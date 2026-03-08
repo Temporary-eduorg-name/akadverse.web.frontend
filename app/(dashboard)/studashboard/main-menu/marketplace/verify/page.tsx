@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type VerifyStatus = "loading" | "success" | "error";
 
-export default function PaymentVerifyPage() {
+function PaymentVerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<VerifyStatus>("loading");
@@ -76,5 +76,22 @@ export default function PaymentVerifyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentVerifyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8 text-center">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">Processing Payment</h1>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">Verifying payment...</p>
+          </div>
+        </div>
+      }
+    >
+      <PaymentVerifyContent />
+    </Suspense>
   );
 }
