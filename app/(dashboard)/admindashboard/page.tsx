@@ -89,16 +89,16 @@ const Page = () => {
             {workspaces.map((workspace) => (
               <div
                 key={workspace.id}
-                className={`p-8 bg-white border border-gray-200 rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer min-h-[260px] relative ${workspace.badge ? 'text-center' : ''}`}
+                className="p-8 bg-white border border-gray-200 rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer min-h-[260px] relative"
                 onClick={() => workspace.badge ? null : router.push(workspace.path)}
               >
-                <div className={`mb-6 ${workspace.badge ? 'flex justify-center' : ''}`}>
+                <div className="mb-6">
                   <workspace.icon size={40} className="text-gray-400" />
                 </div>
-                <h3 className={`text-2xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors flex items-center gap-2 ${workspace.badge ? 'justify-center' : ''}`}>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors flex items-center gap-2">
                   {workspace.title}
                   {workspace.badge && (
-                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full text-center">
                       {workspace.badge}
                     </span>
                   )}
