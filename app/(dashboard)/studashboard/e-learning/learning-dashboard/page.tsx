@@ -1,72 +1,605 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Book, Search, BellDot, User, LogOut, ArrowLeft } from 'lucide-react';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  LayoutGrid,
+  FileText,
+  File,
+  MapPin,
+  Bell,
+  Home,
+  BookOpen,
+  ClipboardList,
+  BarChart3,
+  Lightbulb,
+  Rocket,
+  SlidersHorizontal,
+  ChevronDown,
+} from "lucide-react";
 
 const Page = () => {
   const router = useRouter();
+  const [activeNav, setActiveNav] = useState("dashboard");
+
+  /* ── Dummy Data ── */
+  const recentGrades = [
+    {
+      name: "Calculus II",
+      subtitle: "Midterm Exam",
+      grade: "A-",
+      iconBg: "bg-[#ffedd5]" /* Figma: orange tint */,
+      iconColor: "text-orange-600",
+      symbol: "Σ",
+    },
+    {
+      name: "Data Structures",
+      subtitle: "Project 01",
+      grade: "A+",
+      iconBg: "bg-[#dbeafe]" /* Figma: blue tint */,
+      iconColor: "text-blue-600",
+      symbol: "</>",
+    },
+    {
+      name: "Genetics",
+      subtitle: "Lab Report",
+      grade: "B+",
+      iconBg: "bg-[#f3e8ff]" /* Figma: purple tint */,
+      iconColor: "text-purple-600",
+      symbol: "Λ",
+    },
+  ];
+
+  const myLearningCourses = [
+    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
+    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
+    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
+  ];
+
+  const courses = [
+    {
+      name: "Introduction to Machine Learning",
+      code: "CS304",
+      instructor: "Dr. Sarah Williams",
+      category: "Technology",
+      categoryTextColor: "text-[#2563eb]" /* Figma blue */,
+      categoryBgColor: "bg-[#eff6ff]",
+      credits: "4.0",
+      status: "Open",
+      statusDot: "bg-[#10b981]" /* Figma green */,
+      statusTextColor: "text-[#475569]",
+      action: "Register",
+    },
+    {
+      name: "Advanced Quantum Physics",
+      code: "PH402",
+      instructor: "Prof. Liam Chen",
+      category: "Science",
+      categoryTextColor: "text-[#9333ea]" /* Figma purple */,
+      categoryBgColor: "bg-[#faf5ff]",
+      credits: "3.0",
+      status: "Registered",
+      statusDot: "bg-[#cbd5e1]" /* Figma gray */,
+      statusTextColor: "text-[#94a3b8]",
+      action: "Details",
+    },
+    {
+      name: "Entrepreneurship & Innovation",
+      code: "BS101",
+      instructor: "Martha Stewart",
+      category: "Business",
+      categoryTextColor: "text-[#ea580c]" /* Figma orange */,
+      categoryBgColor: "bg-[#fff7ed]",
+      credits: "2.0",
+      status: "Limited Spots",
+      statusDot: "bg-[#f59e0b]" /* Figma amber */,
+      statusTextColor: "text-[#475569]",
+      action: "Register",
+    },
+  ];
+
+  const sidebarNav = [
+    { id: "dashboard", label: "Dashboard", icon: Home },
+    { id: "courses", label: "Courses", icon: BookOpen },
+    { id: "records", label: "Records", icon: ClipboardList },
+    { id: "mylearning", label: "Mylearning", icon: BarChart3 },
+    { id: "suggestions", label: "Suggestions", icon: Lightbulb },
+  ];
+
+  /* ── SVG Donut helpers ── */
+  const RADIUS = 50;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const PROGRESS_PERCENT = 0.77;
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Book size={28} className="text-blue-600" />
-            <span className="text-lg font-semibold text-blue-600">AkadVerse</span>
+    <div className="flex min-h-screen font-sans">
+      {/* ─── Sidebar — fixed, z-50, above navbar ─── */}
+      {/* Figma: #1e40af, 288px wide, border-r rgba(30,64,175,0.2) */}
+      <aside className="w-[288px] bg-[#1e40af] text-white flex flex-col fixed top-0 left-0 h-screen z-50 border-r border-[rgba(30,64,175,0.2)]">
+        {/* Header — "Learning Essentials" + compass icon */}
+        <div className="px-6 pt-6 pb-5 flex items-center gap-3">
+          <div className="w-10 h-10 bg-[rgba(255,255,255,0.2)] rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg
+              width="22"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon
+                points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
+                fill="white"
+                stroke="white"
+              />
+            </svg>
           </div>
-          <div className="flex-1 max-w-sm mx-6 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full pl-12 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div>
+            {/* Figma: 18px Bold white */}
+            <p className="font-bold text-[18px] leading-[22.5px] text-white">
+              Learning Essentials
+            </p>
+            {/* Figma: 12px Regular white/60% */}
+            <p className="font-normal text-[12px] leading-4 text-[rgba(255,255,255,0.6)]">
+              Vibrant Blue Edition
+            </p>
           </div>
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors" aria-label="Notifications">
-              <BellDot size={20} />
+        </div>
+
+        {/* Back to Workspace — user explicitly requested this */}
+        <div className="px-6 pb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-[rgba(255,255,255,0.5)] hover:text-white transition-colors text-[13px]"
+          >
+            <ArrowLeft size={14} />
+            <span>Back to workspace</span>
+          </button>
+        </div>
+
+        {/* Navigation — Figma: 8px gap, px-16, py-12 per link, rounded-[12px] */}
+        <nav className="flex-1 px-4 space-y-2">
+          {sidebarNav.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeNav === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-[16px] ${
+                  isActive
+                    ? "bg-[rgba(255,255,255,0.45)] text-white font-medium"
+                    : "text-[rgba(255,255,255,0.8)] hover:text-white hover:bg-[rgba(255,255,255,0.1)] font-normal"
+                }`}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* ─── Main Content — offset by sidebar width ─── */}
+      {/* Figma: page bg #f0f4f8 */}
+      <div className="flex-1 flex flex-col ml-[288px] bg-[#f0f4f8] min-h-screen">
+        {/* Top Toolbar / Header — Figma: white, border-b #e2e8f0, 60px height */}
+        <header className="h-[60px] bg-white border-b border-[#e2e8f0] flex items-center relative sticky top-0 z-40 px-6">
+          {/* Left: Top toolbar icons — absolutely centered */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-6">
+            <button className="text-[#1e40af] hover:text-[#1e40af] p-2 bg-[#eff6ff] rounded-lg">
+              <LayoutGrid size={20} />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">Student Profile</span>
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User size={16} className="text-blue-600" />
+            <button className="text-gray-500 hover:text-gray-700">
+              <ClipboardList size={20} />
+            </button>
+            <button className="text-gray-500 hover:text-gray-700">
+              <FileText size={20} />
+            </button>
+            <button className="text-gray-500 hover:text-gray-700">
+              <File size={20} />
+            </button>
+            <button className="text-gray-500 hover:text-gray-700">
+              <MapPin size={20} />
+            </button>
+          </div>
+
+          {/* Right: bell + user info + avatar */}
+          <div className="flex items-center gap-6 ml-auto">
+            {/* Notification Bell with red dot — Figma: #ef4444 dot, white border */}
+            <button className="relative text-gray-500 hover:text-gray-700 p-2">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-[#ef4444] border-2 border-white rounded-full" />
+            </button>
+
+            {/* Vertical Divider — Figma: #e2e8f0, 32px tall */}
+            <div className="w-px h-8 bg-[#e2e8f0]" />
+
+            {/* User Info + Avatar */}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                {/* Figma: 14px Bold #0f172a */}
+                <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                  Alex Rivers
+                </p>
+                {/* Figma: 12px Regular #64748b */}
+                <p className="text-[12px] font-normal text-[#64748b] leading-4">
+                  Student ID: 49201
+                </p>
+              </div>
+              {/* Figma: 40px avatar, rgba(30,64,175,0.1) bg, rgba(30,64,175,0.2) border */}
+              <div className="w-10 h-10 rounded-full bg-[rgba(30,64,175,0.1)] border-2 border-[rgba(30,64,175,0.2)] flex items-center justify-center overflow-hidden">
+                <span className="text-[#1e40af] font-bold text-sm">AR</span>
               </div>
             </div>
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Back to login"
-              onClick={() => router.push('/login')}
-            >
-              <LogOut size={18} />
-            </button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-8"
-        >
-          <ArrowLeft size={20} />
-          <span className="text-sm font-medium">Back</span>
-        </button>
+        {/* ─── Page Body ─── */}
+        <div className="flex-1 overflow-y-auto px-8 py-8">
+          {/* Academic Overview Title + Download Report */}
+          {/* Figma: title 30px Extra Bold #0f172a, tracking -0.75px */}
+          <div className="mb-8">
+            <div className="flex items-end justify-between">
+              <div>
+                <h1 className="text-[30px] font-extrabold text-[#0f172a] leading-9 tracking-[-0.75px] mb-1">
+                  Academic Overview
+                </h1>
+                {/* Figma: 16px Regular #64748b */}
+                <p className="text-[16px] font-normal text-[#64748b] leading-6">
+                  Welcome back, your performance this semester is excellent.
+                </p>
+              </div>
+              {/* Figma: white bg, #e2e8f0 border, rounded-[12px], 14px Semi Bold #475569 */}
+              <button className="px-[17px] py-[9px] bg-white border border-[#e2e8f0] rounded-xl text-[14px] font-semibold text-[#475569] hover:bg-gray-50 transition-colors whitespace-nowrap">
+                Download Report
+              </button>
+            </div>
+          </div>
 
-        {/* Page Title */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Learning Dashboard</h1>
-          <p className="text-gray-600">Overview of your current courses and academic progress.</p>
-        </div>
+          {/* ──── Two-Column Master Layout ──── */}
+          <div className="flex gap-6">
+            {/* ── Left Column ── */}
+            <div className="flex-1 min-w-0">
+              {/* Academic Records: CGPA card + Recent Grades side by side */}
+              {/* Figma: 24px gap between the two cards */}
+              <div className="flex gap-6 mb-6">
+                {/* ── CGPA & Credit Progress Card ── */}
+                {/* Figma: white, #e2e8f0 border, rounded-[24px], shadow */}
+                <div className="flex-1 bg-white rounded-3xl p-6 border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
+                  <div className="flex gap-5 items-center">
+                    {/* Donut Chart — left side */}
+                    {/* Figma: 128px circle, stroke #06f (0066ff), gray track */}
+                    <div className="flex-shrink-0">
+                      <div className="relative w-[128px] h-[128px]">
+                        <svg
+                          className="w-full h-full -rotate-90"
+                          viewBox="0 0 128 128"
+                        >
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r={RADIUS}
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="10"
+                          />
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r={RADIUS}
+                            fill="none"
+                            stroke="#0066ff"
+                            strokeWidth="10"
+                            strokeDasharray={`${PROGRESS_PERCENT * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          {/* Figma: 24px Bold #0f172a */}
+                          <span className="text-[24px] font-bold text-[#0f172a] leading-8">
+                            3.85
+                          </span>
+                          {/* Figma: 10px Bold #64748b uppercase */}
+                          <span className="text-[10px] font-bold text-[#64748b] uppercase leading-[15px]">
+                            CGPA
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Coming Soon */}
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Coming Soon</h2>
-            <p className="text-gray-600">Learning Dashboard features are under development.</p>
+                    {/* Right side: Credit Progress label + bar + status boxes */}
+                    <div className="flex-1 flex flex-col gap-2">
+                      {/* Figma: 14px Bold #0f172a "Credit Progress" */}
+                      <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                        Credit Progress
+                      </p>
+
+                      {/* Figma: 12px height, #f1f5f9 track, #06f fill, rounded-full */}
+                      <div className="w-full bg-[#f1f5f9] rounded-full h-3">
+                        <div
+                          className="bg-[#0066ff] h-3 rounded-full"
+                          style={{ width: "78%" }}
+                        />
+                      </div>
+
+                      {/* Two status boxes below — Figma: 15px gap, 16px top padding */}
+                      <div className="flex gap-[15px] pt-4">
+                        {/* Status box — Figma: #f8fafc bg, #f1f5f9 border, rounded-[16px], 13px padding */}
+                        <div className="flex-1 bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-[13px]">
+                          {/* Figma: 10px Bold #94a3b8 uppercase "STATUS" */}
+                          <p className="text-[10px] font-bold text-[#94a3b8] uppercase leading-[15px] mb-1">
+                            Status
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {/* Figma: green check icon + 14px Bold #10b981 "Distinction" */}
+                            <span className="text-[#10b981] text-xs">✓</span>
+                            <span className="text-[14px] font-bold text-[#10b981] leading-5">
+                              Distinction
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Remaining box — same container styling */}
+                        <div className="flex-1 bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-[13px]">
+                          {/* Figma: 10px Bold #94a3b8 uppercase */}
+                          <p className="text-[10px] font-bold text-[#94a3b8] uppercase leading-[15px] mb-1">
+                            Remaining
+                          </p>
+                          {/* Figma: 14px Bold #0f172a "26\nCredits" multi-line */}
+                          <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                            26
+                          </p>
+                          <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                            Credits
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Recent Grades Card ── */}
+                {/* Figma: white, #e2e8f0 border, rounded-[24px], shadow, 25px padding */}
+                <div className="w-[193px] flex-shrink-0 bg-white rounded-3xl p-[25px] border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col">
+                  {/* Figma: 14px Bold #0f172a */}
+                  <h3 className="text-[14px] font-bold text-[#0f172a] leading-5 mb-4">
+                    Recent Grades
+                  </h3>
+                  <div className="space-y-4 flex-1">
+                    {recentGrades.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        {/* Figma: 32px icon box, rounded-[8px] */}
+                        <div
+                          className={`w-8 h-8 ${item.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
+                        >
+                          <span
+                            className={`text-[10px] font-bold ${item.iconColor}`}
+                          >
+                            {item.symbol}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {/* Figma: 12px Bold #0f172a */}
+                          <p className="text-[12px] font-bold text-[#0f172a] leading-4">
+                            {item.name}
+                          </p>
+                          {/* Figma: 10px Regular #64748b */}
+                          <p className="text-[10px] font-normal text-[#64748b] leading-[15px]">
+                            {item.subtitle}
+                          </p>
+                        </div>
+                        {/* Figma: 14px Bold #0f172a */}
+                        <span className="text-[14px] font-bold text-[#0f172a] leading-5">
+                          {item.grade}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Figma: 10px Bold #94a3b8 uppercase, tracking 1px, centered */}
+                  <button className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[1px] mt-4 py-2 text-center w-full hover:text-[#64748b] transition-colors">
+                    View All Records
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Course Control Section ── */}
+              <div className="mb-6">
+                {/* Header row — outside the table card */}
+                {/* Figma: 20px Bold #0f172a title, controls on right */}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[20px] font-bold text-[#0f172a] leading-7">
+                    Course Control
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {/* Figma: white bg, #e2e8f0 border, rounded-[8px], 12px Regular #0f172a */}
+                    <button className="flex items-center gap-1.5 px-2 py-1 bg-white border border-[#e2e8f0] rounded-lg text-[12px] font-normal text-[#0f172a]">
+                      All Departments
+                      <ChevronDown size={14} />
+                    </button>
+                    <button className="p-1 text-gray-400 hover:text-gray-600">
+                      <SlidersHorizontal size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table Card — Figma: white, #e2e8f0 border, rounded-[24px], shadow */}
+                <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+                  <table className="w-full text-sm">
+                    {/* Figma: #f8fafc header bg, 10px Bold #64748b uppercase, tracking 0.5px */}
+                    <thead>
+                      <tr className="bg-[#f8fafc]">
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Course Name
+                        </th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Category
+                        </th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Credits
+                        </th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-right text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((course, idx) => (
+                        <tr
+                          key={idx}
+                          className="border-t border-[#f1f5f9] hover:bg-gray-50/40 transition-colors"
+                        >
+                          {/* Course Name — Figma: 14px Bold #0f172a, code 10px Regular #94a3b8 */}
+                          <td className="px-6 py-4">
+                            <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                              {course.name}
+                            </p>
+                            <p className="text-[10px] font-normal text-[#94a3b8] mt-0.5">
+                              {course.code} • {course.instructor}
+                            </p>
+                          </td>
+
+                          {/* Category Pill — Figma: colored bg pill, 10px Bold text, rounded-full */}
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${course.categoryTextColor} ${course.categoryBgColor}`}
+                            >
+                              {course.category}
+                            </span>
+                          </td>
+
+                          {/* Credits — Figma: 14px Regular #0f172a */}
+                          <td className="px-6 py-4 text-[14px] font-normal text-[#0f172a]">
+                            {course.credits}
+                          </td>
+
+                          {/* Status — Figma: dot + 10px Bold text */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`w-2 h-2 rounded-full ${course.statusDot}`}
+                              />
+                              <span
+                                className={`text-[10px] font-bold ${course.statusTextColor}`}
+                              >
+                                {course.status}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Action — Figma: Register = #06f blue, Details = outlined */}
+                          <td className="px-6 py-4 text-right">
+                            {course.action === "Register" ? (
+                              <button className="px-4 py-1.5 bg-[#0066ff] text-white text-[12px] font-bold rounded-lg shadow-[0px_10px_15px_-3px_rgba(0,102,255,0.2),0px_4px_6px_-4px_rgba(0,102,255,0.2)] hover:bg-[#0052cc] transition-colors">
+                                Register
+                              </button>
+                            ) : (
+                              <button className="px-[17px] py-[7px] border border-[#e2e8f0] text-[12px] font-bold text-[#475569] rounded-lg hover:bg-gray-50 transition-colors">
+                                Details
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Right Column — MyLearning ── */}
+            <div className="w-[274px] flex-shrink-0 space-y-4">
+              {/* MyLearning heading + View all link */}
+              {/* Figma: rocket icon, ~18px Bold #0f172a, "View all" #1e40af 14px Bold */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Rocket size={20} className="text-[#0f172a]" />
+                  <h3 className="text-[18px] font-bold text-[#0f172a] leading-7">
+                    MyLearning
+                  </h3>
+                </div>
+              </div>
+
+              {/* Figma: #e4edff bg wrapper, rounded-[15px] */}
+              <div className="bg-[#e4edff] rounded-[15px] p-4 space-y-[15px]">
+                {myLearningCourses.map((course, idx) => (
+                  /* Figma: white, #e2e8f0 border 0.833px, rounded-[13.333px], 95px height */
+                  <div
+                    key={idx}
+                    className="bg-white rounded-[13px] p-[10px] border border-[#e2e8f0]"
+                  >
+                    {/* Top row: icon + ON TRACK badge */}
+                    <div className="flex justify-between items-start mb-1">
+                      {/* Figma: #eff6ff bg, rounded-[8.75px], 35x23 */}
+                      <div className="w-[35px] h-[23px] bg-[#eff6ff] rounded-[9px] flex items-center justify-center">
+                        <span className="text-blue-600 font-bold text-[10px]">
+                          {"{ }"}
+                        </span>
+                      </div>
+                      {/* Figma: #dcfce7 bg, #16a34a text, ~7px Bold uppercase */}
+                      <span className="text-[7px] font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded-sm uppercase">
+                        {course.status}
+                      </span>
+                    </div>
+
+                    {/* Figma: ~11px Bold #1e293b */}
+                    <p className="text-[11px] font-bold text-[#1e293b] leading-[17px] mb-1">
+                      {course.title}
+                    </p>
+
+                    {/* Progress row — Figma: ~9px Semi Bold #94a3b8 / #1e40af */}
+                    <div className="flex items-center justify-between text-[9px] mb-1">
+                      <span className="font-semibold text-[#94a3b8] uppercase tracking-tight">
+                        Course Progress
+                      </span>
+                      <span className="font-semibold text-[#1e40af]">
+                        {course.progress}%
+                      </span>
+                    </div>
+
+                    {/* Figma: #f1f5f9 track ~4px, #1e40af fill */}
+                    <div className="w-full bg-[#f1f5f9] rounded-full h-1">
+                      <div
+                        className="bg-[#1e40af] h-1 rounded-full"
+                        style={{ width: `${course.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── New Suggestions Card ── */}
+              {/* Figma: #1e40af solid bg, rounded-[16px], shadow, 93px tall, 265px wide */}
+              <div className="bg-[#1e40af] rounded-2xl p-5 text-white shadow-[0px_10px_15px_-3px_rgba(30,64,175,0.2),0px_4px_6px_-4px_rgba(30,64,175,0.2)] relative overflow-hidden">
+                <div className="flex items-start gap-3">
+                  {/* Figma: #c7daff bg box, rounded-[13.333px], 50x47, with bulb icon */}
+                  <div className="w-[50px] h-[47px] bg-[#c7daff] rounded-[13px] flex items-center justify-center flex-shrink-0">
+                    <Lightbulb size={18} className="text-[#1e40af]" />
+                  </div>
+                  <div>
+                    {/* Figma: 14px Bold white */}
+                    <h4 className="font-bold text-[14px] leading-5 text-white mb-1">
+                      New Suggestions
+                    </h4>
+                    {/* Figma: ~7px Extra Light white */}
+                    <p className="text-[7px] font-extralight text-white leading-[11px]">
+                      Explore personalized course
+                      <br />
+                      recommendations tailored to your
+                      <br />
+                      career goals and interests.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
