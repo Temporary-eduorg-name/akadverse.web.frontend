@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 interface BusinessDropdownProps {
   hasActivity?: boolean;
@@ -9,14 +10,16 @@ interface BusinessDropdownProps {
 
 export default function BusinessDropdown({ hasActivity = false }: BusinessDropdownProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated } = useAuth();
+  const marketplaceBase = getMarketplaceBase(pathname);
 
   const handleClick = () => {
     
     if (!isAuthenticated) {
       router.push("/login");
     } else {
-      router.push("/dashboard");
+      router.push(`${marketplaceBase}/dashboard`);
     }
   };
 

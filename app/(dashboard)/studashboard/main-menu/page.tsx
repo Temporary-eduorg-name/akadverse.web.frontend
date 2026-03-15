@@ -14,7 +14,7 @@ const Page = () => {
       description: 'Announcements, quick academic overview, campus updates',
       icon: 'home',
       color: 'bg-blue-50',
-      path: '/studashboard',
+      path: '/studashboard/main-menu/student-dashboard',
     },
     {
       id: 2,
@@ -30,7 +30,7 @@ const Page = () => {
       description: 'Schedule Manager, Attendance, Email Integration, Suggestions',
       icon: 'gift',
       color: 'bg-teal-50',
-      path: '/essentials',
+      path: '/studashboard/main-menu/essentials/suggestions',
     },
   ];
 

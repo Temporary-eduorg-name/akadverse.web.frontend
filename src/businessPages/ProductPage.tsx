@@ -157,7 +157,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`/api/businesses/${businessId}/products`, {
+      const response = await fetch(`/api/marketplace/businesses/${businessId}/products`, {
         method: "GET",
         credentials: "include",
       });
@@ -234,7 +234,7 @@ export default function ProductsPage() {
       }
 
       const response = await fetch(
-        `/api/businesses/${businessId}/products`,
+        `/api/marketplace/businesses/${businessId}/products`,
         {
           method: "POST",
           credentials: "include",
@@ -275,7 +275,7 @@ export default function ProductsPage() {
 
     try {
       const response = await fetch(
-        `/api/businesses/${businessId}/products/${productId}`,
+        `/api/marketplace/businesses/${businessId}/products/${productId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -390,3 +390,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

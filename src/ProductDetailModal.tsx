@@ -138,7 +138,7 @@ export default function ProductDetailModal({
   const handleAddToCart = async () => {
     setAdding(true);
     try {
-      const response = await fetch("/api/cart", {
+      const response = await fetch("/api/marketplace/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -383,3 +383,4 @@ export default function ProductDetailModal({
     </AnimatePresence>
   );
 }
+

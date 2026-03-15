@@ -29,19 +29,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/verify", {
+            console.log('check')
+        const response = await fetch("/api/marketplace/auth/verify", {
           credentials: "include",
         });
 
         if (response.ok) {
           setIsAuthenticated(true);
 
-          const userResponse = await fetch("/api/user", {
+          const userResponse = await fetch("/api/marketplace/user", {
             credentials: "include",
           });
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
+            console.log(userData)
             setUser(userData.user);
           } else {
             setUser(null);
@@ -76,3 +78,4 @@ export function useAuth() {
   }
   return context;
 }
+

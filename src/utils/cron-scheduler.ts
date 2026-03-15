@@ -1,10 +1,11 @@
 import cron from "node-cron";
 import dotenv from "dotenv";
+import { getAppBaseUrl } from "../lib/app-url";
 
 // Load environment variables
 dotenv.config();
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL = getAppBaseUrl();
 
 async function triggerEscrowRelease() {
     const timestamp = new Date().toISOString();
@@ -17,7 +18,7 @@ async function triggerEscrowRelease() {
             console.error("❌ CRON_SECRET not found in environment variables");
             process.exit(1);
         }
-        const response = await fetch(`${APP_URL}/api/cron/escrow-release`, {
+        const response = await fetch(`${APP_URL}/api/marketplace/cron/escrow-release`, {
 
             method: "POST",
             headers: {
@@ -54,7 +55,7 @@ async function triggerEscrowRelease() {
 const cronExpression = "*/1 * * * *"; // Every 5 minutes
 console.log(`🚀 Escrow release scheduler started`);
 console.log(`📅 Schedule: Every 5 minutes (${cronExpression})`);
-console.log(`🌐 Target URL: ${APP_URL}/api/cron/escrow-release`);
+console.log(`🌐 Target URL: ${APP_URL}/api/marketplace/cron/escrow-release`);
 console.log(`⏰ Next run will be in ~5 minutes\n`);
 
 cron.schedule(cronExpression, triggerEscrowRelease, {

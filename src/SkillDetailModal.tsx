@@ -112,7 +112,7 @@ export default function SkillDetailModal({
         description: description.trim(),
       };
 
-      const response = await fetch(`/api/skills/${skill.id}/offers`, {
+      const response = await fetch(`/api/marketplace/skills/${skill.id}/offers`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -390,3 +390,4 @@ export default function SkillDetailModal({
     </AnimatePresence>
   );
 }
+

@@ -50,7 +50,7 @@ export default function NewSkillsCarousel() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const response = await fetch("/api/skills?type=new&limit=10");
+        const response = await fetch("/api/marketplace/skills?type=new&limit=10");
         if (response.ok) {
           const data = await response.json();
           setSkills(data.skills || []);
@@ -220,3 +220,4 @@ export default function NewSkillsCarousel() {
     </>
   );
 }
+

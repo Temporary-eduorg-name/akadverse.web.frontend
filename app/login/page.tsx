@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Book, Sun, Moon } from 'lucide-react';
 import { PasswordInput } from '../components/password-input';
@@ -12,6 +13,7 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [activeRole, setActiveRole] = useState<'student' | 'faculty' | 'admin'>('student');
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('login-theme');
@@ -33,16 +35,13 @@ const LoginPage = () => {
     window.localStorage.setItem('login-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
-  const demoCredentials = [
-    { role: 'Student', email: 'student@example.com', password: 'student' },
-    { role: 'Faculty', email: 'faculty@example.com', password: 'faculty' },
-    { role: 'Admin', email: 'admin@example.com', password: 'admin' },
+  const roleOptions = [
+    { id: 'student' as const, label: 'Student', path: '/studashboard' },
+    { id: 'faculty' as const, label: 'Faculty', path: '/staffdashboard' },
+    { id: 'admin' as const, label: 'Admin', path: '/admindashboard' },
   ];
 
-  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-  };
+  const activeRoleIndex = roleOptions.findIndex((role) => role.id === activeRole);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,24 +49,22 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // Add your login API call here
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password }),
-      // });
+      const response = await fetch('/api/marketplace/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
 
-      // Mock login for now
-      console.log('Login attempt:', { email, password });
-      
-      // Redirect based on role (this is a placeholder)
-      if (email.includes('admin')) {
-        router.push('/admindashboard');
-      } else if (email.includes('faculty')) {
-        router.push('/staffdashboard');
-      } else {
-        router.push('/studashboard');
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || 'Login failed. Please try again.');
+        return;
       }
+
+      const selected = roleOptions.find((role) => role.id === activeRole);
+      router.push(selected?.path ?? '/studashboard');
     } catch (err) {
       setError('Login failed. Please try again.');
     } finally {
@@ -149,39 +146,51 @@ const LoginPage = () => {
               disabled={isLoading}
               className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? 'Signing in...' : 'Log In'}
             </button>
+
+            <p className={`text-sm text-center ${isDarkMode ? 'text-[#9CA3AF]' : 'text-gray-600'}`}>
+              Don&apos;t have an account?{' '}
+              <Link href="/signup" className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Sign up
+              </Link>
+            </p>
           </form>
 
-          {/* Demo Access Section */}
+          {/* Role Section */}
           <div className={`border rounded-2xl p-6 ${isDarkMode ? 'bg-[#171717] border-[#262626]' : 'bg-white border-gray-200'}`}>
             <h3 className={`text-xs font-semibold uppercase tracking-widest mb-6 ${isDarkMode ? 'text-[#737373]' : 'text-gray-500'}`}>
-              Demo Access
+              Choose View Role
             </h3>
-            <div className="space-y-4">
-              {demoCredentials.map((demo) => (
+            <div className={`relative grid grid-cols-3 rounded-xl p-1 ${isDarkMode ? 'bg-[#0f0f0f]' : 'bg-gray-100'}`}>
+              <span
+                className={`absolute top-1 bottom-1 w-[calc((100%-0.5rem)/3)] rounded-lg transition-transform duration-300 ease-out ${
+                  isDarkMode ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white border border-blue-100 shadow-sm'
+                }`}
+                style={{ transform: `translateX(calc(${activeRoleIndex} * 100%))` }}
+              />
+              {roleOptions.map((role) => (
                 <button
-                  key={demo.role}
-                  onClick={() => handleDemoLogin(demo.email, demo.password)}
-                  className="w-full flex justify-between items-center text-left group hover:opacity-100 transition"
+                  key={role.id}
+                  type="button"
+                  onClick={() => setActiveRole(role.id)}
+                  className={`relative z-10 py-2 text-sm font-semibold transition-colors ${
+                    activeRole === role.id
+                      ? isDarkMode
+                        ? 'text-white'
+                        : 'text-blue-700'
+                      : isDarkMode
+                        ? 'text-[#8a8a8a] hover:text-[#c8c8c8]'
+                        : 'text-gray-500 hover:text-gray-800'
+                  }`}
                 >
-                  <span
-                    className={`font-medium transition ${
-                      isDarkMode ? 'text-[#D4D4D4] group-hover:text-white' : 'text-gray-800 group-hover:text-gray-900'
-                    }`}
-                  >
-                    {demo.role}
-                  </span>
-                  <span
-                    className={`text-sm font-mono transition ${
-                      isDarkMode ? 'text-[#737373] group-hover:text-[#A3A3A3]' : 'text-gray-500 group-hover:text-gray-700'
-                    }`}
-                  >
-                    {demo.email} : {demo.password}
-                  </span>
+                  {role.label}
                 </button>
               ))}
             </div>
+            <p className={`mt-4 text-xs ${isDarkMode ? 'text-[#8a8a8a]' : 'text-gray-500'}`}>
+              Your selected role decides which dashboard opens immediately after login.
+            </p>
           </div>
         </div>
       </div>
@@ -208,3 +217,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

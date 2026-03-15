@@ -2,20 +2,32 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import BusinessDropdown from "./BusinessDropdown";
 import SkillsDropdown from "./SkillsDropdown";
 import ActivityDropdown from "./ActivityDropdown";
 import CartDropdown from "./CartDropdown";
 import SearchBar from "./SearchBar";
+import { getDashboardRoot, getMarketplaceBase } from "./marketplaceRouteUtils";
 
-export default function Navbar() {
+interface NavbarProps {
+  className?: string;
+}
+
+export default function Navbar({ className = "" }: NavbarProps) {
   const { isAuthenticated, user } = useAuth();
+  const pathname = usePathname();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [hasBusinessActivity, setHasBusinessActivity] = useState(false);
   const eventSourcesRef = useRef<EventSource[]>([]);
   const setupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dashboardRoot = getDashboardRoot(pathname);
+  const marketplaceBase = getMarketplaceBase(pathname);
+  const marketplaceLabel = pathname.startsWith("/staffdashboard")
+    ? "Faculty Marketplace"
+    : "Student Marketplace";
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -63,7 +75,7 @@ export default function Navbar() {
 
   const fetchCartCount = async () => {
     try {
-      const response = await fetch("/api/cart", { credentials: "include" });
+      const response = await fetch("/api/marketplace/cart", { credentials: "include" });
       if (response.ok) {
         const data = await response.json();
         setCartCount(data.cartItems?.length || 0);
@@ -75,7 +87,7 @@ export default function Navbar() {
 
   const setupBusinessActivityListener = async () => {
     try {
-      const response = await fetch("/api/businesses", { credentials: "include" });
+      const response = await fetch("/api/marketplace/businesses", { credentials: "include" });
       if (!response.ok) return;
 
       const data = await response.json();
@@ -87,7 +99,7 @@ export default function Navbar() {
 
       businesses.forEach((business: { id: string }) => {
         const eventSource = new EventSource(
-          `/api/realtime/events?scope=seller&businessId=${business.id}`
+          `/api/marketplace/realtime/events?scope=seller&businessId=${business.id}`
         );
 
         // Set timeout for connection - if it doesn't connect in 5 seconds, close it
@@ -131,27 +143,30 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 gap-6">
-            <div className="flex items-center">
-              <Link href="/" className="text-xl font-bold text-zinc-900 dark:text-white">
-                Student Marketplace
+      <nav className={`sticky top-[70px] z-20 w-full bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 ${className}`}>
+        <div className="w-full px-3 sm:px-4 lg:px-6">
+          <div className="flex flex-wrap items-center gap-3 py-3 lg:flex-nowrap lg:h-16 lg:py-0">
+            <div className="min-w-0 shrink-0">
+              <Link href={marketplaceBase} className="block truncate text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
+                {marketplaceLabel}
               </Link>
             </div>
-            <div className="flex-1 flex justify-center">
+
+            <div className="order-3 w-full lg:order-none lg:flex-1 lg:min-w-[260px]">
               <SearchBar />
             </div>
-            <div className="flex items-center gap-6">
+
+            <div className="ml-auto flex items-center justify-end gap-3 sm:gap-4 flex-wrap">
               <BusinessDropdown hasActivity={hasBusinessActivity} />
               <SkillsDropdown />
               <ActivityDropdown />
-              {isAuthenticated && user?.role === "admin" && (
+              {isAuthenticated && user?.role === "super-admin" && !pathname.startsWith("/studashboard") && (
                 <Link
-                  href="/admin"
-                  className="text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors font-medium"
+                  href={`${dashboardRoot}/main-menu/admin`}
+                  className="inline-flex items-center gap-1.5 text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors font-medium"
+                  title="Super Admin Dashboard"
                 >
-                  Admin
+                  <span className="hidden sm:inline">Admin</span>
                 </Link>
               )}
               <button
@@ -181,10 +196,10 @@ export default function Navbar() {
               </button>
               {!isAuthenticated && (
                 <Link
-                  href="/signup"
+                  href={marketplaceBase}
                   className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
                 >
-                  Sign Up
+                  Browse
                 </Link>
               )}
             </div>
@@ -200,3 +215,4 @@ export default function Navbar() {
     </>
   );
 }
+

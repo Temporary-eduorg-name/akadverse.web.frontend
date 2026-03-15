@@ -64,3 +64,28 @@ body {
   padding: 16px;
   min-height: 60px;
 }
+
+.theme-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #c9d6ea #f4f7fc;
+}
+
+.theme-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.theme-scrollbar::-webkit-scrollbar-track {
+  background: #f4f7fc;
+  border-radius: 999px;
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb {
+  background: #c9d6ea;
+  border-radius: 999px;
+  border: 2px solid #f4f7fc;
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b5c5df;
+}

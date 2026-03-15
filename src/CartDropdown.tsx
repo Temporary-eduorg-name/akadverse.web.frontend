@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import LoadingSpinner from "./LoadingSpinner";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 interface CartItem {
   id: string;
@@ -38,6 +39,8 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
+  const marketplaceBase = getMarketplaceBase(pathname);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +50,7 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
 
   const fetchCart = async () => {
     try {
-      const response = await fetch("/api/cart", {
+      const response = await fetch("/api/marketplace/cart", {
         credentials: "include",
       });
 
@@ -67,7 +70,7 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
     if (newQuantity < 1) return;
 
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
+      const response = await fetch(`/api/marketplace/cart/${itemId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -88,7 +91,7 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
 
   const removeItem = async (itemId: string) => {
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
+      const response = await fetch(`/api/marketplace/cart/${itemId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -246,7 +249,7 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
 
               {/* Checkout Button */}
               <Link
-                href="/checkout"
+                href={`${marketplaceBase}/checkout`}
                 onClick={onClose}
                 className="block w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-center py-3 rounded-lg font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
               >
@@ -261,3 +264,4 @@ export default function CartDropdown({ isOpen, onClose, onCartChange }: CartDrop
     </AnimatePresence>
   );
 }
+

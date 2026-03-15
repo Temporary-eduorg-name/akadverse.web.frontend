@@ -1,20 +1,23 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect, useRef } from "react";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 export default function SkillsDropdown() {
     const router = useRouter();
+    const pathname = usePathname();
     const { isAuthenticated, user } = useAuth();
     const [hasSkillActivity, setHasSkillActivity] = useState(false);
     const eventSourceRef = useRef<EventSource | null>(null);
+    const marketplaceBase = getMarketplaceBase(pathname);
 
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
         try {
-            const eventSource = new EventSource("/api/realtime/events?scope=skill_owner");
+            const eventSource = new EventSource("/api/marketplace/realtime/events?scope=skill_owner");
             eventSourceRef.current = eventSource;
 
             eventSource.addEventListener("update", (event) => {
@@ -45,10 +48,10 @@ export default function SkillsDropdown() {
             return;
         }
 
-        router.push("/dashboard/skills");
+        router.push(`${marketplaceBase}/dashboard/skills`);
         
         // Mark notifications as read when visiting dashboard
-        fetch("/api/skills/notifications", {
+        fetch("/api/marketplace/skills/notifications", {
             method: "PATCH",
             credentials: "include",
         }).catch((error) => console.error("Failed to mark notifications as read:", error));
@@ -66,3 +69,4 @@ export default function SkillsDropdown() {
         </button>
     );
 }
+

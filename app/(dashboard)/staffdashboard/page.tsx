@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Book, Search, BellDot, User, LogOut, Zap, Home, BookOpen } from 'lucide-react';
+import { Book, BellDot, User, LogOut, Zap, House, Bot, BookOpen } from 'lucide-react';
 
 const Page = () => {
   const router = useRouter();
@@ -10,60 +10,72 @@ const Page = () => {
   const workspaces = [
     {
       id: 1,
-      title: 'Teaching Tools',
-      description: 'AI tools, Docs, Sheets, and Drive resources for faculty and course management.',
+      title: 'Productivity Layer',
+      description: 'Tools to create, organize, and manage faculty work. This workspace includes tools such as Docs and Drive.',
       icon: Zap,
-      colors: 'bg-purple-500',
-      path: '/staffdashboard/teaching-tools',
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-50',
+      path: '/staffdashboard/productivity-layer',
     },
     {
       id: 2,
-      title: 'Faculty Dashboard',
-      description: 'Overview of students, upcoming classes, and administrative announcements.',
-      icon: Home,
-      colors: 'bg-blue-500',
-      path: '/staffdashboard/faculty-dashboard',
+      title: 'Main Menu',
+      description: 'Access campus tools, the faculty dashboard, marketplace, and faculty essentials.',
+      icon: House,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-50',
+      path: '/staffdashboard/main-menu',
     },
     {
       id: 3,
-      title: 'Courses & Resources',
-      description: 'Manage course content, lecture materials, and teaching resources.',
+      title: 'E-Learning',
+      description: 'Access courses, learning materials, and track faculty progress. Includes learning dashboard, my learning, and learning resources.',
       icon: BookOpen,
-      colors: 'bg-teal-500',
-      path: '/staffdashboard/courses-resources',
+      color: 'text-green-500',
+      bgColor: 'bg-green-50',
+      path: '/staffdashboard/e-learning',
+    },
+    {
+      id: 4,
+      title: 'AI Studio',
+      description: 'Your AI-powered faculty assistant for research, writing, and planning support.',
+      icon: Bot,
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-50',
+      path: '/staffdashboard/ai-studio',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-white font-sans">
+      <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
+        <div className="px-6 py-4 grid grid-cols-3 items-center">
+          <div
+            className="flex items-center gap-3 justify-self-start cursor-pointer"
+            onClick={() => router.push('/staffdashboard')}
+          >
             <Book size={28} className="text-blue-600" />
             <span className="text-lg font-semibold text-blue-600">AkadVerse</span>
           </div>
-          <div className="flex-1 max-w-sm mx-6 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full pl-12 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+
+          <div className="justify-self-center">
+            <span className="text-sm font-medium text-gray-400 tracking-wide">Faculty Workspace</span>
           </div>
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors" aria-label="Notifications">
+
+          <div className="flex items-center gap-3 justify-self-end">
+            <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors" aria-label="Notifications" title="Notifications">
               <BellDot size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">Faculty Profile</span>
+              <span className="text-sm font-medium text-gray-500">Faculty Profile</span>
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <User size={16} className="text-blue-600" />
               </div>
             </div>
             <button
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-500 hover:text-gray-700 transition-colors p-2"
               aria-label="Logout"
+              title="Logout"
               onClick={() => router.push('/login')}
             >
               <LogOut size={18} />
@@ -72,34 +84,32 @@ const Page = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Gray Container Card */}
-        <div className="bg-gray-100 rounded-[24px] p-8">
-          {/* Page Title */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Faculty Portal</h1>
-            <p className="text-gray-600">Welcome back. Select an area to manage.</p>
-          </div>
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Good morning, Faculty</h1>
+          <p className="text-gray-500">Select a workspace to continue.</p>
+        </div>
 
-          {/* Workspaces Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-            {workspaces.map((workspace) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+          {workspaces.map((workspace) => {
+            const Icon = workspace.icon;
+
+            return (
               <div
                 key={workspace.id}
-                className="p-8 bg-white border border-gray-200 rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer min-h-[260px]"
                 onClick={() => router.push(workspace.path)}
+                className="p-8 min-h-[260px] border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:border-transparent hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer group"
               >
-              <div className="mb-6">
-                <workspace.icon size={40} className="text-gray-400" />
-              </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
+                <div className={`w-14 h-14 ${workspace.bgColor} rounded-xl flex items-center justify-center mb-6 shadow-[0_2px_6px_rgba(16,24,40,0.04)]`}>
+                  <Icon size={31} className={workspace.color} />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition">
                   {workspace.title}
                 </h3>
-                <p className="text-base text-gray-600 leading-relaxed">{workspace.description}</p>
+                <p className="text-md text-gray-500 leading-relaxed">{workspace.description}</p>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { Resend } from "resend";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 const resend = new Resend(process.env.RESEND_SECRET_KEY);
+const APP_BASE_URL = getAppBaseUrl();
 
 interface EmailData {
   to: string;
@@ -49,7 +51,7 @@ export async function sendOfferAcceptedEmail(
       <p><strong>${buyerName}</strong> has accepted your offer for <strong>${skillName}</strong>!</p>
       <p><strong>Agreed Price:</strong> ₦${acceptedPrice.toLocaleString("en-US")}</p>
       <p>You can now proceed with the service delivery. Check your dashboard for more details.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/skills" 
+      <a href="${APP_BASE_URL}/dashboard/skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Dashboard
       </a>
@@ -75,7 +77,7 @@ export async function sendOfferRejectedEmail(
       <p>Hi ${skillOwnerName},</p>
       <p><strong>${buyerName}</strong> has rejected your offer for <strong>${skillName}</strong>.</p>
       <p>You can create a new offer or reach out to them directly to discuss further.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/my_skills" 
+      <a href="${APP_BASE_URL}/my_skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         My Skills
       </a>
@@ -103,7 +105,7 @@ export async function sendOfferNegotiatedEmail(
       <p><strong>${buyerName}</strong> has sent a counter offer for <strong>${skillName}</strong>!</p>
       <p><strong>Counter Price:</strong> ₦${counterPrice.toLocaleString("en-US")}</p>
       <p>You can review and accept or reject this counter offer from your dashboard.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/skills" 
+      <a href="${APP_BASE_URL}/dashboard/skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>
@@ -131,7 +133,7 @@ export async function sendOfferCompletedEmail(
       <p>Your offer for <strong>${skillName}</strong> from <strong>${skillOwnerName}</strong> has been completed!</p>
       <p><strong>Final Amount Paid:</strong> ₦${finalPrice.toLocaleString("en-US")}</p>
       <p>Thank you for using our platform. Leave a review to help other users find great skills.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/activity/offers" 
+      <a href="${APP_BASE_URL}/activity/offers" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Transaction
       </a>
@@ -159,7 +161,7 @@ export async function sendOfferToBuyerEmail(
       <p><strong>${skillOwnerName}</strong> has accepted your offer for <strong>${skillName}</strong>!</p>
       <p><strong>Offer Price:</strong> ₦${offerPrice.toLocaleString("en-US")}</p>
       <p>You can now proceed with payment or continue negotiating. Check your dashboard for details.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/activity/offers" 
+      <a href="${APP_BASE_URL}/activity/offers" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offers
       </a>
@@ -185,7 +187,7 @@ export async function sendOfferRejectedByBuyerEmail(
       <p>Hi ${skillOwnerName},</p>
       <p><strong>${buyerName}</strong> has rejected your offer for <strong>${skillName}</strong>.</p>
       <p>You can create a new offer or reach out to them directly to discuss further.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/my_skills" 
+      <a href="${APP_BASE_URL}/my_skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         My Skills
       </a>
@@ -213,7 +215,7 @@ export async function sendCounterOfferFromBuyerEmail(
       <p><strong>${buyerName}</strong> has sent a counter offer for <strong>${skillName}</strong>!</p>
       <p><strong>Counter Price:</strong> ₦${counterPrice.toLocaleString("en-US")}</p>
       <p>You can review and accept or reject this counter offer from your dashboard.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/skills" 
+      <a href="${APP_BASE_URL}/dashboard/skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>
@@ -271,7 +273,7 @@ export async function sendNewOfferToSkillOwnerEmail(
         <p style="margin: 0;"><strong>Description:</strong> ${description || "No description provided"}</p>
       </div>
       <p>You can accept, negotiate, or reject this offer from your dashboard.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/skills" 
+      <a href="${APP_BASE_URL}/dashboard/skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>
@@ -344,7 +346,7 @@ export async function sendOfferAcceptedToBuyerEmail(
         </div>
       ` : ''}
       <p>You can now communicate with ${skillOwnerName} to coordinate the service delivery.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/activity/offers" 
+      <a href="${APP_BASE_URL}/activity/offers" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>
@@ -376,7 +378,7 @@ export async function sendNegotiationFromSkillOwnerToBuyerEmail(
         ${reason ? `<p style="margin: 0;"><strong>Reason:</strong> ${reason}</p>` : ''}
       </div>
       <p>You can accept, counter, or reject this offer from your activity page.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/activity/offers" 
+      <a href="${APP_BASE_URL}/activity/offers" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>
@@ -408,7 +410,7 @@ export async function sendNegotiationFromBuyerToSkillOwnerEmail(
         ${reason ? `<p style="margin: 0;"><strong>Reason:</strong> ${reason}</p>` : ''}
       </div>
       <p>You can accept, counter, or reject this offer from your dashboard.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/skills" 
+      <a href="${APP_BASE_URL}/dashboard/skills" 
          style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
         View Offer
       </a>

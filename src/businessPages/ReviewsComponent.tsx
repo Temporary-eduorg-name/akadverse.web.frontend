@@ -25,7 +25,7 @@ export default function ReviewsComponent() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`/api/businesses/${businessId}/reviews`, {
+      const response = await fetch(`/api/marketplace/businesses/${businessId}/reviews`, {
         credentials: "include",
       });
 
@@ -147,3 +147,4 @@ export default function ReviewsComponent() {
     </div>
   );
 }
+

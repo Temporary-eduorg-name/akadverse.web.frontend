@@ -1,12 +1,14 @@
-import { defineConfig, env } from "prisma/config";
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+if (!process.env["DATABASE_PUBLIC_URL"]) throw new Error("DATABASE_PUBLIC_URL is not set in .env");
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
-  engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+    url: process.env["DATABASE_PUBLIC_URL"],
   },
 });

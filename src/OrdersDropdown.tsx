@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 interface Order {
   id: string;
@@ -16,8 +18,10 @@ export default function OrdersDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
   const { isAuthenticated, setIsAuthenticated } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const marketplaceBase = getMarketplaceBase(pathname);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -33,7 +37,7 @@ export default function OrdersDropdown() {
     if (!isOpen) {
       setLoading(true);
       try {
-        const response = await fetch("/api/orders/current", {
+        const response = await fetch("/api/marketplace/orders/current", {
           method: "GET",
           credentials: "include",
         });
@@ -105,7 +109,7 @@ export default function OrdersDropdown() {
                     No pending orders
                   </p>
                   <Link
-                    href="/order-history"
+                    href={`${marketplaceBase}/order-history`}
                     className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-md text-sm hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
                   >
                     View Order History
@@ -121,7 +125,7 @@ export default function OrdersDropdown() {
                       {currentOrders.map((order) => (
                         <Link
                           key={order.id}
-                          href={`/current-orders`}
+                          href={`${marketplaceBase}/current-orders`}
                           className="block p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                         >
                           <div className="flex justify-between items-start">
@@ -142,13 +146,13 @@ export default function OrdersDropdown() {
 
                   <div className="space-y-2 border-t border-zinc-200 dark:border-zinc-700 pt-3">
                     <Link
-                      href="/current-orders"
+                      href={`${marketplaceBase}/current-orders`}
                       className="block w-full text-center bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-md text-sm hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
                     >
                       View All Orders
                     </Link>
                     <Link
-                      href="/order-history"
+                      href={`${marketplaceBase}/order-history`}
                       className="block w-full text-center bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white px-4 py-2 rounded-md text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                     >
                       Order History
@@ -163,3 +167,4 @@ export default function OrdersDropdown() {
     </div>
   );
 }
+

@@ -13,7 +13,7 @@ export default function CategoriesGrid() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch("/api/marketplace/categories");
         if (!response.ok) {
           return;
         }
@@ -87,3 +87,4 @@ export default function CategoriesGrid() {
     </div>
   );
 }
+
