@@ -48,6 +48,14 @@ export async function POST(req: NextRequest) {
       include: { tasks: true },
     });
 
+    await prisma.notification.create({
+      data: {
+        userId: auth.userId,
+        type: "schedule_created",
+        message: `New schedule created: ${name}`,
+      },
+    });
+
     return NextResponse.json({ schedule }, { status: 201 });
   } catch (error) {
     console.error("Error creating schedule:", error);

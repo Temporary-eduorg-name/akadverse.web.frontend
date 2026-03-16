@@ -63,10 +63,10 @@ export default function MainMenuLayout({
 
         <div
           style={mainStyle}
-          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-6 lg:p-7 min-w-0"
+          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-4 sm:p-6 lg:p-7 pb-20 lg:pb-7 min-w-0"
         >
           <div className="flex min-h-[calc(100vh-140px)] items-center justify-center">
-            <div className="w-full max-w-xl rounded-[28px] border border-[#dfe7f2] bg-white px-8 py-10 text-center shadow-[0_18px_50px_rgba(15,23,42,0.1)]">
+            <div className="w-full max-w-xl rounded-[28px] border border-[#dfe7f2] bg-white px-5 sm:px-8 py-8 sm:py-10 text-center shadow-[0_18px_50px_rgba(15,23,42,0.1)]">
               <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#edf4ff]">
                 {authState === 'checking' ? (
                   <ShieldCheck size={42} className="text-[#2f6ef7]" />
@@ -75,7 +75,7 @@ export default function MainMenuLayout({
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold text-[#2f3b4f]">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#2f3b4f]">
                 {authState === 'checking' ? 'Checking your access' : 'Login required'}
               </h1>
 

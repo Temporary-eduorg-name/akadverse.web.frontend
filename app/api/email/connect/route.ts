@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI_ALT;
 
   if (!clientId || !redirectUri) {
     return NextResponse.json(

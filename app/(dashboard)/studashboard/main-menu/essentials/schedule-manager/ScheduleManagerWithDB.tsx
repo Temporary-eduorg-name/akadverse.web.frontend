@@ -1,3 +1,7 @@
+
+// Place AnimatedTaskCheckbox after all imports, before component definitions
+
+
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +21,12 @@ import {
 
 type ViewMode = 'my-schedule' | 'focus-mode' | 'daily-schedule';
 type TasksTab = 'completed' | 'pending' | 'ignored';
+type AnimatedTaskCheckboxProps = {
+  item: ScheduleItem;
+  onComplete: (id: string) => void;
+  isTaskPast: (item: ScheduleItem) => boolean;
+  addMinutes: (time: string, duration: number) => string;
+};
 
 type ScheduleItem = {
   id: string;
@@ -175,6 +185,7 @@ const ScheduleManagerWithDB = () => {
   const [tasksTab, setTasksTab] = useState<TasksTab>('pending');
   const [timeframeWeeks, setTimeframeWeeks] = useState<number>(1);
 
+
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showViewTasksModal, setShowViewTasksModal] = useState(false);
@@ -187,10 +198,16 @@ const ScheduleManagerWithDB = () => {
     focus: false,
     color: '#9b59b6',
   });
+  const [creatingTask, setCreatingTask] = useState(false);
+  const [creatingSchedule, setCreatingSchedule] = useState(false);
 
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const bodyScrollRef = useRef<HTMLDivElement>(null);
   const isSyncing = useRef(false);
+
+  // Add state for selected schedule filter and daily tab
+  const [selectedScheduleId, setSelectedScheduleId] = useState('all');
+  const [dailyTab, setDailyTab] = useState<TasksTab>('pending');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -266,7 +283,13 @@ const ScheduleManagerWithDB = () => {
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, index) => addDays(boardWeekStart, index)), [boardWeekStart]);
   const weekDateKeys = useMemo(() => weekDates.map((date) => toDateKey(date)), [weekDates]);
 
-  const activeBoardItems = useMemo(() => items.filter((item) => !item.ignored), [items]);
+  // Filter items by selected schedule
+  const filteredItems = useMemo(() => {
+    if (selectedScheduleId === 'all') return items;
+    return items.filter((item) => item.scheduleId === selectedScheduleId);
+  }, [items, selectedScheduleId]);
+
+  const activeBoardItems = useMemo(() => filteredItems.filter((item) => !item.ignored), [filteredItems]);
 
   const filteredBoardItems = useMemo(() => {
     let data = activeBoardItems.filter((item) => weekDateKeys.includes(item.date));
@@ -344,14 +367,90 @@ const ScheduleManagerWithDB = () => {
       .filter((item) => (tasksTab === 'completed' ? item.completed : !item.completed));
   }, [items, tasksTab, timeframeWeeks]);
 
+  // (Removed duplicate declaration)
+
+  // Daily items with tab filtering
   const dailyItems = useMemo(() => {
     let data = activeBoardItems.filter((item) => item.date === dailyDate);
     if (view === 'focus-mode') {
       data = data.filter((item) => item.focus);
     }
+    // Filter by dailyTab
+    if (dailyTab === 'completed') {
+      data = data.filter((item) => item.completed);
+    } else if (dailyTab === 'ignored') {
+      data = data.filter((item) => item.ignored && !item.completed);
+    } else {
+      // pending
+      data = data.filter((item) => !item.completed && !item.ignored);
+    }
     return data.sort((left, right) => getMinutes(left.startTime) - getMinutes(right.startTime));
-  }, [activeBoardItems, dailyDate, view]);
+  }, [activeBoardItems, dailyDate, view, dailyTab]);
+  const AnimatedTaskCheckbox: React.FC<AnimatedTaskCheckboxProps> = ({ item, onComplete, isTaskPast, addMinutes }) => {
+    const [ticking, setTicking] = React.useState(false);
+    const [hidden, setHidden] = React.useState(false);
 
+    const handleCheck = async () => {
+      if (item.completed || ticking) return;
+      setTicking(true);
+      // Play tick animation, then slide out
+      setTimeout(() => {
+        setHidden(true);
+        setTimeout(() => {
+          onComplete(item.id);
+          setTicking(false);
+          setHidden(false);
+        }, 400); // Slide out duration
+      }, 250); // Tick duration
+    };
+
+    return (
+      <motion.div
+        layout
+        className={`p-4 rounded-2xl border border-gray-200 bg-white ${item.completed ? 'bg-green-50' : ''}`}
+        style={{ borderLeft: `4px solid ${item.color}` }}
+        initial={false}
+        animate={hidden ? { x: 120, opacity: 0 } : { x: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+              {item.focus && <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Focus</span>}
+              {item.scheduleName === 'No Schedule' && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Unscheduled</span>}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              {item.startTime} - {addMinutes(item.startTime, item.duration)} | {item.category} | {item.scheduleName}
+            </p>
+            {item.details && <p className="text-xs text-gray-700 font-medium mt-2 leading-5">{item.details}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            {!item.completed && isTaskPast(item) && <XCircle size={16} className="text-red-600" />}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={item.completed || ticking}
+                disabled={item.completed || ticking}
+                onChange={handleCheck}
+                className="peer sr-only"
+              />
+              <span
+                className={`w-5 h-5 border-2 rounded transition-colors duration-200 flex items-center justify-center ${item.completed || ticking ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'
+                  }`}
+              >
+                {(item.completed || ticking) && (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </span>
+            </label>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
   const toggleComplete = async (taskId: string) => {
     const task = items.find((entry) => entry.id === taskId);
     if (!task) {
@@ -364,81 +463,23 @@ const ScheduleManagerWithDB = () => {
     setItems((prev) => prev.map((item) => (
       item.id === taskId
         ? {
-            ...item,
-            completed: nextCompleted,
-            ...(nextCompleted ? { ignored: false, ignoredAt: null } : {}),
-          }
+          ...item,
+          completed: nextCompleted,
+          ...(nextCompleted ? { ignored: false, ignoredAt: null } : {}),
+        }
         : item
     )));
 
-    setSlotModal((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        items: prev.items.map((item) => (
-          item.id === taskId
-            ? {
-                ...item,
-                completed: nextCompleted,
-                ...(nextCompleted ? { ignored: false, ignoredAt: null } : {}),
-              }
-            : item
-        )),
-      };
-    });
-
-    try {
-      const response = await fetch(`/api/schedule-manager/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: nextCompleted }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update task');
-      }
-
-      const updated = await response.json();
-
-      setItems((prev) => prev.map((item) => (
-        item.id === taskId
-          ? {
-              ...item,
-              completed: updated.task.completed,
-              ignored: updated.task.ignored,
-              ignoredAt: updated.task.ignoredAt,
-            }
-          : item
-      )));
-
-      setSlotModal((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          items: prev.items.map((item) => (
-            item.id === taskId
-              ? {
-                  ...item,
-                  completed: updated.task.completed,
-                  ignored: updated.task.ignored,
-                  ignoredAt: updated.task.ignoredAt,
-                }
-              : item
-          )),
-        };
-      });
-    } catch (error) {
-      console.error('Error updating task:', error);
-
-      // Roll back optimistic state when the request fails.
-      setItems((prev) => prev.map((item) => (item.id === taskId ? task : item)));
-      setSlotModal((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          items: prev.items.map((item) => (item.id === taskId ? task : item)),
-        };
-      });
+    {
+      dailyItems.map((item) => (
+        <AnimatedTaskCheckbox
+          key={item.id}
+          item={item}
+          onComplete={toggleComplete}
+          isTaskPast={isTaskPast}
+          addMinutes={addMinutes}
+        />
+      ))
     }
   };
 
@@ -455,7 +496,7 @@ const ScheduleManagerWithDB = () => {
       alert('Please fill in the required task fields');
       return;
     }
-
+    setCreatingTask(true);
     try {
       const response = await fetch('/api/schedule-manager/tasks', {
         method: 'POST',
@@ -498,6 +539,8 @@ const ScheduleManagerWithDB = () => {
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task');
+    } finally {
+      setCreatingTask(false);
     }
   };
 
@@ -506,7 +549,7 @@ const ScheduleManagerWithDB = () => {
       alert('Please enter a schedule name');
       return;
     }
-
+    setCreatingSchedule(true);
     try {
       const response = await fetch('/api/schedule-manager/schedules', {
         method: 'POST',
@@ -536,8 +579,12 @@ const ScheduleManagerWithDB = () => {
     } catch (error) {
       console.error('Error creating schedule:', error);
       alert('Failed to create schedule');
+    } finally {
+      setCreatingSchedule(false);
     }
   };
+
+  // (Removed duplicate declaration)
 
   if (loading) {
     return (
@@ -610,7 +657,7 @@ const ScheduleManagerWithDB = () => {
           </motion.div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full">
           <button
             onClick={() => setShowScheduleModal(true)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors flex items-center gap-2"
@@ -626,7 +673,24 @@ const ScheduleManagerWithDB = () => {
             <ClipboardList size={16} />
             Create Task
           </button>
+
+          <div className="flex-1" />
+          {/* Schedule Filter as Dropdown */}
+          <div className="flex gap-2 items-center">
+            <span className="text-sm font-medium text-gray-700">Filter by Schedule:</span>
+            <select
+              className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedScheduleId}
+              onChange={e => setSelectedScheduleId(e.target.value)}
+            >
+              <option value="all">All</option>
+              {schedules.map(sch => (
+                <option key={sch.id} value={sch.id}>{sch.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
+
       </div>
 
       <div className="bg-gray-50 p-4 flex-1">
@@ -636,25 +700,22 @@ const ScheduleManagerWithDB = () => {
               <div className="inline-flex items-center gap-1 rounded-2xl bg-gray-100 p-1.5 mx-auto">
                 <button
                   onClick={() => setView('my-schedule')}
-                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-                    view === 'my-schedule' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
-                  }`}
+                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${view === 'my-schedule' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
+                    }`}
                 >
                   My Schedule
                 </button>
                 <button
                   onClick={() => setView('focus-mode')}
-                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-                    view === 'focus-mode' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
-                  }`}
+                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${view === 'focus-mode' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
+                    }`}
                 >
                   Focus Mode
                 </button>
                 <button
                   onClick={() => setView('daily-schedule')}
-                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-                    view === 'daily-schedule' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
-                  }`}
+                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${view === 'daily-schedule' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
+                    }`}
                 >
                   Daily Schedule
                 </button>
@@ -741,33 +802,38 @@ const ScheduleManagerWithDB = () => {
                   <h2 className="text-lg font-semibold text-gray-900">Daily Schedule Overview</h2>
                 </div>
 
+                {/* Daily Tabs */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors ${dailyTab === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-700 hover:bg-yellow-50'}`}
+                    onClick={() => setDailyTab('pending')}
+                  >
+                    Pending
+                  </button>
+                  <button
+                    className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors ${dailyTab === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-green-50'}`}
+                    onClick={() => setDailyTab('completed')}
+                  >
+                    Completed
+                  </button>
+                  <button
+                    className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors ${dailyTab === 'ignored' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700 hover:bg-red-50'}`}
+                    onClick={() => setDailyTab('ignored')}
+                  >
+                    Ignored
+                  </button>
+                </div>
+
                 <div className="space-y-3">
                   {dailyItems.length === 0 && <p className="text-sm text-gray-500">No tasks for this day.</p>}
                   {dailyItems.map((item) => (
-                    <motion.div
+                    <AnimatedTaskCheckbox
                       key={item.id}
-                      layout
-                      className="p-4 rounded-2xl border border-gray-200 bg-white"
-                      style={{ borderLeft: `4px solid ${item.color}` }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-                            {item.focus && <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Focus</span>}
-                            {item.scheduleName === 'No Schedule' && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Unscheduled</span>}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {item.startTime} - {addMinutes(item.startTime, item.duration)} | {item.category} | {item.scheduleName}
-                          </p>
-                          {item.details && <p className="text-xs text-gray-700 font-medium mt-2 leading-5">{item.details}</p>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!item.completed && isTaskPast(item) && <XCircle size={16} className="text-red-600" />}
-                          <input type="checkbox" checked={item.completed} onChange={() => toggleComplete(item.id)} />
-                        </div>
-                      </div>
-                    </motion.div>
+                      item={item}
+                      onComplete={toggleComplete}
+                      isTaskPast={isTaskPast}
+                      addMinutes={addMinutes}
+                    />
                   ))}
                 </div>
               </div>
@@ -997,12 +1063,16 @@ const ScheduleManagerWithDB = () => {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={createTask}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors"
+                    disabled={creatingTask}
+                    className={`flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center ${creatingTask ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
-                    Create Task
+                    {creatingTask ? (
+                      <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Creating...</span>
+                    ) : 'Create Task'}
                   </button>
                   <button
                     onClick={() => setShowTaskModal(false)}
+                    disabled={creatingTask}
                     className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors"
                   >
                     Cancel
@@ -1076,12 +1146,16 @@ const ScheduleManagerWithDB = () => {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={createSchedule}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors"
+                    disabled={creatingSchedule}
+                    className={`flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center ${creatingSchedule ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
-                    Create Schedule
+                    {creatingSchedule ? (
+                      <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Creating...</span>
+                    ) : 'Create Schedule'}
                   </button>
                   <button
                     onClick={() => setShowScheduleModal(false)}
+                    disabled={creatingSchedule}
                     className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors"
                   >
                     Cancel
@@ -1162,8 +1236,11 @@ const ScheduleManagerWithDB = () => {
                       <motion.div
                         key={task.id}
                         layout
-                        className="p-4 rounded-2xl border border-gray-200 bg-gray-50"
+                        className={`p-4 rounded-2xl border border-gray-200 bg-gray-50 ${task.completed ? 'bg-green-50' : ''}`}
                         style={{ borderLeft: `4px solid ${task.color}` }}
+                        initial={false}
+                        animate={task.completed ? { x: 120, opacity: 0 } : { x: 0, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
@@ -1275,40 +1352,40 @@ const ScheduleManagerWithDB = () => {
                   const liveItem = items.find((entry) => entry.id === item.id) ?? item;
 
                   return (
-                  <motion.div
-                    key={liveItem.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
-                    style={{ borderLeft: `4px solid ${liveItem.color}` }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-base font-semibold text-gray-900">{liveItem.title}</p>
-                          {liveItem.focus && <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Focus</span>}
-                          {liveItem.scheduleName === 'No Schedule' && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Unscheduled</span>}
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {liveItem.startTime} - {addMinutes(liveItem.startTime, liveItem.duration)} | {liveItem.category}
-                        </p>
-                        <p className="text-sm text-gray-500">Schedule: {liveItem.scheduleName}</p>
-                        {liveItem.details ? (
-                          <p className="text-sm text-gray-700 leading-6">{liveItem.details}</p>
-                        ) : (
-                          <p className="text-sm text-gray-400">No extra details for this task.</p>
-                        )}
-                        {!liveItem.completed && isTaskPast(liveItem) && (
-                          <div className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
-                            <XCircle size={12} />
-                            Time passed
+                    <motion.div
+                      key={liveItem.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+                      style={{ borderLeft: `4px solid ${liveItem.color}` }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-base font-semibold text-gray-900">{liveItem.title}</p>
+                            {liveItem.focus && <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Focus</span>}
+                            {liveItem.scheduleName === 'No Schedule' && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Unscheduled</span>}
                           </div>
-                        )}
+                          <p className="text-sm text-gray-600">
+                            {liveItem.startTime} - {addMinutes(liveItem.startTime, liveItem.duration)} | {liveItem.category}
+                          </p>
+                          <p className="text-sm text-gray-500">Schedule: {liveItem.scheduleName}</p>
+                          {liveItem.details ? (
+                            <p className="text-sm text-gray-700 leading-6">{liveItem.details}</p>
+                          ) : (
+                            <p className="text-sm text-gray-400">No extra details for this task.</p>
+                          )}
+                          {!liveItem.completed && isTaskPast(liveItem) && (
+                            <div className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                              <XCircle size={12} />
+                              Time passed
+                            </div>
+                          )}
+                        </div>
+                        <input type="checkbox" checked={liveItem.completed} onChange={() => toggleComplete(liveItem.id)} />
                       </div>
-                      <input type="checkbox" checked={liveItem.completed} onChange={() => toggleComplete(liveItem.id)} />
-                    </div>
-                  </motion.div>
+                    </motion.div>
                   );
                 })}
               </div>

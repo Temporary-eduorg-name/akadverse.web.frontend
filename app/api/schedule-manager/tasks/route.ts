@@ -39,6 +39,7 @@ const markIgnoredTasks = async (userId: string) => {
     where: candidateWhere,
     select: {
       id: true,
+      title: true,
       date: true,
       startTime: true,
       duration: true,
@@ -62,6 +63,20 @@ const markIgnoredTasks = async (userId: string) => {
     },
     data: ignoredUpdate,
   });
+
+  const expiredTaskTitles = candidates
+    .filter((task) => expiredTaskIds.includes(task.id))
+    .map((task) => ({
+      userId,
+      type: "task_deadline_reached",
+      message: `Task deadline reached: ${task.title}`,
+    }));
+
+  if (expiredTaskTitles.length > 0) {
+    await prisma.notification.createMany({
+      data: expiredTaskTitles,
+    });
+  }
 };
 
 // GET - Fetch tasks with optional filters

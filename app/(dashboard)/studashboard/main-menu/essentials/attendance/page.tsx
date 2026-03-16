@@ -68,6 +68,8 @@ type CourseSummary = {
   missed: number;
   suppressed: number;
   percentage: number;
+  suppressedWeeks?: number;
+  suppressedAttendances: EffectiveAttendanceUpload[];
 };
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -449,28 +451,59 @@ for (const record of [...chapelService, ...rollCall]) {
   }
 }
 
-const effectiveAttendance: EffectiveAttendanceUpload[] = attendance.map((record) => {
-  const weekKey = getWeekStartKey(record.sessionDate);
-  const suppressedBy = suppressedWeeks.get(weekKey);
 
-  return {
-    ...record,
-    effectiveStatus: suppressedBy ? 'suppressed' : record.status,
-    suppressedBy: suppressedBy ?? null,
-  };
-});
+// Build effectiveAttendance: only 'present' or 'absent' in main array, never 'suppressed'.
+const effectiveAttendance: EffectiveAttendanceUpload[] = attendance.map((record) => ({
+  ...record,
+  effectiveStatus: record.status, // Only 'present' or 'absent'
+  suppressedBy: null,
+}));
+
+// Build suppressedAttendances: all attendances (present or absent) that fall in a suppressed week
+const suppressedAttendances: EffectiveAttendanceUpload[] = attendance
+  .map((record) => {
+    const weekKey = getWeekStartKey(record.sessionDate);
+    const suppressedBy = suppressedWeeks.get(weekKey);
+    if (suppressedBy) {
+      return {
+        ...record,
+        effectiveStatus: 'suppressed',
+        suppressedBy,
+      };
+    }
+    return null;
+  })
+  .filter(Boolean) as EffectiveAttendanceUpload[];
 
 const countStatus = (records: EffectiveAttendanceUpload[], status: AttendanceStatus) => records.filter((record) => record.effectiveStatus === status).length;
 
 const courseSummaries: CourseSummary[] = courses.map((course) => {
+  // Only present/absent in records
   const records = effectiveAttendance
     .filter((record) => record.courseCode === course.code)
     .sort((left, right) => parseDateKey(left.sessionDate).getTime() - parseDateKey(right.sessionDate).getTime());
 
-  const attended = countStatus(records, 'present');
-  const missed = countStatus(records, 'absent');
-  const suppressed = countStatus(records, 'suppressed');
-  const percentage = Math.round((attended / course.totalClasses) * 100);
+  // Attended is always total present
+  const attended = records.filter((r) => r.status === 'present').length;
+  // Missed is always total absent
+  const missed = records.filter((r) => r.status === 'absent').length;
+  // Suppressed: count of suppressedAttendances for this course
+  const suppressedForCourse = suppressedAttendances.filter((r) => r.courseCode === course.code);
+  // Suppressed: number of attendances for this course that were suppressed (not unique weeks)
+  const suppressed = suppressedForCourse.length;
+  // Suppressed weeks: unique week keys for this course (not used for table count)
+  const suppressedWeekSet = new Set(suppressedForCourse.map((r) => getWeekStartKey(r.sessionDate)));
+  const suppressedWeeks = suppressedWeekSet.size;
+
+  // Calculate number of present attendances that fall in suppressed weeks
+  const presentSuppressed = records.filter((r) => {
+    if (r.status !== 'present') return false;
+    const weekKey = getWeekStartKey(r.sessionDate);
+    return suppressedWeekSet.has(weekKey);
+  }).length;
+
+  // Attendance percentage: (present - presentSuppressed) / totalClasses * 100
+  const percentage = Math.round(((attended - presentSuppressed) / course.totalClasses) * 100);
 
   return {
     course,
@@ -479,6 +512,8 @@ const courseSummaries: CourseSummary[] = courses.map((course) => {
     missed,
     suppressed,
     percentage,
+    suppressedWeeks,
+    suppressedAttendances: suppressedForCourse,
   };
 });
 
@@ -525,7 +560,8 @@ function CourseDetailsModal({
 
   const presentDates = summary.records.filter((record) => record.effectiveStatus === 'present');
   const absentDates = summary.records.filter((record) => record.effectiveStatus === 'absent');
-  const suppressedDates = summary.records.filter((record) => record.effectiveStatus === 'suppressed');
+  // SuppressedDates: always the suppressedAttendances for this course
+  const suppressedDates = summary.suppressedAttendances;
 
   return (
     <AnimatePresence>
@@ -554,7 +590,7 @@ function CourseDetailsModal({
           </div>
 
           <div className="overflow-y-auto max-h-[calc(88vh-92px)] p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-500 mb-1">Attendance</p>
                 <p className={`text-3xl font-bold ${summary.percentage >= summary.course.requiredPercentage ? 'text-emerald-600' : 'text-rose-600'}`}>{summary.percentage}%</p>
@@ -568,12 +604,16 @@ function CourseDetailsModal({
                 <p className="text-3xl font-bold text-emerald-600">{summary.attended}</p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-500 mb-1">Missed / Suppressed</p>
-                <p className="text-3xl font-bold text-slate-900">{summary.missed} / {summary.suppressed}</p>
+                <p className="text-sm font-semibold text-slate-500 mb-1">Missed</p>
+                <p className="text-3xl font-bold text-rose-600">{summary.missed}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-500 mb-1">Suppressed Weeks</p>
+                <p className="text-3xl font-bold text-amber-600">{summary.suppressed}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_1fr] gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6">
               <div className="rounded-[24px] border border-slate-200 p-5 bg-white">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Course Details</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -612,15 +652,14 @@ function CourseDetailsModal({
               <div className="rounded-[24px] border border-slate-200 p-5 bg-white">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Attendance Uploads</h3>
                 <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                  {summary.records.map((record) => {
+                  {summary.records.map((record, idx) => {
                     const statusMeta = statusPresentation[record.effectiveStatus];
                     const StatusIcon = statusMeta.icon;
-
                     return (
                       <div key={record.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="font-bold text-slate-900">{record.topic}</p>
+                            <p className="font-bold text-slate-900">Week {idx + 1}</p>
                             <p className="text-sm text-slate-600 mt-1">Class Date: {formatFullDate(record.sessionDate)}</p>
                             <p className="text-xs text-slate-500 mt-1">Uploaded {new Date(record.uploadedAt).toLocaleString()} by {record.uploadSource}</p>
                             {record.effectiveStatus === 'suppressed' && record.suppressedBy && (
@@ -1037,10 +1076,11 @@ function AttendanceContent({ isSidebarExpanded }: { isSidebarExpanded: boolean }
                     <table className="w-full text-left border-collapse table-fixed">
                       <thead>
                         <tr className="border-b border-slate-200 text-sm font-bold text-slate-400 uppercase tracking-wider">
-                          <th className="pb-3 pl-2 pr-2 w-[34%]">Course</th>
-                          <th className="pb-3 text-center w-[12%]">Held</th>
-                          <th className="pb-3 text-center w-[12%]">Attended</th>
-                          <th className="pb-3 text-center w-[12%]">Missed</th>
+                          <th className="pb-3 pl-2 pr-2 w-[30%]">Course</th>
+                          <th className="pb-3 text-center w-[10%]">Held</th>
+                          <th className="pb-3 text-center w-[10%]">Pres.</th>
+                          <th className="pb-3 text-center w-[10%]">Abs.</th>
+                          <th className="pb-3 text-center w-[10%]">Supp.</th>
                           <th className="pb-3 pr-2 w-[30%] text-right">Attendance %</th>
                         </tr>
                       </thead>
@@ -1061,6 +1101,7 @@ function AttendanceContent({ isSidebarExpanded }: { isSidebarExpanded: boolean }
                             <td className="py-3 text-center font-bold text-slate-600">{summary.course.totalClasses}</td>
                             <td className="py-3 text-center font-bold text-emerald-600">{summary.attended}</td>
                             <td className="py-3 text-center font-bold text-rose-500">{summary.missed}</td>
+                            <td className="py-3 text-center font-bold text-amber-600">{summary.suppressed}</td>
                             <td className="py-3 pr-2 rounded-r-xl">
                               <div className="flex items-center justify-end gap-2">
                                 <div className="w-full max-w-[100px] h-2 bg-slate-100 rounded-full overflow-hidden">

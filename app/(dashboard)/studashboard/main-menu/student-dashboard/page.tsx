@@ -333,7 +333,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="xl:col-span-2 space-y-6">
                 <div className="border border-gray-200 bg-white rounded-[14px] p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)]">
                   <div className="flex justify-between items-center mb-4">

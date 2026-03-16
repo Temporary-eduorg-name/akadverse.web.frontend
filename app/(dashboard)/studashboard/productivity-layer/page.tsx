@@ -3,11 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Book,
-  Search,
-  BellDot,
-  User,
-  LogOut,
   ArrowLeft,
   Bot,
   FileText,
@@ -16,6 +11,7 @@ import {
   Table2,
   Play,
 } from "lucide-react";
+import DashboardNavbar from '@/app/components/dashboard/student/DashboardNavbar';
 
 const Page = () => {
   const router = useRouter();
@@ -76,58 +72,14 @@ const Page = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Book size={28} className="text-blue-600" />
-            <span className="text-lg font-semibold text-blue-600">
-              AkadVerse
-            </span>
-          </div>
-          <div className="flex-1 max-w-sm mx-6 relative">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full pl-12 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-center gap-6">
-            <button
-              className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors"
-              aria-label="Notifications"
-            >
-              <BellDot size={20} />
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">
-                Student Profile
-              </span>
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User size={16} className="text-blue-600" />
-              </div>
-            </div>
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Back to login"
-              onClick={() => router.push("/login")}
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <DashboardNavbar />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-8"
+          className="mb-6 flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 sm:mb-8"
         >
           <ArrowLeft size={20} />
           <span className="text-sm font-medium">Back to Workspaces</span>
@@ -135,7 +87,7 @@ const Page = () => {
 
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
             Productivity Layer
           </h1>
           <p className="text-gray-600">
@@ -144,20 +96,20 @@ const Page = () => {
         </div>
 
         {/* Gemni Chat and Features Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 xl:mb-12">
           {/* Gemni Chat Card */}
-          <div className="p-10 border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#615FFF] to-[#4F4BC4] rounded-[18px] flex items-center justify-center mb-8 shadow-[0_4px_12px_rgba(97,95,255,0.3)]">
+          <div className="cursor-pointer rounded-[20px] border border-transparent p-6 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:p-8 lg:p-10">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#615FFF] to-[#4F4BC4] shadow-[0_4px_12px_rgba(97,95,255,0.3)] sm:mb-8 sm:h-20 sm:w-20">
               <Bot size={40} className="text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">
               Gemni Chat
             </h3>
-            <p className="text-base text-gray-600 leading-relaxed mb-8">
+            <p className="mb-8 text-base leading-relaxed text-gray-600">
               AI chat, research assistant, note summarizer, study planner. Your
               primary companion for academic productivity.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <button className="px-4 py-1 text-sm bg-[#615FFF] text-white font-normal rounded-full hover:bg-[#4F4BC4] transition-colors">
                 Featured
               </button>
@@ -197,7 +149,7 @@ const Page = () => {
             ].map((tool) => (
               <div
                 key={tool.name}
-                className="p-6 border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer"
+                className="cursor-pointer rounded-[20px] border border-transparent p-5 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:p-6"
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -218,29 +170,29 @@ const Page = () => {
         </div>
 
         {/* AkadVerse Hub */}
-        <div className="bg-[#0f172b] rounded-3xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] p-8 mb-12 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 opacity-10 pt-8 pr-8">
+        <div className="relative mb-12 overflow-hidden rounded-3xl bg-[#0f172b] p-5 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] sm:p-8">
+          <div className="absolute right-0 top-0 h-40 w-40 px-4 pt-6 opacity-10 sm:h-64 sm:w-64 sm:pt-8 sm:pr-8">
             <Play size={192} className="text-white" />
           </div>
 
-          <div className="flex items-center gap-3 mb-8 relative">
+          <div className="relative mb-8 flex items-center gap-3">
             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
               <Play size={16} className="text-white fill-white" />
             </div>
-            <h2 className="text-2xl tracking-tight">
+            <h2 className="text-xl tracking-tight sm:text-2xl">
               <span className="font-bold text-white">AkadVerse </span>
               <span className="font-normal text-[#90a1b9]">Hub</span>
             </h2>
           </div>
 
           <div className="mb-8 relative">
-            <h3 className="text-lg font-semibold text-[#e2e8f0] mb-4">
+            <h3 className="mb-4 text-lg font-semibold text-[#e2e8f0]">
               Relating to your course
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {courseVideos.map((video, index) => (
                 <div key={index} className="cursor-pointer group">
-                  <div className="relative bg-[#1d293d] border border-[#314158] rounded-[14px] h-[180px] overflow-hidden mb-3">
+                  <div className="relative mb-3 h-44 overflow-hidden rounded-[14px] border border-[#314158] bg-[#1d293d] md:h-[180px]">
                     <img
                       src={video.image}
                       alt={video.title}
@@ -270,7 +222,7 @@ const Page = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {careerVideos.map((video, index) => (
                 <div key={index} className="cursor-pointer group">
-                  <div className="relative bg-[#1d293d] border border-[#314158] rounded-[14px] h-[180px] overflow-hidden mb-3">
+                  <div className="relative mb-3 h-44 overflow-hidden rounded-[14px] border border-[#314158] bg-[#1d293d] md:h-[180px]">
                     <img
                       src={video.image}
                       alt={video.title}
@@ -299,11 +251,11 @@ const Page = () => {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             Recent Work
           </h2>
-          <div className="border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] overflow-hidden">
+          <div className="overflow-hidden rounded-[20px] border border-transparent shadow-[0_2px_8px_rgba(16,24,40,0.07)]">
             {recentWork.map((item, index) => (
               <div
                 key={item.id}
-                className={`p-6 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer ${
+                className={`cursor-pointer p-4 transition-colors hover:bg-gray-50 sm:flex sm:items-center sm:justify-between sm:p-6 ${
                   index !== recentWork.length - 1
                     ? "border-b border-gray-100"
                     : ""

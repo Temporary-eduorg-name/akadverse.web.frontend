@@ -64,11 +64,38 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
     { id: 'marketplace', icon: BookOpen, path: '/admindashboard/main-menu/marketplace' },
     { id: 'essentials', icon: Folder, path: '/admindashboard/main-menu/essentials/suggestions' },
   ];
+  const mobileItems = [
+    { id: 'dashboard', label: 'Home', icon: LayoutDashboard, path: '/admindashboard/main-menu/admin-dashboard' },
+    { id: 'marketplace', label: 'Market', icon: BookOpen, path: '/admindashboard/main-menu/marketplace' },
+    { id: 'email', label: 'Email', icon: Mail, path: '/admindashboard/main-menu/essentials/email' },
+    { id: 'schedule', label: 'Schedule', icon: Calendar, path: '/admindashboard/main-menu/essentials/schedule-manager' },
+    { id: 'attendance', label: 'Attendance', icon: CheckCircle, path: '/admindashboard/main-menu/essentials/attendance' },
+    { id: 'suggestions', label: 'Ideas', icon: Lightbulb, path: '/admindashboard/main-menu/essentials/suggestions' },
+  ];
 
   if (collapsed) {
     return (
-      <div className={`fixed left-0 top-[70px] w-14 h-[calc(100vh-70px)] bg-white border-r border-gray-200 z-30 ${className}`}>
-        <nav className="p-2 space-y-2">
+      <div className={`fixed bottom-0 left-0 right-0 top-auto h-16 w-auto bg-white border-t border-gray-200 z-30 lg:left-0 lg:top-[70px] lg:bottom-auto lg:right-auto lg:w-14 lg:h-[calc(100vh-70px)] lg:border-r lg:border-t-0 ${className}`}>
+        <nav className="flex h-full items-center gap-1 overflow-x-auto px-2 lg:hidden">
+          {mobileItems.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <button
+                key={`collapsed-mobile-${item.id}`}
+                onClick={() => router.push(item.path)}
+                className={`flex min-w-[56px] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[10px] font-medium transition-colors ${
+                  active ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+                title={item.label}
+                aria-label={item.label}
+              >
+                <item.icon size={16} />
+                <span className="leading-none">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+        <nav className="hidden h-full px-2 lg:block lg:space-y-2 lg:p-2">
           {compactItems.map((item) => {
             const active = item.id === 'essentials' ? isEssentialsSectionActive : isActive(item.path);
             return (
@@ -91,12 +118,36 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
   }
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: sidebarCollapsed ? 64 : 256 }}
-      transition={{ duration: 0.26, ease: [0.25, 0.1, 0.25, 1] }}
-      className={`fixed left-0 top-[70px] h-[calc(100vh-70px)] bg-white border-r border-gray-200 z-30 overflow-hidden ${className}`}
-    >
+    <>
+      <nav className={`fixed bottom-0 left-0 right-0 h-16 border-t border-gray-200 bg-white z-30 lg:hidden ${className}`}>
+        <div className="flex h-full items-center gap-1 overflow-x-auto px-2">
+          {mobileItems.map((item) => {
+            const active = isActive(item.path);
+
+            return (
+              <button
+                key={`mobile-${item.id}`}
+                onClick={() => router.push(item.path)}
+                className={`flex min-w-[56px] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[10px] font-medium transition-colors ${
+                  active ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+                title={item.label}
+                aria-label={item.label}
+              >
+                <item.icon size={16} />
+                <span className="leading-none">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <motion.aside
+        initial={false}
+        animate={{ width: sidebarCollapsed ? 64 : 256 }}
+        transition={{ duration: 0.26, ease: [0.25, 0.1, 0.25, 1] }}
+        className={`hidden lg:block fixed left-0 top-[70px] h-[calc(100vh-70px)] bg-white border-r border-gray-200 z-30 overflow-hidden ${className}`}
+      >
       <div className={sidebarCollapsed ? 'flex justify-center pt-2 pb-1' : 'relative flex items-center justify-end px-4 pt-3 pb-2'}>
         {!sidebarCollapsed && <p className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-900 tracking-wide">Main Menu</p>}
         <motion.button
@@ -201,7 +252,8 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
           </motion.nav>
         )}
       </AnimatePresence>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 };
 
