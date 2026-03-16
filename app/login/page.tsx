@@ -88,7 +88,7 @@ const LoginPage = () => {
 
       {/* Left Side - Black Section */}
       <div
-        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:pl-20 relative z-10 min-h-screen transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'
+        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:pl-20 xl:pr-0 relative z-10 min-h-screen transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'
           }`}
       >
         <div className="max-w-[430px] w-full -ml-auto -mt-20">
