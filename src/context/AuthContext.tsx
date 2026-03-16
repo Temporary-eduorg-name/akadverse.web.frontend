@@ -27,6 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startRefreshTimer = () => {
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+      }
+
+      // Refresh a bit before the 1-hour access token expires.
+      refreshIntervalId = setInterval(async () => {
+        try {
+          await fetch("/api/marketplace/auth/refresh", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Periodic token refresh failed:", error);
+        }
+      }, 50 * 60 * 1000);
+    };
+
     const checkAuth = async () => {
       try {
             console.log('check')
@@ -45,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData = await userResponse.json();
             console.log(userData)
             setUser(userData.user);
+            startRefreshTimer();
           } else {
             setUser(null);
           }
@@ -62,6 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
+
+    return () => {
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+      }
+    };
   }, []);
 
   return (
