@@ -76,7 +76,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className={`min-h-screen font-sans relative overflow-hidden transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'}`}>
+    <div className={`min-h-screen flex font-sans relative overflow-hidden transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'}`}>
       <button
         type="button"
         onClick={() => setIsDarkMode((prev) => !prev)}
@@ -90,7 +90,7 @@ const SignUpPage = () => {
       </button>
 
       <div
-        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 relative z-10 min-h-screen transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'
+        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:pl-20 relative z-10 min-h-screen transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'
           }`}
       >
         <div className="max-w-[430px] w-full -ml-auto py-10">
