@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Menu,
+  LayoutDashboard,
   BookOpen,
   Lightbulb,
   Folder,
@@ -37,7 +37,7 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
   }, [collapsed, sidebarCollapsed, onWidthChange]);
 
   const navItems = [
-    { id: 'dashboard', label: 'Admin Dashboard', icon: Menu, path: '/admindashboard/main-menu/admin-dashboard', subItems: null },
+    { id: 'dashboard', label: 'Admin Dashboard', icon: LayoutDashboard, path: '/admindashboard/main-menu/admin-dashboard', subItems: null },
     { id: 'marketplace', label: 'Marketplace', icon: BookOpen, path: '/admindashboard/main-menu/marketplace', subItems: null },
     {
       id: 'essentials',
@@ -60,7 +60,7 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
 
   const isEssentialsSectionActive = pathname.startsWith('/admindashboard/main-menu/essentials');
   const compactItems = [
-    { id: 'dashboard', icon: Menu, path: '/admindashboard/main-menu/admin-dashboard' },
+    { id: 'dashboard', icon: LayoutDashboard, path: '/admindashboard/main-menu/admin-dashboard' },
     { id: 'marketplace', icon: BookOpen, path: '/admindashboard/main-menu/marketplace' },
     { id: 'essentials', icon: Folder, path: '/admindashboard/main-menu/essentials/suggestions' },
   ];

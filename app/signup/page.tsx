@@ -80,20 +80,18 @@ const SignUpPage = () => {
       <button
         type="button"
         onClick={() => setIsDarkMode((prev) => !prev)}
-        className={`absolute top-6 right-6 z-30 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition ${
-          isDarkMode
+        className={`absolute top-6 right-6 z-30 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition ${isDarkMode
             ? 'bg-white/10 border-white/20 text-white hover:bg-white/20'
             : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
-        }`}
+          }`}
       >
         {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
         {isDarkMode ? 'Light Mode' : 'Dark Mode'}
       </button>
 
       <div
-        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 relative z-10 min-h-screen transition-colors ${
-          isDarkMode ? 'bg-black' : 'bg-gray-100'
-        }`}
+        className={`w-full lg:w-[52%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 relative z-10 min-h-screen transition-colors ${isDarkMode ? 'bg-black' : 'bg-gray-100'
+          }`}
       >
         <div className="max-w-[430px] w-full -ml-auto py-10">
           <div className="mb-10 text-left">
@@ -112,9 +110,8 @@ const SignUpPage = () => {
               </p>
               <div className={`relative grid grid-cols-3 rounded-xl p-1 ${isDarkMode ? 'bg-[#0f0f0f]' : 'bg-gray-100'}`}>
                 <span
-                  className={`absolute top-1 bottom-1 w-[calc((100%-0.5rem)/3)] rounded-lg transition-transform duration-300 ease-out ${
-                    isDarkMode ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white border border-blue-100 shadow-sm'
-                  }`}
+                  className={`absolute top-1 bottom-1 w-[calc((100%-0.5rem)/3)] rounded-lg transition-transform duration-300 ease-out ${isDarkMode ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-white border border-blue-100 shadow-sm'
+                    }`}
                   style={{ transform: `translateX(calc(${activeRoleIndex} * 100%))` }}
                 />
                 {roleOptions.map((role) => (
@@ -122,15 +119,14 @@ const SignUpPage = () => {
                     key={role.id}
                     type="button"
                     onClick={() => setActiveRole(role.id)}
-                    className={`relative z-10 py-2 text-sm font-semibold transition-colors ${
-                      activeRole === role.id
+                    className={`relative z-10 py-2 text-sm font-semibold transition-colors ${activeRole === role.id
                         ? isDarkMode
                           ? 'text-white'
                           : 'text-blue-700'
                         : isDarkMode
                           ? 'text-[#8a8a8a] hover:text-[#c8c8c8]'
                           : 'text-gray-500 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     {role.label}
                   </button>
@@ -147,11 +143,10 @@ const SignUpPage = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${
-                    isDarkMode
+                  className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${isDarkMode
                       ? 'bg-[#171717] border-[#262626] text-white placeholder-[#737373]'
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
+                    }`}
                 />
               </div>
 
@@ -163,11 +158,10 @@ const SignUpPage = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${
-                    isDarkMode
+                  className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${isDarkMode
                       ? 'bg-[#171717] border-[#262626] text-white placeholder-[#737373]'
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
+                    }`}
                 />
               </div>
             </div>
@@ -180,11 +174,10 @@ const SignUpPage = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 required
-                className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${
-                  isDarkMode
+                className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${isDarkMode
                     ? 'bg-[#171717] border-[#262626] text-white placeholder-[#737373]'
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                }`}
+                  }`}
               />
             </div>
 
@@ -196,11 +189,10 @@ const SignUpPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${
-                  isDarkMode
+                className={`w-full pl-12 pr-3 py-3 border rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm ${isDarkMode
                     ? 'bg-[#171717] border-[#262626] text-white placeholder-[#737373]'
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                }`}
+                  }`}
               />
             </div>
 
@@ -235,15 +227,11 @@ const SignUpPage = () => {
         </div>
       </div>
 
-      <div
-        className="hidden lg:flex absolute top-0 bottom-0 right-0 w-[56%] rounded-l-[32px] shadow-2xl z-20 border border-white/20 overflow-hidden"
-        style={{
-          backgroundImage: "url('/login-bg.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
+      <div className='flex flex-1 bg-[#FAFAFA] relative rounded-tl-3xl rounded-bl-3xl overflow-hidden items-center justify-center '>
+        <div className="absolute w-96 h-96 rounded-full blur-[100px] opacity-70 bg-[#7B6CFF] top-[-130px] left-[-30px]" />
+        <div className="absolute w-[456px] h-[348px] rounded-full blur-[100px] opacity-60 bg-[#A48CFF] top-1/2 -translate-y-1/2 right-[-40px]" />
+        <div className="absolute w-96 h-96 rounded-full blur-[80px] opacity-60 bg-[#F2D8A7] bottom-21 right-18" />
+        <div className="absolute w-[440px] h-[335px] rounded-full blur-[100px] opacity-60 bg-[#BFD3FF] bottom-[-90px] left-[114px]" />
         <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/25' : 'bg-white/10'}`} />
         <div className="relative z-10 w-full h-full flex items-center justify-center">
           <div className="bg-white/90 backdrop-blur-sm rounded-full p-8 shadow-2xl">
