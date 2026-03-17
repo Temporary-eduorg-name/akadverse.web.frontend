@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useAuth } from '@/src/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Zap, BookOpen, Bot, House, BellDot, User, LogOut } from 'lucide-react';
+import { Book, Zap, BookOpen, Bot, House, LogOut } from 'lucide-react';
+import NotificationBell from '../shared/NotificationBell';
 
 const MAIN_MENU_PATHS = [
   '/studashboard/main-menu/student-dashboard',
@@ -52,6 +54,58 @@ const DashboardNavbar = () => {
     },
   ];
 
+
+  const { user } = useAuth();
+  // Helper to capitalize first letter
+  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  const displayName = user ? `${capitalize(user.firstName)} ${capitalize(user.lastName)}` : '';
+  const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : '';
+
+  // Notification state
+  type Notification = {
+    type: string;
+    message: string;
+    [key: string]: any;
+  };
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unread, setUnread] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    // Connect to SSE endpoint for notifications
+    const es = new window.EventSource('/api/marketplace/realtime/events?scope=student');
+    eventSourceRef.current = es;
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // Example: { type: 'order', message: 'New order received', ... }
+        setNotifications((prev) => [data, ...prev]);
+        setUnread(true);
+      } catch {}
+    };
+    es.onerror = () => {
+      es.close();
+    };
+    return () => {
+      es.close();
+    };
+  }, [user]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.notification-dropdown')) {
+        setDropdownOpen(false);
+        setUnread(false);
+      }
+    };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [dropdownOpen]);
+
   return (
     <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
       <div className="flex items-center justify-between px-3 py-3 sm:px-4 lg:hidden">
@@ -64,12 +118,10 @@ const DashboardNavbar = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors" aria-label="Notifications" title="Notifications">
-            <BellDot size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <User size={16} className="text-blue-600" />
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-sm">
+              {initials || 'SP'}
             </div>
           </div>
           <button
@@ -123,13 +175,11 @@ const DashboardNavbar = () => {
         </div>
 
         <div className="flex items-center gap-3 justify-self-end">
-          <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors" aria-label="Notifications" title="Notifications">
-            <BellDot size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-500">Student Profile</span>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <User size={16} className="text-blue-600" />
+            <span className="text-sm font-medium text-gray-500">{displayName}</span>
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-sm">
+              {initials || 'SP'}
             </div>
           </div>
           <button

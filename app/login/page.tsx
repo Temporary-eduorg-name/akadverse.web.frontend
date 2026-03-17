@@ -64,7 +64,7 @@ const LoginPage = () => {
       }
 
       const selected = roleOptions.find((role) => role.id === activeRole);
-      router.push(selected?.path ?? '/studashboard');
+      window.location.href = selected?.path ?? '/studashboard';
     } catch (err) {
       setError('Login failed. Please try again.');
     } finally {

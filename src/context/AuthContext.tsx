@@ -49,7 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const checkAuth = async () => {
       try {
-            console.log('check')
         const response = await fetch("/api/marketplace/auth/verify", {
           credentials: "include",
         });
@@ -63,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            console.log(userData)
             setUser(userData.user);
             startRefreshTimer();
           } else {

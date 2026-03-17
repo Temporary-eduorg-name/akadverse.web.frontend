@@ -1,9 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { buildAppUrl } from "@/lib/app-url";
-
-const EMAIL_PAGE = buildAppUrl("/studashboard/main-menu/essentials/email");
+const EMAIL_PAGE = `${process.env.NEXT_LIVE_APP_URL_ALT}/studashboard/main-menu/essentials/email`;
 
 export async function GET(req: NextRequest) {
   const auth = verifyAuth(req);

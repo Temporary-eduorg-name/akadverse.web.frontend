@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   const scopes = [
+    "openid",
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/userinfo.email",
   ].join(" ");
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
     scope: scopes,
     access_type: "offline",
     prompt: "consent",
+    include_granted_scopes: "true",
   });
 
   const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;

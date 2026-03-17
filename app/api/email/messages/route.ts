@@ -166,10 +166,12 @@ export async function GET(req: NextRequest) {
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?labelIds=${labelId}&maxResults=${limit}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
-
+    const scope = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`)
     if (!listRes.ok) {
+      console.log(listRes)
       return NextResponse.json({ error: "Failed to list messages" }, { status: 502 });
     }
+    console.log(await scope.json())
 
     const listData: { messages?: { id: string }[] } = await listRes.json();
     const ids = (listData.messages ?? []).map((m) => m.id);
@@ -188,7 +190,8 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json({ messages: rawMessages.map(parseGmailMessage) });
-  } catch {
+  } catch(error) {
+    console.log(error)
     return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 });
   }
 }

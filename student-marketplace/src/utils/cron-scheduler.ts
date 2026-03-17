@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-const APP_URL = (process.env.NEXT_LIVE_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://akadverse-web-frontend.vercel.app").replace(/\/+$/, "");
+const APP_URL = (process.env.NEXT_LIVE_APP_URL_ALT || process.env.NEXT_PUBLIC_APP_URL || "https://akadverse-web-frontend.vercel.app").replace(/\/+$/, "");
 
 async function triggerEscrowRelease() {
     const timestamp = new Date().toISOString();

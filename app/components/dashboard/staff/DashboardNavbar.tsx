@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Zap, BookOpen, Bot, House, BellDot, User, LogOut } from 'lucide-react';
+import { Book, Zap, BookOpen, Bot, House, LogOut } from 'lucide-react';
+import NotificationBell from '../shared/NotificationBell';
+import { useAuth } from '@/src/context/AuthContext';
 
 const MAIN_MENU_PATHS = [
   '/staffdashboard/main-menu/faculty-dashboard',
@@ -52,6 +54,10 @@ const DashboardNavbar = () => {
     },
   ];
 
+  const { user } = useAuth ? useAuth() : { user: null };
+  const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+  const displayName = user ? `${capitalize(user.firstName)} ${capitalize(user.lastName)}` : 'Faculty Profile';
+  const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : 'FP';
   return (
     <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
       <div className="flex items-center justify-between px-3 py-3 sm:px-4 lg:hidden">
@@ -64,12 +70,10 @@ const DashboardNavbar = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors" aria-label="Notifications" title="Notifications">
-            <BellDot size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <User size={16} className="text-blue-600" />
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-sm">
+              {initials}
             </div>
           </div>
           <button
@@ -123,13 +127,11 @@ const DashboardNavbar = () => {
         </div>
 
         <div className="flex items-center gap-3 justify-self-end">
-          <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors" aria-label="Notifications" title="Notifications">
-            <BellDot size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-500">Faculty Profile</span>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <User size={16} className="text-blue-600" />
+            <span className="text-sm font-medium text-gray-500">{displayName}</span>
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-sm">
+              {initials}
             </div>
           </div>
           <button

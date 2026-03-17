@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_SECRET_KEY);
-const APP_BASE_URL = (process.env.NEXT_LIVE_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://akadverse-web-frontend.vercel.app").replace(/\/+$/, "");
+const APP_BASE_URL = (process.env.NEXT_LIVE_APP_URL || process.env.NEXT_PUBLIC_APP_URL_ALT || "https://akadverse.vercel.app").replace(/\/+$/, "");
 
 interface EmailData {
   to: string;
