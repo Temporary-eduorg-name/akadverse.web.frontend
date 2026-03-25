@@ -79,7 +79,7 @@ const Page = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Back Button */}
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/studashboard",)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-8"
         >
           <ArrowLeft size={20} />

@@ -1,0 +1,1713 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Records System</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideDown {
+      from { max-height: 0; opacity: 0; }
+      to { max-height: 2000px; opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { max-height: 2000px; opacity: 1; }
+      to { max-height: 0; opacity: 0; }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .section-content {
+      overflow: hidden;
+      transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease-in-out;
+    }
+    
+    .section-content.expanded {
+      max-height: 2000px;
+      opacity: 1;
+    }
+    
+    .section-content.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
+    
+    .dial-container {
+      position: relative;
+      width: 320px;
+      height: 260px;
+      margin: 0 auto;
+    }
+    
+    .dial-arc {
+      transition: stroke-dashoffset 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+    
+    .needle {
+      transition: transform 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: 160px 160px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    }
+    
+    .speedometer-tick {
+      stroke: #475569;
+      stroke-width: 3;
+    }
+    
+    .speedometer-tick-minor {
+      stroke: #94a3b8;
+      stroke-width: 1.5;
+    }
+    
+    .speedometer-label {
+      fill: #1e293b;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Segoe UI', sans-serif;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .speedometer-bg {
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+    }
+    
+    .gauge-glow {
+      filter: blur(8px);
+      opacity: 0.6;
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    }
+    
+    .btn-transition {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-transition:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-transition:active {
+      transform: translateY(0);
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .toast.show {
+      opacity: 1;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="h-full w-full overflow-auto" style="background: #ffffff !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+   <div class="min-h-full px-6 py-10">
+    <header class="max-w-7xl mx-auto mb-10 fade-in">
+     <h1 id="page-title" class="text-4xl font-bold mb-3" style="color: #1e293b; letter-spacing: -0.5px;">Academic Records Portal</h1>
+     <div class="flex items-center gap-4 text-lg" style="color: #475569;"><span id="student-name">Adebayo Emmanuel</span> <span style="color: #94a3b8;">|</span> <span id="student-id">ID: 180406047</span> <span style="color: #94a3b8;">|</span> <span>Computer Science</span>
+     </div>
+    </header>
+    <main class="max-w-7xl mx-auto space-y-4"><!-- Section 1: Academic Assessments -->
+     <section class="card-hover" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;"><button onclick="toggleSection('assessments')" class="w-full px-8 py-6 flex items-center justify-between btn-transition" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff;">
+       <div class="flex items-center gap-4">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg><span class="text-xl font-semibold" style="letter-spacing: -0.3px;">Academic Assessments</span>
+       </div>
+      <svg id="assessments-icon" class="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+       </svg></button>
+      <div id="assessments-content" class="section-content collapsed">
+       <div class="p-6">
+        <div class="mb-6 flex gap-4"><input type="text" id="course-code" placeholder="Course Code (e.g., CS101)" class="flex-1 px-4 py-3 border-2 rounded-lg" style="border-color: #e0e7ff; background: #f8fafc;"> <input type="text" id="course-title" placeholder="Course Title" class="flex-1 px-4 py-3 border-2 rounded-lg" style="border-color: #e0e7ff; background: #f8fafc;"> <select id="credit-units" class="w-32 px-4 py-3 border-2 rounded-lg" style="border-color: #e0e7ff; background: #f8fafc;"> <option value="">Units</option> <option value="0">0</option> <option value="1">1</option> <option value="2">2</option> <option value="3">3</option> <option value="4">4</option> <option value="5">5</option> </select> <button onclick="addCourse()" class="btn-transition px-6 py-3 rounded-lg font-semibold" style="background: #4f46e5; color: #ffffff;">Add Course</button>
+        </div>
+        <div class="overflow-x-auto">
+         <table class="w-full" style="border-collapse: separate; border-spacing: 0;">
+          <thead>
+           <tr style="background: #f1f5f9;">
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Code</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Title</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Credit Units</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Test 1</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Test 2</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Mid-Semester</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Actions</th>
+           </tr>
+          </thead>
+          <tbody id="assessments-table">
+          </tbody>
+         </table>
+        </div>
+       </div>
+      </div>
+     </section><!-- Section 2: Academic Records -->
+     <section class="card-hover" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;"><button onclick="toggleSection('records')" class="w-full px-8 py-6 flex items-center justify-between btn-transition" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #ffffff;">
+       <div class="flex items-center gap-4">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg><span class="text-xl font-semibold" style="letter-spacing: -0.3px;">Academic Records</span>
+       </div>
+      <svg id="records-icon" class="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+       </svg></button>
+      <div id="records-content" class="section-content collapsed">
+       <div class="p-6">
+        <div class="grid grid-cols-2 gap-6 mb-6">
+         <div class="text-center p-8 rounded-xl" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);">
+          <div class="dial-container mx-auto" id="gpa-dial-container"></div>
+         </div>
+         <div class="text-center p-8 rounded-xl" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);">
+          <div class="dial-container mx-auto" id="cgpa-dial-container"></div>
+         </div>
+        </div>
+        <div class="mb-6 flex gap-4 justify-center"><button onclick="showSemesterPicker()" class="btn-transition px-6 py-3 rounded-lg font-semibold" style="background: #059669; color: #ffffff;">View Previous Results</button> <button onclick="showTranscriptOptions()" class="btn-transition px-6 py-3 rounded-lg font-semibold" style="background: #7c3aed; color: #ffffff;">Print Unofficial Transcript</button>
+        </div>
+        <div id="semester-picker" class="hidden mb-6 p-4 rounded-lg" style="background: #f8fafc; border: 2px solid #e0e7ff;">
+         <h4 class="font-bold mb-3 text-lg" style="color: #1e293b;">Select Semester</h4>
+         <div class="grid grid-cols-5 gap-2" id="semester-buttons"></div>
+        </div>
+        <div id="transcript-options" class="hidden mb-6 p-4 rounded-lg" style="background: #f8fafc; border: 2px solid #e0e7ff;">
+         <h4 class="font-bold mb-3 text-lg" style="color: #1e293b;">Transcript Options</h4>
+         <div class="flex gap-4"><button onclick="printTranscript('current')" class="btn-transition flex-1 px-6 py-3 rounded-lg font-semibold" style="background: #4f46e5; color: #ffffff;">Current Print (All Semesters)</button> <button onclick="showCustomPrint()" class="btn-transition flex-1 px-6 py-3 rounded-lg font-semibold" style="background: #7c3aed; color: #ffffff;">Custom Print (Select Semesters)</button>
+         </div>
+         <div id="custom-print-options" class="hidden mt-4">
+          <p class="mb-2 font-semibold" style="color: #475569;">Select semesters to include:</p>
+          <div class="grid grid-cols-5 gap-2" id="custom-semester-checkboxes"></div><button onclick="printCustomTranscript()" class="mt-4 btn-transition px-6 py-3 rounded-lg font-semibold w-full" style="background: #059669; color: #ffffff;">Generate Custom Transcript</button>
+         </div>
+        </div>
+        <div id="results-display" class="overflow-x-auto">
+         <h4 class="font-bold mb-4 text-xl" style="color: #1e293b;" id="semester-title">Latest Semester Results</h4>
+         <table class="w-full" style="border-collapse: separate; border-spacing: 0;">
+          <thead>
+           <tr style="background: #f1f5f9;">
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Code</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Title</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Credit Units</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Grade</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Credit Score</th>
+           </tr>
+          </thead>
+          <tbody id="results-table">
+          </tbody>
+         </table>
+        </div>
+       </div>
+      </div>
+     </section><!-- Section 3: CGPA Calculator -->
+     <section class="card-hover" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;"><button onclick="toggleSection('calculator')" class="w-full px-8 py-6 flex items-center justify-between btn-transition" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+       <div class="flex items-center gap-4">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+        </svg><span class="text-xl font-semibold" style="letter-spacing: -0.3px;">CGPA Calculator</span>
+       </div>
+      <svg id="calculator-icon" class="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+       </svg></button>
+      <div id="calculator-content" class="section-content collapsed">
+       <div class="p-6">
+        <div class="grid grid-cols-2 gap-6 mb-6">
+         <div class="text-center p-8 rounded-xl" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);">
+          <div class="dial-container mx-auto" id="calc-gpa-dial-container"></div>
+         </div>
+         <div class="text-center p-8 rounded-xl" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);">
+          <div class="dial-container mx-auto" id="calc-cgpa-dial-container"></div>
+         </div>
+        </div>
+        <div class="overflow-x-auto mb-6">
+         <table class="w-full" style="border-collapse: separate; border-spacing: 0;">
+          <thead>
+           <tr style="background: #f1f5f9;">
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Code</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Course Title</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Credit Units</th>
+            <th class="px-6 py-4 text-left font-bold" style="color: #1e293b;">Select Grade</th>
+           </tr>
+          </thead>
+          <tbody id="calculator-table">
+          </tbody>
+         </table>
+        </div><button onclick="calculateProjectedGPA()" class="btn-transition w-full px-6 py-4 rounded-lg font-bold text-xl" style="background: linear-gradient(90deg, #dc2626 0%, #f59e0b 100%); color: #ffffff;">Calculate Projected GPA &amp; CGPA</button>
+       </div>
+      </div>
+     </section><!-- Section 4: Performance Analytics -->
+     <section class="card-hover" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;"><button onclick="toggleSection('analytics')" class="w-full px-8 py-6 flex items-center justify-between btn-transition" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff;">
+       <div class="flex items-center gap-4">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+        </svg><span class="text-xl font-semibold" style="letter-spacing: -0.3px;">Performance Analytics</span>
+       </div>
+      <svg id="analytics-icon" class="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+       </svg></button>
+      <div id="analytics-content" class="section-content collapsed">
+       <div class="p-8">
+        <div class="mb-8 p-6 rounded-lg" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);">
+         <h3 class="text-xl font-bold mb-4" style="color: #78350f;">AI Performance Agent</h3>
+         <div class="mb-4 p-4 rounded-lg h-64 overflow-y-auto" style="background: #ffffff; border: 2px solid #fbbf24;">
+          <div id="chat-messages" class="space-y-3"></div>
+         </div>
+         <div class="flex gap-3"><input type="text" id="chat-input" placeholder="Ask about your performance..." class="flex-1 px-4 py-3 border-2 rounded-lg font-medium" style="border-color: #fbbf24; background: #ffffff;"> <button onclick="sendMessage()" class="btn-transition px-6 py-3 rounded-lg font-bold" style="background: #f59e0b; color: #ffffff;">Send</button> <button onclick="document.getElementById('file-upload').click()" class="btn-transition px-6 py-3 rounded-lg font-bold flex items-center gap-2" style="background: #d97706; color: #ffffff;">
+           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+           </svg> Upload </button> <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv" onchange="handleFileUpload(event)">
+         </div>
+        </div>
+        <div class="grid grid-cols-3 gap-6">
+         <!-- Row 1 -->
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #fde8ef 0%, #fcd1df 100%); border: 2px dashed #f9a8d4; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #be185d;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <polyline points="3 17 9 11 13 15 21 7"></polyline>
+             <polyline points="21 7 21 17"></polyline>
+           </svg>
+           <p class="font-semibold" style="color: #be185d;">GPA Trend Chart</p>
+           <p class="text-sm mt-1" style="color: #be185d;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #e9eeff 0%, #d6deff 100%); border: 2px dashed #a78bfa; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #4c51bf;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <rect x="3" y="14" width="4" height="7" rx="1"></rect>
+             <rect x="10" y="9" width="4" height="12" rx="1"></rect>
+             <rect x="17" y="4" width="4" height="17" rx="1"></rect>
+           </svg>
+           <p class="font-semibold" style="color: #4c51bf;">CGPA Trend Chart</p>
+           <p class="text-sm mt-1" style="color: #4c51bf;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border: 2px dashed #c084fc; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #7e22ce;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <circle cx="12" cy="12" r="8"></circle>
+             <path d="M12 4v8h8"></path>
+           </svg>
+           <p class="font-semibold" style="color: #7e22ce;">Grade Distribution</p>
+           <p class="text-sm mt-1" style="color: #7e22ce;">Coming Soon</p>
+          </div>
+         </div>
+
+         <!-- Row 2 -->
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #e6fffa 0%, #ccfbf1 100%); border: 2px dashed #6ee7b7; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #059669;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <rect x="3" y="10" width="4" height="11" rx="1"></rect>
+             <rect x="9.5" y="6" width="4" height="15" rx="1"></rect>
+             <rect x="16" y="3" width="4" height="18" rx="1"></rect>
+           </svg>
+           <p class="font-semibold" style="color: #059669;">Credit Hour Analysis</p>
+           <p class="text-sm mt-1" style="color: #059669;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #fff1e6 0%, #fde7c7 100%); border: 2px dashed #fb923c; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #c2410c;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <rect x="3" y="3" width="6" height="6" rx="1"></rect>
+             <rect x="9" y="9" width="6" height="6" rx="1"></rect>
+             <rect x="15" y="15" width="6" height="6" rx="1"></rect>
+           </svg>
+           <p class="font-semibold" style="color: #c2410c;">Performance Heatmap</p>
+           <p class="text-sm mt-1" style="color: #c2410c;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #fff1f2 0%, #ffd6d9 100%); border: 2px dashed #f87171; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #b91c1c;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <circle cx="12" cy="12" r="9"></circle>
+             <path d="M12 8v4l3 3"></path>
+           </svg>
+           <p class="font-semibold" style="color: #b91c1c;">Study Time Analytics</p>
+           <p class="text-sm mt-1" style="color: #b91c1c;">Coming Soon</p>
+          </div>
+         </div>
+
+         <!-- Row 3 -->
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #e6f6ff 0%, #cdefff 100%); border: 2px dashed #60a5fa; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #0369a1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <circle cx="12" cy="12" r="9"></circle>
+             <path d="M9 12l2 2 4-4"></path>
+           </svg>
+           <p class="font-semibold" style="color: #0369a1;">Course Completion</p>
+           <p class="text-sm mt-1" style="color: #0369a1;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #fff9db 0%, #fff3bf 100%); border: 2px dashed #facc15; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #a16207;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></polygon>
+           </svg>
+           <p class="font-semibold" style="color: #a16207;">Achievement Tracker</p>
+           <p class="text-sm mt-1" style="color: #a16207;">Coming Soon</p>
+          </div>
+         </div>
+
+         <div class="p-6 rounded-xl text-center" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border: 2px dashed #c084fc; min-height: 200px; display:flex; align-items:center; justify-content:center;">
+          <div>
+           <svg class="w-12 h-12 mx-auto mb-3" style="color: #7e22ce;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+             <rect x="4" y="7" width="16" height="14" rx="1"></rect>
+             <path d="M9 12h6"></path>
+             <path d="M9 16h6"></path>
+           </svg>
+           <p class="font-semibold" style="color: #7e22ce;">Semester Comparison</p>
+           <p class="text-sm mt-1" style="color: #7e22ce;">Coming Soon</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </section>
+    </main>
+   </div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script>
+    // ------------------------------------------------------------------
+    // How this page works (quick overview for beginners):
+    // - `sampleData` is a small in-memory dataset used when there is no
+    //   external `dataSdk` available. Each entry is a course record.
+    // - `allRecords` holds the current set of course records (results & assessments).
+    // - `updateUI()` redraws tables and dials to reflect `allRecords`.
+    // - `initializeCharts()` prepares analytics canvases (can be blank).
+    // This simple flow makes the app easy to reason about for newcomers.
+    // ------------------------------------------------------------------
+    // Default configuration for the page (editable by elementSdk)
+    // Contains values that are used to populate the header and styling
+    // Keep this object small and serializable so elementSdk can persist it
+    // ------------------------------------------------------------------
+    const defaultConfig = {
+      page_title: "Academic Records Portal",
+      student_name: "Adebayo Emmanuel",
+      student_id: "ID: 180406047",
+      primary_color: "#1e293b",
+      secondary_color: "#0f172a",
+      text_color: "#0f172a",
+      background_color: "#ffffff",
+      accent_color: "#475569"
+    };
+
+    // Flag: when true, analytics canvases stay blank placeholders.
+    // Toggle this to `false` in the console to render the charts for testing
+    let analyticsBlank = true;
+
+    // In-memory data store used by the page. In production this is
+    // populated by `dataSdk` (if available) and mirrored to local sample data
+    let allRecords = [];
+    // UI state
+    let expandedSections = new Set();
+    let currentOpenSection = null;
+    const semesters = ['100lvl Alpha', '100lvl Omega', '200lvl Alpha', '200lvl Omega', '300lvl Alpha', '300lvl Omega', '400lvl Alpha', '400lvl Omega', '500lvl Alpha', '500lvl Omega'];
+    let currentSemester = '400lvl Alpha';
+    
+    // ------------------------------------------------------------------
+    // Sample dataset used when `dataSdk` is not available. Each record
+    // represents either a past result or a current assessment.
+    // Fields: type ('result'|'assessment'), courseCode, courseTitle,
+    // creditUnits, grade (A..F for results), semester, test1,test2,midSemester
+    // ------------------------------------------------------------------
+    const sampleData = [
+      // 100lvl Alpha
+      {type: 'result', courseCode: 'CSC101', courseTitle: 'Introduction to Computer Science', creditUnits: 3, grade: 'A', semester: '100lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'MTH101', courseTitle: 'General Mathematics I', creditUnits: 3, grade: 'B', semester: '100lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'PHY101', courseTitle: 'General Physics I', creditUnits: 3, grade: 'B', semester: '100lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CHM101', courseTitle: 'General Chemistry I', creditUnits: 3, grade: 'C', semester: '100lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'GST111', courseTitle: 'Communication in English', creditUnits: 2, grade: 'A', semester: '100lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      
+      // 100lvl Omega
+      {type: 'result', courseCode: 'CSC102', courseTitle: 'Introduction to Problem Solving', creditUnits: 3, grade: 'A', semester: '100lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'MTH102', courseTitle: 'General Mathematics II', creditUnits: 3, grade: 'B', semester: '100lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'PHY102', courseTitle: 'General Physics II', creditUnits: 3, grade: 'B', semester: '100lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CHM102', courseTitle: 'General Chemistry II', creditUnits: 3, grade: 'C', semester: '100lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'GST112', courseTitle: 'Logic and Philosophy', creditUnits: 2, grade: 'B', semester: '100lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      
+      // 200lvl Alpha
+      {type: 'result', courseCode: 'CSC201', courseTitle: 'Computer Programming I', creditUnits: 4, grade: 'A', semester: '200lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC203', courseTitle: 'Discrete Mathematics', creditUnits: 3, grade: 'A', semester: '200lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'MTH201', courseTitle: 'Mathematical Methods I', creditUnits: 3, grade: 'B', semester: '200lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'STA201', courseTitle: 'Probability I', creditUnits: 3, grade: 'B', semester: '200lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC205', courseTitle: 'Computer Architecture', creditUnits: 3, grade: 'A', semester: '200lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      
+      // 200lvl Omega
+      {type: 'result', courseCode: 'CSC202', courseTitle: 'Computer Programming II', creditUnits: 4, grade: 'A', semester: '200lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC204', courseTitle: 'Data Structures', creditUnits: 3, grade: 'A', semester: '200lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'MTH202', courseTitle: 'Mathematical Methods II', creditUnits: 3, grade: 'B', semester: '200lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'STA202', courseTitle: 'Probability II', creditUnits: 3, grade: 'A', semester: '200lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC206', courseTitle: 'Operating Systems', creditUnits: 3, grade: 'B', semester: '200lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      
+      // 300lvl Alpha
+      {type: 'result', courseCode: 'CSC301', courseTitle: 'Algorithm Design and Analysis', creditUnits: 3, grade: 'A', semester: '300lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC303', courseTitle: 'Database Management Systems', creditUnits: 3, grade: 'A', semester: '300lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC305', courseTitle: 'Software Engineering', creditUnits: 3, grade: 'A', semester: '300lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC307', courseTitle: 'Computer Networks', creditUnits: 3, grade: 'B', semester: '300lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC309', courseTitle: 'Theory of Computation', creditUnits: 3, grade: 'B', semester: '300lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      
+      // 300lvl Omega
+      {type: 'result', courseCode: 'CSC302', courseTitle: 'Artificial Intelligence', creditUnits: 3, grade: 'A', semester: '300lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC304', courseTitle: 'Web Technologies', creditUnits: 3, grade: 'A', semester: '300lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC306', courseTitle: 'Mobile Application Development', creditUnits: 3, grade: 'A', semester: '300lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC308', courseTitle: 'Compiler Construction', creditUnits: 3, grade: 'B', semester: '300lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC310', courseTitle: 'Computer Graphics', creditUnits: 3, grade: 'A', semester: '300lvl Omega', test1: 0, test2: 0, midSemester: 0},
+      
+      // 400lvl Alpha (Current)
+      {type: 'result', courseCode: 'CSC401', courseTitle: 'Machine Learning', creditUnits: 3, grade: 'A', semester: '400lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC403', courseTitle: 'Cloud Computing', creditUnits: 3, grade: 'A', semester: '400lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC405', courseTitle: 'Cybersecurity', creditUnits: 3, grade: 'B', semester: '400lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC407', courseTitle: 'Distributed Systems', creditUnits: 3, grade: 'A', semester: '400lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      {type: 'result', courseCode: 'CSC409', courseTitle: 'Advanced Databases', creditUnits: 3, grade: 'A', semester: '400lvl Alpha', test1: 0, test2: 0, midSemester: 0},
+      
+      // Current assessments - departmental courses with random scores (Test 1 & Test 2 out of 15)
+      {type: 'assessment', courseCode: 'CSC402', courseTitle: 'Deep Learning', creditUnits: 3, test1: Math.floor(Math.random() * 6) + 10, test2: Math.floor(Math.random() * 6) + 10, midSemester: 0, semester: '400lvl Omega'},
+      {type: 'assessment', courseCode: 'CSC404', courseTitle: 'Blockchain Technology', creditUnits: 3, test1: Math.floor(Math.random() * 6) + 10, test2: Math.floor(Math.random() * 6) + 10, midSemester: 0, semester: '400lvl Omega'},
+      {type: 'assessment', courseCode: 'CSC406', courseTitle: 'Internet of Things', creditUnits: 3, test1: Math.floor(Math.random() * 6) + 10, test2: Math.floor(Math.random() * 6) + 10, midSemester: 0, semester: '400lvl Omega'},
+      {type: 'assessment', courseCode: 'CSC408', courseTitle: 'Natural Language Processing', creditUnits: 3, test1: Math.floor(Math.random() * 6) + 10, test2: Math.floor(Math.random() * 6) + 10, midSemester: 0, semester: '400lvl Omega'},
+      {type: 'assessment', courseCode: 'CSC410', courseTitle: 'Computer Vision', creditUnits: 3, test1: Math.floor(Math.random() * 6) + 10, test2: Math.floor(Math.random() * 6) + 10, midSemester: 0, semester: '400lvl Omega'},
+      // Mid-semester courses with random scores (Mid-Semester out of 30)
+      {type: 'assessment', courseCode: 'CIT401', courseTitle: 'Information Technology Management', creditUnits: 2, test1: 0, test2: 0, midSemester: Math.floor(Math.random() * 11) + 20, semester: '400lvl Omega'},
+      {type: 'assessment', courseCode: 'ENT402', courseTitle: 'Entrepreneurship Studies', creditUnits: 2, test1: 0, test2: 0, midSemester: Math.floor(Math.random() * 11) + 20, semester: '400lvl Omega'}
+    ];
+
+    // Data SDK integration hook. When the external data source notifies
+    // the page of changes it will call `onDataChanged` with the full
+    // set of records. We save the data locally and refresh UI/charts.
+    const dataHandler = {
+      onDataChanged(data) {
+        allRecords = data;
+        ensureStudyHours(); // ensure analytics have required fields
+        updateUI();         // refresh tables and dials
+      }
+    };
+
+      async function init() {
+        // If dataSdk isn't available, fall back to in-memory sample data
+        if (!window.dataSdk || typeof window.dataSdk.init !== 'function') {
+          console.warn('dataSdk not available, using in-memory sample data');
+          allRecords = sampleData.slice();
+          ensureStudyHours();
+          updateUI();
+          initializeCharts();
+          return;
+        }
+
+        const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error("Failed to initialize data SDK");
+        return;
+      }
+      
+      // Load sample data only if database is empty
+      if (allRecords.length === 0) {
+        for (const record of sampleData) {
+          const dataRecord = {
+            ...record,
+            id: Date.now().toString() + Math.random().toString(),
+            createdAt: new Date().toISOString()
+          };
+          await window.dataSdk.create(dataRecord);
+        }
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            document.getElementById('page-title').textContent = config.page_title || defaultConfig.page_title;
+            document.getElementById('student-name').textContent = config.student_name || defaultConfig.student_name;
+            document.getElementById('student-id').textContent = config.student_id || defaultConfig.student_id;
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.primary_color || defaultConfig.primary_color,
+                set: (value) => {
+                  config.primary_color = value;
+                  window.elementSdk.setConfig({ primary_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_color || defaultConfig.secondary_color,
+                set: (value) => {
+                  config.secondary_color = value;
+                  window.elementSdk.setConfig({ secondary_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (value) => {
+                  config.accent_color = value;
+                  window.elementSdk.setConfig({ accent_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["page_title", config.page_title || defaultConfig.page_title],
+            ["student_name", config.student_name || defaultConfig.student_name],
+            ["student_id", config.student_id || defaultConfig.student_id]
+          ])
+        });
+      }
+
+      initializeCharts();
+    }
+
+    function updateUI() {
+      // Refresh visible tables and dials when the underlying data changes
+      updateAssessmentsTable();
+      updateResultsTable();
+      updateCalculatorTable();
+      updateDials();
+      // Refresh analytics canvases. These functions are idempotent and
+      // will clear themselves if `analyticsBlank` is set.
+      drawGpaCgpaBarChart(analyticsBlank);
+      drawPerformanceHeatmap(analyticsBlank);
+      drawGradeCompositionPies(analyticsBlank);
+      drawStudyTimeAnalytics(analyticsBlank);
+    }
+
+    // ensureStudyHours
+    // - Purpose: Guarantee every record has a numeric `studyHours` field
+    //   so the study-time scatter plot has values to draw. Some records
+    //   come from sample data and may not include this field. If it's
+    //   missing we seed a small random value (1-30 hours) so visuals work.
+    // - Note for beginners: this is a convenience helper only. In a
+    //   real app you'd gather actual study-hour data from users.
+    function ensureStudyHours() {
+      allRecords = allRecords.map(r => ({
+        ...r,
+        // If the record already has a numeric studyHours value, keep it.
+        // Otherwise assign a random small integer so charts remain usable.
+        studyHours: typeof r.studyHours === 'number' ? r.studyHours : Math.floor(Math.random() * 30) + 1
+      }));
+    }
+
+    // ------------------------------------------------------------------
+    // UI lifecycle notes for beginners:
+    // - init() runs on page load. If `dataSdk` exists the app will
+    //   initialize it and wait for `onDataChanged` updates.
+    // - When data changes we call `updateUI()` which: rebuilds tables,
+    //   recalculates the GPA/CGPA dials, and redraws analytics canvases.
+    // This separation (data -> updateUI -> render) keeps the code simple.
+    // ------------------------------------------------------------------
+
+    function toggleSection(sectionId) {
+      const content = document.getElementById(`${sectionId}-content`);
+      const icon = document.getElementById(`${sectionId}-icon`);
+      
+      // Close previously open section
+      if (currentOpenSection && currentOpenSection !== sectionId) {
+        const prevContent = document.getElementById(`${currentOpenSection}-content`);
+        const prevIcon = document.getElementById(`${currentOpenSection}-icon`);
+        prevContent.classList.remove('expanded');
+        prevContent.classList.add('collapsed');
+        prevIcon.style.transform = 'rotate(0deg)';
+        expandedSections.delete(currentOpenSection);
+      }
+      
+      if (expandedSections.has(sectionId)) {
+        content.classList.remove('expanded');
+        content.classList.add('collapsed');
+        icon.style.transform = 'rotate(0deg)';
+        expandedSections.delete(sectionId);
+        currentOpenSection = null;
+      } else {
+        content.classList.remove('collapsed');
+        content.classList.add('expanded');
+        icon.style.transform = 'rotate(180deg)';
+        expandedSections.add(sectionId);
+        currentOpenSection = sectionId;
+      }
+    }
+
+    async function addCourse() {
+      const code = document.getElementById('course-code').value.trim();
+      const title = document.getElementById('course-title').value.trim();
+      const units = parseInt(document.getElementById('credit-units').value);
+
+      if (!code || !title || !units) {
+        showToast('Please fill all course fields', '#dc2626');
+        return;
+      }
+
+      if (allRecords.length >= 999) {
+        showToast('Maximum limit of 999 records reached. Please delete some items first.', '#dc2626');
+        return;
+      }
+
+      const newCourse = {
+        id: Date.now().toString(),
+        type: 'assessment',
+        courseCode: code,
+        courseTitle: title,
+        creditUnits: units,
+        grade: '',
+        semester: currentSemester,
+        // align with other assessment records
+        test1: 0,
+        test2: 0,
+        midSemester: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(newCourse);
+      if (result.isOk) {
+        document.getElementById('course-code').value = '';
+        document.getElementById('course-title').value = '';
+        document.getElementById('credit-units').value = '';
+        showToast('Course added successfully', '#059669');
+      } else {
+        showToast('Failed to add course', '#dc2626');
+      }
+    }
+
+    function updateAssessmentsTable() {
+      const tbody = document.getElementById('assessments-table');
+      const assessments = allRecords.filter(r => r.type === 'assessment');
+      
+      // Separate departmental and mid-semester courses
+      const departmentalCourses = [];
+      const midSemesterCourses = [];
+      
+      assessments.forEach(course => {
+        const isMidSemester = ['CIT', 'TMC', 'ENT', 'DLD'].some(prefix => course.courseCode.startsWith(prefix));
+        if (isMidSemester) {
+          midSemesterCourses.push(course);
+        } else {
+          departmentalCourses.push(course);
+        }
+      });
+      
+      // Sort both arrays by course code
+      departmentalCourses.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+      midSemesterCourses.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+      
+      // Combine: departmental first, then mid-semester
+      const sortedAssessments = [...departmentalCourses, ...midSemesterCourses];
+      
+      tbody.innerHTML = sortedAssessments.map(course => {
+        const isMidSemester = ['CIT', 'TMC', 'ENT', 'DLD'].some(prefix => course.courseCode.startsWith(prefix));
+                  <!-- Removed auto-injected iframe/challenge script that may cause unexpected external requests -->
+        
+        return `
+          <tr class="fade-in" style="border-bottom: 1px solid #e2e8f0;">
+            <td class="px-6 py-4" style="color: #334155;">${course.courseCode}</td>
+            <td class="px-6 py-4" style="color: #334155;">${course.courseTitle}</td>
+            <td class="px-6 py-4" style="color: #334155;">${course.creditUnits}</td>
+            <td class="px-6 py-4">
+              ${!isMidSemester ? `
+                <span class="font-semibold" style="color: #3b82f6;">${course.test1 || 0}</span>
+              ` : '<span style="color: #94a3b8;">—</span>'}
+            </td>
+            <td class="px-6 py-4">
+              ${!isMidSemester ? `
+                <span class="font-semibold" style="color: #3b82f6;">${course.test2 || 0}</span>
+              ` : '<span style="color: #94a3b8;">—</span>'}
+            </td>
+            <td class="px-6 py-4">
+              ${isMidSemester ? `
+                <span class="font-semibold" style="color: #f59e0b;">${course.midSemester || 0}</span>
+              ` : '<span style="color: #94a3b8;">—</span>'}
+            </td>
+            <td class="px-6 py-4">
+              <button onclick="deleteCourse('${course.id}')" 
+                      class="btn-transition px-4 py-2 rounded-lg font-semibold" 
+                      style="background: #dc2626; color: #ffffff;">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function updateTest(id, field, score) {
+      const course = allRecords.find(r => r.id === id);
+      if (!course) return;
+
+      const updatedCourse = { ...course, [field]: parseFloat(score) || 0 };
+      const result = await window.dataSdk.update(updatedCourse);
+      
+      if (result.isOk) {
+        showToast('Score updated successfully', '#059669');
+      } else {
+        showToast('Failed to update score', '#dc2626');
+      }
+    }
+
+    async function deleteCourse(id) {
+      const course = allRecords.find(r => r.id === id);
+      if (!course) return;
+
+      const result = await window.dataSdk.delete(course);
+      if (result.isOk) {
+        showToast('Course deleted', '#059669');
+      } else {
+        showToast('Failed to delete course', '#dc2626');
+      }
+    }
+
+    function updateResultsTable() {
+      // Build the results table for the currently selected semester.
+      // Only records with type === 'result' are shown here.
+      // For each row we show: course code, title, credit units, grade, and
+      // the credit score (gradePoints * creditUnits). Example: A(5.0) in
+      // a 3-unit course -> credit score = 15.0.
+      const tbody = document.getElementById('results-table');
+      const results = allRecords.filter(r => r.type === 'result' && r.semester === currentSemester);
+      
+      tbody.innerHTML = results.map(result => {
+        const gradePoint = gradeToPoint(result.grade);
+        const creditScore = gradePoint * result.creditUnits;
+        
+        return `
+          <tr class="fade-in" style="border-bottom: 1px solid #e2e8f0;">
+            <td class="px-6 py-4" style="color: #334155;">${result.courseCode}</td>
+            <td class="px-6 py-4" style="color: #334155;">${result.courseTitle}</td>
+            <td class="px-6 py-4" style="color: #334155;">${result.creditUnits}</td>
+            <td class="px-6 py-4 font-bold" style="color: ${getGradeColor(result.grade)};">${result.grade}</td>
+            <td class="px-6 py-4 font-bold" style="color: #334155;">${creditScore.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateCalculatorTable() {
+      // Build the grade-select table (used for projecting GPA/CGPA on future assessments)
+      // Each assessment row gets a <select> where the user picks a letter
+      // grade. We use a stable id `grade-{id or courseCode}` so JS can read
+      // the selected choice later when computing the projection.
+      const tbody = document.getElementById('calculator-table');
+      const assessments = allRecords.filter(r => r.type === 'assessment');
+      
+      tbody.innerHTML = assessments.map(course => `
+        <tr class="fade-in" style="border-bottom: 1px solid #e2e8f0;">
+          <td class="px-6 py-4" style="color: #334155;">${course.courseCode}</td>
+          <td class="px-6 py-4" style="color: #334155;">${course.courseTitle}</td>
+          <td class="px-6 py-4" style="color: #334155;">${course.creditUnits}</td>
+          <td class="px-6 py-4">
+            <select id="grade-${course.id || course.courseCode}" class="w-full px-4 py-2 border-2 rounded-lg" style="border-color: #e0e7ff; background: #f8fafc;">
+              <option value="">Select Grade</option>
+              <option value="A">A (5.0)</option>
+              <option value="B">B (4.0)</option>
+              <option value="C">C (3.0)</option>
+              <option value="D">D (2.0)</option>
+              <option value="F">F (0.0)</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function gradeToPoint(grade) {
+      // Map a letter grade (A,B,C,D,F) to numeric grade points (0.0 - 5.0).
+      // If an unknown grade is passed we return 0 (safe fallback).
+      // Example: gradeToPoint('A') === 5.0
+      const gradeMap = { 'A': 5.0, 'B': 4.0, 'C': 3.0, 'D': 2.0, 'F': 0.0 };
+      return gradeMap[grade] || 0;
+    }
+
+    function getGradeColor(grade) {
+      const colorMap = {
+        'A': '#059669',
+        'B': '#0891b2',
+        'C': '#f59e0b',
+        'D': '#f97316',
+        'F': '#dc2626'
+      };
+      return colorMap[grade] || '#64748b';
+    }
+
+    function createDial(containerId, value, label) {
+      // Render a speedometer-style dial in `containerId` that shows `value`.
+      // Parameters:
+      //  - containerId: id string of the element that will hold the dial
+      //  - value: number on a 0.0 - 5.0 scale (e.g., 4.25)
+      //  - label: text label to display under the numeric value
+      // Explanation for beginners:
+      //  - The dial shows the numeric value as both an animated needle and
+      //    a number. The dial maps 0.0 -> West (-90deg), 2.5 -> North (0deg),
+      //    5.0 -> East (90deg). The animated arc and needle are adjusted
+      //    based on `value` so the dial looks smooth and realistic.
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      const color = getDialColor(value);
+      
+      // Generate tick marks and labels for a realistic speedometer
+      // 0.0 at West (180deg), 2.5 at North (270deg), 5.0 at East (0deg/360deg)
+      let tickMarks = '';
+      let tickLabels = '';
+      
+      // Major ticks at 0, 1, 2, 3, 4, 5
+      for (let i = 0; i <= 5; i++) {
+        // Map values: 0->180deg, 2.5->270deg, 5->360deg (or 0deg)
+        // Formula: angle = 180 + (i / 5) * 180
+        const angle = 180 + (i / 5) * 180;
+        const radians = (angle * Math.PI) / 180;
+        const x1 = 160 + Math.cos(radians) * 100;
+        const y1 = 160 + Math.sin(radians) * 100;
+        const x2 = 160 + Math.cos(radians) * 85;
+        const y2 = 160 + Math.sin(radians) * 85;
+        
+        tickMarks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="speedometer-tick"/>`;
+        
+        // Labels
+        const labelX = 160 + Math.cos(radians) * 70;
+        const labelY = 160 + Math.sin(radians) * 70;
+        tickLabels += `<text x="${labelX}" y="${labelY}" class="speedometer-label" text-anchor="middle" dominant-baseline="middle">${i}.0</text>`;
+      }
+      
+      // Minor ticks between major marks
+      for (let i = 0; i < 5; i++) {
+        for (let j = 1; j < 5; j++) {
+          const majorAngle = 180 + (i / 5) * 180;
+          const minorAngle = majorAngle + (j * 36 / 5);
+          const radians = (minorAngle * Math.PI) / 180;
+          const x1 = 160 + Math.cos(radians) * 100;
+          const y1 = 160 + Math.sin(radians) * 100;
+          const x2 = 160 + Math.cos(radians) * 92;
+          const y2 = 160 + Math.sin(radians) * 92;
+          
+          tickMarks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="speedometer-tick-minor"/>`;
+        }
+      }
+      
+      container.innerHTML = `
+        <svg viewBox="0 0 320 220" class="w-full">
+          <defs>
+            <linearGradient id="grad-${containerId}" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+              <stop offset="20%" style="stop-color:#f97316;stop-opacity:1" />
+              <stop offset="40%" style="stop-color:#f59e0b;stop-opacity:1" />
+              <stop offset="60%" style="stop-color:#0891b2;stop-opacity:1" />
+              <stop offset="80%" style="stop-color:#059669;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+            </linearGradient>
+            <radialGradient id="bg-${containerId}" cx="50%" cy="50%">
+              <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+              <stop offset="70%" style="stop-color:#e2e8f0;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:1" />
+            </radialGradient>
+            <filter id="shadow-${containerId}">
+              <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+            </filter>
+            <filter id="inner-shadow-${containerId}">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+              <feOffset dx="0" dy="2" result="offsetblur"/>
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.5"/>
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          <!-- Outer circle (bezel) -->
+          <circle cx="160" cy="160" r="115" fill="#334155" class="speedometer-bg"/>
+          
+          <!-- Inner circle background with gradient -->
+          <circle cx="160" cy="160" r="105" fill="url(#bg-${containerId})" filter="url(#inner-shadow-${containerId})"/>
+          
+          <!-- Glow effect under arc -->
+          <path d="M 60 160 A 100 100 0 1 1 260 160" 
+                fill="none" 
+                stroke="url(#grad-${containerId})" 
+                stroke-width="20" 
+                stroke-linecap="round"
+                opacity="0.3"
+                class="gauge-glow"
+                id="glow-${containerId}"/>
+          
+          <!-- Background arc track -->
+          <path d="M 60 160 A 100 100 0 1 1 260 160" 
+                fill="none" 
+                stroke="#cbd5e1" 
+                stroke-width="18" 
+                stroke-linecap="round"/>
+          
+          <!-- Animated colored arc -->
+          <path d="M 60 160 A 100 100 0 1 1 260 160" 
+                fill="none" 
+                stroke="url(#grad-${containerId})" 
+                stroke-width="18" 
+                stroke-linecap="round"
+                stroke-dasharray="314.16"
+                stroke-dashoffset="314.16"
+                class="dial-arc"
+                id="arc-${containerId}"/>
+          
+          <!-- Tick marks -->
+          ${tickMarks}
+          
+          <!-- Tick labels -->
+          ${tickLabels}
+          
+          <!-- Center hub -->
+          <circle cx="160" cy="160" r="12" fill="#1e293b" filter="url(#shadow-${containerId})"/>
+          <circle cx="160" cy="160" r="8" fill="#475569"/>
+          
+          <!-- Needle (pointing up initially, will rotate from 0.0 position at West) -->
+          <g id="needle-${containerId}" style="transform: rotate(-90deg); transform-origin: 160px 160px;" class="needle">
+            <polygon points="160,160 154,155 154,85 160,75 166,85 166,155" 
+                     fill="#dc2626"
+                     filter="url(#shadow-${containerId})"/>
+          </g>
+          
+          <!-- Center cap -->
+          <circle cx="160" cy="160" r="6" fill="#991b1b"/>
+        </svg>
+        <div class="text-center" style="margin-top: -10px;">
+          <div class="text-5xl font-bold" style="color: ${color};" id="value-${containerId}">0.00</div>
+          <div class="text-lg font-semibold" style="color: #475569; margin-top: 4px;">${label}</div>
+        </div>
+      `;
+      
+      // Animate the dial after rendering
+      setTimeout(() => {
+        const arc = document.getElementById(`arc-${containerId}`);
+        const glow = document.getElementById(`glow-${containerId}`);
+        const needle = document.getElementById(`needle-${containerId}`);
+        const valueDisplay = document.getElementById(`value-${containerId}`);
+        
+        if (arc && needle && valueDisplay) {
+          const targetOffset = 314.16 - (value / 5.0) * 314.16;
+          // Needle starts at -90deg (pointing to 0.0 at West)
+          // Target angle: -90deg + (value / 5.0) * 180deg
+          // So 0.0 -> -90deg, 2.5 -> 0deg (North), 5.0 -> 90deg (East)
+          const targetAngle = -90 + (value / 5.0) * 180;
+          
+          arc.style.strokeDashoffset = targetOffset;
+          if (glow) glow.style.strokeDashoffset = targetOffset;
+          needle.style.transform = `rotate(${targetAngle}deg)`;
+          
+          // Animate number counting in the large numeric display. We
+          // increment a small amount many times so the number looks like
+          // it's counting up to the final value (nice UX for beginners).
+          let currentValue = 0;
+          const duration = 2500;
+          const steps = 80;
+          const increment = value / steps;
+          const stepDuration = duration / steps;
+          
+          let step = 0;
+          const interval = setInterval(() => {
+            currentValue += increment;
+            step++;
+            
+            if (step >= steps) {
+              currentValue = value;
+              clearInterval(interval);
+            }
+            
+            valueDisplay.textContent = currentValue.toFixed(2);
+            valueDisplay.style.color = getDialColor(currentValue);
+          }, stepDuration);
+        }
+      }, 100);
+    }
+
+    function getDialColor(value) {
+      if (value < 1.5) return '#dc2626';
+      if (value < 2.4) return '#f97316';
+      if (value < 3.5) return '#f59e0b';
+      if (value < 4.5) return '#0891b2';
+      if (value < 5.0) return '#059669';
+      return '#10b981';
+    }
+
+    function updateDials() {
+      // Update the GPA and CGPA dials for the currently selected semester.
+      // Beginner explanation:
+      //  - GPA: the average for current semester only (weighted by credit units).
+      //  - CGPA: the cumulative GPA from the first semester up to the one
+      //    the user selected. We compute it by filtering results that have
+      //    their semester index <= the currently selected semester index.
+      const results = allRecords.filter(r => r.type === 'result');
+      const currentResults = results.filter(r => r.semester === currentSemester);
+      // Compute CGPA as cumulative from the earliest semester up to the currently selected semester
+      const semIndex = semesters.indexOf(currentSemester);
+      const resultsUpTo = semIndex >= 0 ? results.filter(r => {
+        const idx = semesters.indexOf(r.semester);
+        return idx >= 0 && idx <= semIndex;
+      }) : results;
+
+      const gpa = calculateGPA(currentResults);
+      const cgpa = calculateCGPA(resultsUpTo);
+      
+      setTimeout(() => {
+        createDial('gpa-dial-container', gpa, 'Grade Point Average');
+        createDial('cgpa-dial-container', cgpa, 'Cumulative GPA');
+      }, 100);
+
+      // Debugging info (shows computed values in the browser console).
+      // Helpful while testing and learning (open DevTools -> Console).
+      console.log('updateDials -> semester:', currentSemester, 'gpa:', gpa, 'cgpa(up to sem):', cgpa);
+    }
+
+    function calculateGPA(results) {
+      // Calculate GPA for a list of `results` as the weighted average of
+      // grade points where weights are the credit units. Returns 0 if no units.
+      // Step-by-step for beginners:
+      // 1) For each course compute: points = gradeToPoint(grade) * creditUnits
+      // 2) Sum all `points` into totalPoints and sum credit units into totalUnits
+      // 3) GPA = totalPoints / totalUnits (if totalUnits > 0)
+      // Example: courses = [{grade:'A', creditUnits:3}, {grade:'B', creditUnits:3}]
+      // - totalPoints = 5*3 + 4*3 = 27
+      // - totalUnits = 6
+      // - GPA = 27 / 6 = 4.5
+      if (results.length === 0) return 0;
+
+      let totalPoints = 0;
+      let totalUnits = 0;
+
+      results.forEach(result => {
+        const points = gradeToPoint(result.grade);
+        totalPoints += points * result.creditUnits;
+        totalUnits += result.creditUnits;
+      });
+
+      return totalUnits > 0 ? totalPoints / totalUnits : 0;
+    }
+
+    function calculateCGPA(results) {
+      // CGPA is equivalent to GPA computed over all accumulated results.
+      // This wrapper exists for clarity and future extension (e.g., term weights)
+      return calculateGPA(results);
+    }
+
+    function showSemesterPicker() {
+      const picker = document.getElementById('semester-picker');
+      const buttonsContainer = document.getElementById('semester-buttons');
+      
+      buttonsContainer.innerHTML = semesters.map(sem => `
+        <button onclick="selectSemester('${sem}')" 
+                class="btn-transition px-4 py-2 rounded-lg font-semibold ${sem === currentSemester ? 'ring-2 ring-offset-2' : ''}" 
+                style="background: ${sem === currentSemester ? '#059669' : '#4f46e5'}; color: #ffffff;">
+          ${sem}
+        </button>
+      `).join('');
+      
+      picker.classList.toggle('hidden');
+    }
+
+    function selectSemester(semester) {
+      currentSemester = semester;
+      document.getElementById('semester-title').textContent = `${semester} Results`;
+      updateResultsTable();
+      updateDials();
+      document.getElementById('semester-picker').classList.add('hidden');
+      showToast(`Viewing ${semester} results`, '#059669');
+    }
+
+    function showTranscriptOptions() {
+      document.getElementById('transcript-options').classList.toggle('hidden');
+    }
+
+    function showCustomPrint() {
+      const container = document.getElementById('custom-semester-checkboxes');
+      container.innerHTML = semesters.map(sem => `
+        <label class="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100">
+          <input type="checkbox" value="${sem}" class="custom-semester-check">
+          <span class="text-sm">${sem}</span>
+        </label>
+      `).join('');
+      document.getElementById('custom-print-options').classList.remove('hidden');
+    }
+
+    function printTranscript(type) {
+      if (type === 'current') {
+        showToast('Generating full transcript...', '#7c3aed');
+        setTimeout(() => {
+          showToast('Transcript generated successfully!', '#059669');
+        }, 1500);
+      }
+    }
+
+    function printCustomTranscript() {
+      const checkboxes = document.querySelectorAll('.custom-semester-check:checked');
+      const selectedSemesters = Array.from(checkboxes).map(cb => cb.value);
+      
+      if (selectedSemesters.length === 0) {
+        showToast('Please select at least one semester', '#f59e0b');
+        return;
+      }
+      
+      showToast(`Generating transcript for ${selectedSemesters.length} semester(s)...`, '#7c3aed');
+      setTimeout(() => {
+        showToast('Custom transcript generated successfully!', '#059669');
+      }, 1500);
+    }
+
+    function calculateProjectedGPA() {
+      // Projected GPA computation (beginner-friendly explanation):
+      // - The user selects a grade for each assessment (future course).
+      // - We convert letter grades to points (A=5, B=4, etc.) and compute
+      //   totalPoints = sum(points * creditUnits) and totalUnits = sum(creditUnits).
+      // - Projected GPA is totalPoints / totalUnits (weighted average).
+      const assessments = allRecords.filter(r => r.type === 'assessment');
+      let totalPoints = 0; // numerator for GPA calculation
+      let totalUnits = 0;  // denominator for GPA calculation
+      let allSelected = true; // ensure user has picked a grade for each assessment
+
+      assessments.forEach(course => {
+        // Use id fallback to `courseCode` so we can read the select even when
+        // a numeric id is not present (helps beginners avoid DOM id issues).
+        const select = document.getElementById(`grade-${course.id || course.courseCode}`);
+        const grade = select?.value?.toString().trim().toUpperCase();
+
+        if (!grade) {
+          // If any selection is missing we remind the user to choose all grades
+          // before computing projections (keeps the math meaningful).
+          allSelected = false;
+          return;
+        }
+
+        // Convert the letter grade to numeric points, then multiply by units
+        const points = gradeToPoint(grade);
+        totalPoints += points * course.creditUnits;
+        totalUnits += course.creditUnits;
+      });
+      
+      // Ensure user has selected a grade for each assessment row before
+      // attempting projection. If any selection is missing, abort and prompt.
+      if (!allSelected) {
+        showToast('Please select grades for all courses', '#f59e0b');
+        return;
+      }
+      
+      const projectedGPA = totalUnits > 0 ? totalPoints / totalUnits : 0;
+      
+      const allResults = allRecords.filter(r => r.type === 'result');
+      let prevTotalPoints = 0;
+      let prevTotalUnits = 0;
+      
+      allResults.forEach(result => {
+        const points = gradeToPoint(result.grade);
+        prevTotalPoints += points * result.creditUnits;
+        prevTotalUnits += result.creditUnits;
+      });
+      
+      // Combine past results with the user's selected projected grades
+      // to compute a projected cumulative CGPA.
+      const combinedTotalPoints = prevTotalPoints + totalPoints;
+      const combinedTotalUnits = prevTotalUnits + totalUnits;
+      const projectedCGPA = combinedTotalUnits > 0 ? combinedTotalPoints / combinedTotalUnits : 0;
+      // Debugging info (can be inspected in console)
+      console.log('Projected GPA:', projectedGPA, 'Projected CGPA:', projectedCGPA, 'from', totalPoints, 'pts /', totalUnits, 'units');
+      
+      setTimeout(() => {
+        createDial('calc-gpa-dial-container', projectedGPA, 'Projected GPA');
+        createDial('calc-cgpa-dial-container', projectedCGPA, 'Projected CGPA');
+      }, 100);
+      
+      showToast('Projections calculated successfully!', '#059669');
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      const messagesContainer = document.getElementById('chat-messages');
+      
+      messagesContainer.innerHTML += `
+        <div class="fade-in p-3 rounded-lg ml-auto max-w-[70%]" style="background: #f59e0b; color: #ffffff; font-weight: 500;">
+          ${message}
+        </div>
+      `;
+      
+      input.value = '';
+      
+      setTimeout(() => {
+        messagesContainer.innerHTML += `
+          <div class="fade-in p-3 rounded-lg mr-auto max-w-[70%]" style="background: #fffbeb; color: #78350f; border: 2px solid #fef3c7; font-weight: 500;">
+            I've analyzed your performance data. Your GPA trend shows steady improvement, with stronger performance in theory-based courses. Consider focusing more on calculation-intensive subjects for balanced growth.
+          </div>
+        `;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 1000);
+      
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      showToast(`Uploading ${file.name}...`, '#7c3aed');
+      
+      setTimeout(() => {
+        showToast('File processed successfully!', '#059669');
+        const messagesContainer = document.getElementById('chat-messages');
+        messagesContainer.innerHTML += `
+          <div class="fade-in p-3 rounded-lg mr-auto max-w-[70%]" style="background: #fffbeb; color: #78350f; border: 2px solid #fef3c7; font-weight: 500;">
+            📄 Processed: ${file.name}<br>
+            Successfully extracted transcript data and updated analytics.
+          </div>
+        `;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 1500);
+    }
+
+    /**
+     * initializeCharts
+     * Called once on page load (or manually) to initialize all
+     * performance-analytics visuals. If `analyticsBlank` is true the
+     * canvases are cleared and left empty (useful for 'coming soon' UI).
+     */
+    function initializeCharts() {
+      drawGpaCgpaBarChart(analyticsBlank);
+      drawPerformanceHeatmap(analyticsBlank);
+      drawGradeCompositionPies(analyticsBlank);
+      drawStudyTimeAnalytics(analyticsBlank);
+    }
+
+    // Draw a grouped bar chart showing GPA and CGPA per semester
+    function drawGpaCgpaBarChart(blank = false) {
+      const canvas = document.getElementById('gpa-cgpa-bar-chart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      if (blank) return;
+
+      // Build per-semester GPA and CGPA arrays. These are used to draw
+      // grouped bars (GPA vs CGPA) across the semesters x-axis.
+      const gpaData = semesters.map(sem => {
+        const results = allRecords.filter(r => r.type === 'result' && r.semester === sem);
+        return calculateGPA(results);
+      });
+
+      const cgpaData = semesters.map((sem, idx) => {
+        const resultsUpToSem = allRecords.filter(r => {
+          const si = semesters.indexOf(r.semester);
+          return r.type === 'result' && si >= 0 && si <= idx;
+        });
+        return calculateCGPA(resultsUpToSem);
+      });
+
+      // Chart padding and drawable area size. We reserve space for axis
+      // labels and legend by subtracting padding from both sides.
+      const padding = 50;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+      const groupCount = gpaData.length;
+      const groupWidth = groupCount > 0 ? chartWidth / groupCount : chartWidth;
+
+      const maxY = 5.0;
+
+      // Draw Y grid and labels
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(width - padding, y); ctx.stroke();
+        ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText((5.0 - i).toFixed(1), padding - 10, y + 4);
+      }
+
+      // Draw bars: two bars per group (GPA, CGPA)
+      gpaData.forEach((gpa, idx) => {
+        const cgpa = cgpaData[idx];
+        const xGroup = padding + groupWidth * idx;
+        const barWidth = Math.max(8, groupWidth * 0.28);
+
+        // GPA bar (left)
+        // Convert GPA (0..maxY) into a pixel height for the bar.
+        // Example: if maxY=5 and chartHeight=200, a GPA of 4 -> (4/5)*200 = 160px tall.
+        const gpaH = (gpa / maxY) * chartHeight;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(xGroup + groupWidth * 0.15, padding + (chartHeight - gpaH), barWidth, gpaH);
+
+        // CGPA bar (right)
+        const cgpaH = (cgpa / maxY) * chartHeight;
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(xGroup + groupWidth * 0.55, padding + (chartHeight - cgpaH), barWidth, cgpaH);
+
+        // x labels (we use a short semester label like '100lvl' for space)
+        ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(semesters[idx].split(' ')[0], xGroup + groupWidth / 2, height - 20);
+      });
+
+      // Legend
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(width - padding - 140, padding - 30, 12, 12);
+      ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif'; ctx.fillText('GPA', width - padding - 120, padding - 20);
+      ctx.fillStyle = '#475569'; ctx.fillRect(width - padding - 60, padding - 30, 12, 12);
+      ctx.fillStyle = '#64748b'; ctx.fillText('CGPA', width - padding - 38, padding - 20);
+    }
+
+    // Draw performance heatmap: semesters across x, courses down y, value = grade point
+    function drawPerformanceHeatmap(blank = false) {
+      const canvas = document.getElementById('performance-heatmap');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width; const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      if (blank) return;
+
+      // Build list of unique courses (limit to 12 for readability)
+      const courseSet = new Set(allRecords.filter(r => r.type === 'result').map(r => r.courseCode));
+      const courses = Array.from(courseSet).slice(0, 12);
+      const cols = semesters.length; const rows = courses.length;
+      if (rows === 0 || cols === 0) return;
+
+      const padding = 40;
+      const cellW = (width - padding * 2) / cols;
+      const cellH = (height - padding * 2) / rows;
+
+      // Draw cells
+      courses.forEach((course, r) => {
+        semesters.forEach((sem, c) => {
+          const record = allRecords.find(rr => rr.type === 'result' && rr.courseCode === course && rr.semester === sem);
+          const value = record ? gradeToPoint(record.grade) : 0;
+            // Map 0..5 to a simple red->green color scale so higher grades are
+            // greener. `t` is the normalized grade (0.0 -> 0, 5.0 -> 1.0). This
+            // is an easy-to-read visual cue for beginners: red = low, green = high.
+            const t = value / 5.0;
+          const color = `rgb(${Math.round(220*(1-t))}, ${Math.round(80+160*t)}, ${Math.round(80)})`;
+          const x = padding + c * cellW; const y = padding + r * cellH;
+          ctx.fillStyle = color; ctx.fillRect(x, y, cellW - 2, cellH - 2);
+          ctx.fillStyle = '#ffffff'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(value.toFixed(1), x + cellW/2, y + cellH/2 + 4);
+        });
+        // course labels along left
+        ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'; ctx.fillText(courses[r], padding - 8, padding + r*cellH + cellH/2 + 4);
+      });
+
+      // semester labels along bottom
+      ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      semesters.forEach((sem, c) => {
+        const x = padding + c * cellW + cellW/2; ctx.fillText(sem.split(' ')[0], x, height - 8);
+      });
+    }
+
+    // Create 5 pie charts for credit units: 0,1,2,3,3+
+    function drawGradeCompositionPies(blank = false) {
+      const categories = [0,1,2,3,'4+'];
+      categories.forEach(cat => {
+        const id = cat === '4+' ? 'pie-credit-4plus' : `pie-credit-${cat}`;
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d'); const w = canvas.width; const h = canvas.height; ctx.clearRect(0,0,w,h);
+        if (blank) return;
+        // Filter records by credit unit category
+        // For each credit-unit bucket, compute the counts of A/B/C/D/F and
+        // draw a small pie chart representing the distribution.
+        const records = allRecords.filter(r => r.type === 'result' && ((cat === '4+' && r.creditUnits >= 4) || r.creditUnits === cat));
+        const gradeCounts = { A:0,B:0,C:0,D:0,F:0 };
+        records.forEach(r => { const g=r.grade; if (gradeCounts[g] !== undefined) gradeCounts[g]++; });
+        const total = Object.values(gradeCounts).reduce((a,b)=>a+b,0) || 1;
+        const colors = { A:'#059669', B:'#0891b2', C:'#f59e0b', D:'#f97316', F:'#dc2626' };
+        let start = -Math.PI/2;
+        // Draw each pie slice: angle is proportion of this grade count.
+        // Example: if 50% of grades are 'A' then angle = 0.5 * 2PI (half the circle).
+        Object.keys(gradeCounts).forEach(k=>{
+          const v = gradeCounts[k]; const angle = (v/total) * Math.PI*2;
+          ctx.beginPath(); ctx.moveTo(w/2,h/2); ctx.fillStyle = colors[k]; ctx.arc(w/2,h/2, Math.min(w,h)/2 - 4, start, start+angle); ctx.fill();
+          start += angle;
+        });
+        // center text
+        ctx.fillStyle = '#0f172a'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText(cat === '4+' ? '3+' : String(cat), w/2, h/2 - 6);
+        ctx.fillStyle = '#64748b'; ctx.font='9px sans-serif'; ctx.fillText(`${Math.round((gradeCounts.A/total)*100)}% A`, w/2, h/2 + 6);
+      });
+    }
+
+    // Study time analytics: scatter plot hours vs grade point
+    function drawStudyTimeAnalytics(blank = false) {
+      const canvas = document.getElementById('study-time-chart'); if (!canvas) return;
+      const ctx = canvas.getContext('2d'); const width = canvas.width; const height = canvas.height; ctx.clearRect(0,0,width,height);
+      if (blank) return;
+      // Scatter plot: each point is a course (studyHours vs grade point).
+      // Beginners: X-axis = number of hours studied, Y-axis = grade points (0-5).
+      // A point near the top-right means a course that was studied for many
+      // hours and achieved a high grade. This simple plot helps spot trends.
+      const records = allRecords.filter(r => r.type === 'result');
+      if (records.length === 0) return;
+      const padding = 50; const chartW = width - padding*2; const chartH = height - padding*2;
+      const maxHours = Math.max(...records.map(r => r.studyHours || 0), 1);
+      const maxGrade = 5.0;
+      // axes
+      ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(padding, padding+chartH); ctx.lineTo(padding+chartW, padding+chartH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, padding+chartH); ctx.stroke();
+      // points
+      records.forEach(r => {
+        const x = padding + (r.studyHours / maxHours) * chartW;
+        const y = padding + chartH - (gradeToPoint(r.grade) / maxGrade) * chartH;
+        ctx.beginPath(); ctx.fillStyle = '#0f172a'; ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#64748b'; ctx.font='11px sans-serif'; ctx.textAlign='left'; ctx.fillText(r.courseCode, x+8, y+4);
+      });
+      // labels
+      ctx.fillStyle='#64748b'; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.fillText('Study Hours →', padding + chartW/2, height - 10);
+      ctx.save(); ctx.translate(14, padding + chartH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('Grade (GPA)', 0,0); ctx.restore();
+    }
+
+    function drawGPATrendChart(blank = false) {
+      const canvas = document.getElementById('gpa-trend-chart');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      ctx.clearRect(0, 0, width, height);
+      if (blank) return;
+      
+      // Calculate GPA for each semester from sample data
+      const gpaData = [];
+      semesters.forEach(sem => {
+        const results = allRecords.filter(r => r.type === 'result' && r.semester === sem);
+        gpaData.push(calculateGPA(results));
+      });
+      
+      // Derive short labels from the semesters array; keep them aligned with gpaData
+      const labels = semesters.map(s => s.split(' ')[0]);
+      
+      const padding = 50;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+      const stepX = gpaData.length > 1 ? chartWidth / (gpaData.length - 1) : chartWidth;
+      const maxY = 5.0;
+      
+      // Draw grid lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+        
+        // Y-axis labels
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText((5.0 - i).toFixed(1), padding - 10, y + 4);
+      }
+      
+      // Draw line
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      gpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+      
+      // Draw gradient area under line
+      const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
+      gradient.addColorStop(0, 'rgba(15, 23, 42, 0.3)');
+      gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+      
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(padding, height - padding);
+      gpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        ctx.lineTo(x, y);
+      });
+      ctx.lineTo(width - padding, height - padding);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw points
+      ctx.fillStyle = '#0f172a';
+      gpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      // X-axis labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      labels.forEach((label, index) => {
+        const x = padding + stepX * index;
+        ctx.fillText(label, x, height - 20);
+      });
+    }
+
+    function drawCGPATrendChart(blank = false) {
+      const canvas = document.getElementById('cgpa-trend-chart');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      ctx.clearRect(0, 0, width, height);
+      if (blank) return;
+      
+      // Calculate cumulative CGPA up to each semester
+      const cgpaData = [];
+      semesters.forEach((sem, idx) => {
+        const resultsUpToSem = allRecords.filter(r => {
+          const semIndex = semesters.indexOf(r.semester);
+          return r.type === 'result' && semIndex >= 0 && semIndex <= idx;
+        });
+        cgpaData.push(calculateCGPA(resultsUpToSem));
+      });
+      
+      // Derive short labels from the semesters array; keep them aligned with cgpaData
+      const labels = semesters.map(s => s.split(' ')[0]);
+      
+      const padding = 50;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+      const stepX = cgpaData.length > 1 ? chartWidth / (cgpaData.length - 1) : chartWidth;
+      const maxY = 5.0;
+      
+      // Draw grid lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+        
+        // Y-axis labels
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText((5.0 - i).toFixed(1), padding - 10, y + 4);
+      }
+      
+      // Draw line
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      cgpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+      
+      // Draw gradient area under line
+      const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
+      gradient.addColorStop(0, 'rgba(71, 85, 105, 0.3)');
+      gradient.addColorStop(1, 'rgba(71, 85, 105, 0)');
+      
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(padding, height - padding);
+      cgpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        ctx.lineTo(x, y);
+      });
+      ctx.lineTo(width - padding, height - padding);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw points
+      ctx.fillStyle = '#475569';
+      cgpaData.forEach((value, index) => {
+        const x = padding + stepX * index;
+        const y = padding + chartHeight - (value / maxY) * chartHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      // X-axis labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      labels.forEach((label, index) => {
+        const x = padding + stepX * index;
+        ctx.fillText(label, x, height - 20);
+      });
+    }
+
+    function showToast(message, color) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = color;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    const _chatInput = document.getElementById('chat-input');
+    if (_chatInput) {
+      _chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

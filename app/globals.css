@@ -58,6 +58,19 @@ body {
   gap: 10px;
   margin-bottom: 20px;
 }
+
+@keyframes float-card {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float-card {
+  animation: float-card 3s ease-in-out infinite;
+}
 .selected-interests {
   background-color: #eff6ff;
   border-radius: 8px;
