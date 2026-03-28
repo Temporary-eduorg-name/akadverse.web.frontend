@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useMarketplaceActivity } from "@/src/context/MarketplaceActivityContext";
 
 interface Notification {
   id: string;
@@ -24,32 +25,26 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { setScope, setBusinessId, sellerActivity, registerOnUpdate } = useMarketplaceActivity();
+
+  useEffect(() => {
+    setScope("seller");
+    setBusinessId(businessId);
+  }, [setScope, setBusinessId, businessId]);
+
   useEffect(() => {
     fetchNotifications();
   }, [businessId]);
 
+  // Refresh notifications on SSE update
+  const fetchNotificationsCallback = useCallback(() => {
+    fetchNotifications();
+    if (onActivityChange) onActivityChange();
+  }, [onActivityChange]);
   useEffect(() => {
-    if (!businessId) return;
-
-    const eventSource = new EventSource(
-      `/api/marketplace/realtime/events?scope=seller&businessId=${businessId}`
-    );
-
-    const onUpdate = () => {
-      fetchNotifications();
-    };
-
-    eventSource.addEventListener("update", onUpdate);
-
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.removeEventListener("update", onUpdate);
-      eventSource.close();
-    };
-  }, [businessId]);
+    const unregister = registerOnUpdate(fetchNotificationsCallback);
+    return unregister;
+  }, [registerOnUpdate, fetchNotificationsCallback]);
 
   const fetchNotifications = async () => {
     try {

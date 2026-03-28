@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useMarketplaceActivity } from "../context/MarketplaceActivityContext";
 
 interface Order {
   id: string;
@@ -38,11 +39,29 @@ interface Order {
 
 interface OrdersComponentProps {
   onActivityChange?: () => void;
+  businessId:string
 }
 
-export default function OrdersComponent({ onActivityChange }: OrdersComponentProps) {
-  const params = useParams();
-  const businessId = params.id as string;
+export default function OrdersComponent({ onActivityChange,businessId }: OrdersComponentProps) {
+  const { setScope, setBusinessId, sellerActivity, registerOnUpdate } = useMarketplaceActivity();
+
+  useEffect(() => {
+    setScope("seller");
+    setBusinessId(businessId);
+  }, [setScope, setBusinessId, businessId]);
+
+  useEffect(() => {
+    fetchOrders(true);
+  }, [businessId]);
+  // Refresh orders on SSE update
+  const fetchOrdersCallback = useCallback(() => {
+    fetchOrders();
+    if (onActivityChange) onActivityChange();
+  }, [onActivityChange]);
+  useEffect(() => {
+    const unregister = registerOnUpdate(fetchOrdersCallback);
+    return unregister;
+  }, [registerOnUpdate, fetchOrdersCallback]);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,8 +69,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
   const [activeSubTab, setActiveSubTab] = useState<"pending" | "processing" | "shipped" | "delivered" | "disputed">("pending");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [otpInput, setOtpInput] = useState<{ [orderId: string]: string }>({});
-  const [deliveryOtpInput, setDeliveryOtpInput] = useState<{ [orderId: string]: string }>({});    
-   const [deliveryAttemptsLeft, setDeliveryAttemptsLeft] = useState<{ [orderId: string]: number }>({});  const [attempts,setattemps ] = useState<number>(5)
+  const [deliveryOtpInput, setDeliveryOtpInput] = useState<{ [orderId: string]: string }>({});
+  const [deliveryAttemptsLeft, setDeliveryAttemptsLeft] = useState<{ [orderId: string]: number }>({}); const [attempts, setattemps] = useState<number>(5)
   const previousRealtimeCounts = useRef<{ pending: number; processing: number; shipped: number } | null>(null);
 
   useEffect(() => {
@@ -304,8 +323,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
         <button
           onClick={() => setActiveSubTab("pending")}
           className={`px-4 py-2 font-medium transition-colors ${activeSubTab === "pending"
-              ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
-              : "text-zinc-600 dark:text-zinc-400"
+            ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
+            : "text-zinc-600 dark:text-zinc-400"
             }`}
         >
           Pending Orders ({orders.filter((o) => o.status === "pending").length})
@@ -313,8 +332,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
         <button
           onClick={() => setActiveSubTab("processing")}
           className={`px-4 py-2 font-medium transition-colors ${activeSubTab === "processing"
-              ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
-              : "text-zinc-600 dark:text-zinc-400"
+            ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
+            : "text-zinc-600 dark:text-zinc-400"
             }`}
         >
           Processing ({orders.filter((o) => o.status === "processing").length})
@@ -322,8 +341,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
         <button
           onClick={() => setActiveSubTab("shipped")}
           className={`px-4 py-2 font-medium transition-colors ${activeSubTab === "shipped"
-              ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
-              : "text-zinc-600 dark:text-zinc-400"
+            ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
+            : "text-zinc-600 dark:text-zinc-400"
             }`}
         >
           Shipped ({orders.filter((o) => o.status === "shipped").length})
@@ -331,8 +350,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
         <button
           onClick={() => setActiveSubTab("delivered")}
           className={`px-4 py-2 font-medium transition-colors ${activeSubTab === "delivered"
-              ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
-              : "text-zinc-600 dark:text-zinc-400"
+            ? "text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white"
+            : "text-zinc-600 dark:text-zinc-400"
             }`}
         >
           Delivered ({orders.filter((o) => o.status === "delivered").length})
@@ -340,8 +359,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
         <button
           onClick={() => setActiveSubTab("disputed")}
           className={`px-4 py-2 font-medium transition-colors ${activeSubTab === "disputed"
-              ? "text-yellow-600 dark:text-yellow-400 border-b-2 border-yellow-600 dark:border-yellow-400"
-              : "text-zinc-600 dark:text-zinc-400"
+            ? "text-yellow-600 dark:text-yellow-400 border-b-2 border-yellow-600 dark:border-yellow-400"
+            : "text-zinc-600 dark:text-zinc-400"
             }`}
         >
           Disputed ({orders.filter((o) => o.isDisputed && o.status === "disputed").length})
@@ -381,8 +400,8 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
                 </div>
                 <div
                   className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === "pending"
-                      ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
-                      : "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                    ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
+                    : "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
                     }`}
                 >
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -409,7 +428,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
                         {item.selectedVariants && (
                           <span className="text-xs text-zinc-500 ml-2">
                             {/* ({JSON.parse(item.selectedVariants).map((v: any) => v.value).join(", ")}) */}
-                            {Object.entries(JSON.parse(item.selectedVariants)).map(([key,value]) => `${key}: ${value}`).join(',')}
+                            {Object.entries(JSON.parse(item.selectedVariants)).map(([key, value]) => `${key}: ${value}`).join(',')}
                           </span>
                         )}
                       </span>

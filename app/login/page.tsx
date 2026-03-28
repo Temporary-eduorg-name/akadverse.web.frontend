@@ -158,7 +158,7 @@ const LoginPage = () => {
           </form>
 
           {/* Role Section */}
-          <div className={`border rounded-2xl p-6 ${isDarkMode ? 'bg-[#171717] border-[#262626]' : 'bg-white border-gray-200'}`}>
+          {/* <div className={`border rounded-2xl p-6 ${isDarkMode ? 'bg-[#171717] border-[#262626]' : 'bg-white border-gray-200'}`}>
             <h3 className={`text-xs font-semibold uppercase tracking-widest mb-6 ${isDarkMode ? 'text-[#737373]' : 'text-gray-500'}`}>
               Choose View Role
             </h3>
@@ -191,7 +191,7 @@ const LoginPage = () => {
             <p className={`mt-4 text-xs ${isDarkMode ? 'text-[#8a8a8a]' : 'text-gray-500'}`}>
               Your selected role decides which dashboard opens immediately after login.
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
 

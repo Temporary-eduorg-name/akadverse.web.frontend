@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/src/context/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -36,6 +37,7 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
     onWidthChange?.(sidebarCollapsed ? 64 : 256);
   }, [collapsed, sidebarCollapsed, onWidthChange]);
 
+  const { user } = useAuth();
   const navItems = [
     { id: 'dashboard', label: 'Student Dashboard', icon: LayoutDashboard, path: '/studashboard/main-menu/student-dashboard', subItems: null },
     { id: 'marketplace', label: 'Marketplace', icon: BookOpen, path: '/studashboard/main-menu/marketplace', subItems: null },
@@ -71,6 +73,7 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
     { id: 'schedule', label: 'Schedule', icon: Calendar, path: '/studashboard/main-menu/essentials/schedule-manager' },
     { id: 'attendance', label: 'Attendance', icon: CheckCircle, path: '/studashboard/main-menu/essentials/attendance' },
     { id: 'suggestions', label: 'Ideas', icon: Lightbulb, path: '/studashboard/main-menu/essentials/suggestions' },
+
   ];
 
   if (collapsed) {
@@ -119,7 +122,7 @@ const DashboardSidebar = ({ collapsed = false, className = '', onWidthChange }: 
 
   return (
     <>
-      <nav className={`fixed bottom-0 left-0 right-0 h-14 border-t border-gray-200 bg-white z-30 lg:hidden ${className}`}>
+      <nav className={`fixed bottom-0 left-0 right-0 h-14 border-t border-gray-200 bg-white z-30 lg:hidden flex items-center justify-center${className}`}>
         <div className="flex h-full items-center gap-1 overflow-x-auto px-2">
           {mobileItems.map((item) => {
             const active = isActive(item.path);

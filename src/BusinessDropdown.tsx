@@ -26,7 +26,7 @@ export default function BusinessDropdown({ hasActivity = false }: BusinessDropdo
   return (
     <button
       onClick={handleClick}
-      className="relative text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+      className="relative text-zinc-700 hover:text-zinc-900 transition-colors"
     >
       My Businesses
       {hasActivity && (

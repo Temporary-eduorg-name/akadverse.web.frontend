@@ -316,7 +316,7 @@ const Page = () => {
 
         <div
           style={mainStyle}
-          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-6 lg:p-7 min-w-0"
+          className="p-7 lg:pt-[70px] overflow-y-auto ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-6  min-w-0"
         >
           <div className="w-full">
             <div className="mb-6 flex items-start justify-between">

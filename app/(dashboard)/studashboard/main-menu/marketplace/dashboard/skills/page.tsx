@@ -6,6 +6,7 @@ import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import dynamic from "next/dynamic";
 import SkillOffersManager from "@/components/SkillOffersManager";
+import { useMarketplaceActivity } from "@/src/context/MarketplaceActivityContext";
 
 // Dynamically import chart components
 const RevenueChart = dynamic(
@@ -204,63 +205,38 @@ export default function SkillsDashboardMainPage() {
         }
     }, [revenuePeriod, selectedYear, skills.length]);
 
+    // import { useMarketplaceActivity } from "@/context/MarketplaceActivityContext";
+    const { setScope, registerOnUpdate, skillOwnerActivity } = useMarketplaceActivity();
+
     useEffect(() => {
-        const setupRealtimeListener = () => {
-            try {
-                const eventSource = new EventSource("/api/marketplace/realtime/events?scope=skill_owner");
-                eventSourceRef.current = eventSource;
-
-                eventSource.addEventListener("update", (event) => {
-                    const data = JSON.parse((event as MessageEvent).data);
-
-                    setOfferStats((prev) => ({
-                        ...prev,
-                        pending: data.pendingOffers ?? prev.pending,
-                        negotiated: data.negotiatedOffers ?? prev.negotiated,
-                        ongoing: data.ongoingOffers ?? prev.ongoing,
-                    }));
-                });
-
-                eventSource.addEventListener("error", (error) => {
-                    console.error("Skill dashboard realtime listener error:", error);
-                    eventSource.close();
-                    eventSourceRef.current = null;
-                });
-            } catch (error) {
-                console.error("Failed to setup skill dashboard realtime listener:", error);
-            }
-        };
-
-        setupRealtimeListener();
-
-        return () => {
-            if (eventSourceRef.current) {
-                eventSourceRef.current.close();
-                eventSourceRef.current = null;
-            }
-        };
+        setScope("skill_owner");
+        const unregister = registerOnUpdate(() => {
+            // Use skillOwnerActivity to update your state as needed
+            // Example: setOfferStats({ ... })
+        });
+        return unregister;
     }, []);
 
     if (loading) {
         return (
-            <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen flex items-center justify-center">
+            <div className="flex-1 bg-zinc-50 min-h-screen flex items-center justify-center">
                 <LoadingSpinner size="lg" />
             </div>
         );
     }
 
     return (
-        <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen py-12 px-4">
+        <div className="flex-1 bg-zinc-50 min-h-screen py-12 px-4">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
+                        <h1 className="text-4xl font-bold text-zinc-900">
                             Skills Dashboard
                         </h1>
                         <Link
                             href="/studashboard/main-menu/marketplace/add-skill"
-                            className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-lg font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+                            className="bg-zinc-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-zinc-700 transition-colors"
                         >
                             + Add Skill
                         </Link>
@@ -269,38 +245,38 @@ export default function SkillsDashboardMainPage() {
                     {/* Stats Cards */}
                     {stats && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 border border-zinc-200 dark:border-zinc-700">
-                                <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-2">
+                            <div className="bg-white rounded-lg shadow p-6 border border-zinc-200">
+                                <p className="text-zinc-600 text-sm mb-2">
                                     Total Skills
                                 </p>
-                                <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+                                <p className="text-3xl font-bold text-zinc-900">
                                     {skills.length}
                                 </p>
                             </div>
 
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 border border-zinc-200 dark:border-zinc-700">
-                                <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-2">
+                            <div className="bg-white rounded-lg shadow p-6 border border-zinc-200">
+                                <p className="text-zinc-600 text-sm mb-2">
                                     Total Offers
                                 </p>
-                                <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+                                <p className="text-3xl font-bold text-zinc-900">
                                     {stats.totalOffers}
                                 </p>
                             </div>
 
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 border border-zinc-200 dark:border-zinc-700">
-                                <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-2">
+                            <div className="bg-white rounded-lg shadow p-6 border border-zinc-200">
+                                <p className="text-zinc-600 text-sm mb-2">
                                     Total Revenue
                                 </p>
-                                <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+                                <p className="text-3xl font-bold text-zinc-900">
                                     ₦{stats.totalRevenue.toLocaleString()}
                                 </p>
                             </div>
 
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 border border-zinc-200 dark:border-zinc-700">
-                                <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-2">
+                            <div className="bg-white  rounded-lg shadow p-6 border border-zinc-200">
+                                <p className="text-zinc-600 text-sm mb-2">
                                     Pending Offers
                                 </p>
-                                <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                                <p className="text-3xl font-bold text-red-600">
                                     {offerStats.pending}
                                 </p>
                             </div>

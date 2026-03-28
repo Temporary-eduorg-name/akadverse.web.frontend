@@ -87,127 +87,77 @@ export default function NewSkillsCarousel() {
         />
       )}
 
-      <div className="w-full py-12 bg-white dark:bg-zinc-900">
+      <div className="w-full py-12 ">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8 text-center">
-            New Skills
-          </h2>
+          <div className="mb-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-slate-900 mb-2">New Skills</h2>
+            </div>
+          </div>
 
           <div className="relative">
             <Swiper
-              modules={[Autoplay, Navigation]}
-              spaceBetween={20}
+              modules={[Autoplay]}
+              spaceBetween={16}
               slidesPerView={1}
-              navigation={true}
+              loop
               autoplay={{
-                delay: 0,
+                delay: 3000,
                 disableOnInteraction: false,
               }}
-              speed={5000}
-              loop={true}
-              allowTouchMove={true}
-              freeMode
+              speed={500}
               breakpoints={{
-                640: {
-                  slidesPerView: 2,
-                  spaceBetween: 20,
-                },
-                768: {
-                  slidesPerView: 3,
-                  spaceBetween: 24,
-                },
-                1024: {
-                  slidesPerView: 4,
-                  spaceBetween: 30,
-                },
+                640: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 },
               }}
               className="skill-carousel"
             >
               {skills.map((skill) => (
                 <SwiperSlide key={skill.id}>
                   <div
-                    className="relative bg-zinc-50 dark:bg-zinc-800 rounded-lg shadow-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:shadow-xl transition-shadow cursor-pointer h-full"
+                    className="group flex flex-col w-[260px] bg-white rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
                     onMouseEnter={() => setHoveredSkill(skill.id)}
                     onMouseLeave={() => setHoveredSkill(null)}
                   >
-                    {/* Profile Picture */}
-                    <div className="relative">
+                    {/* Skill Image with Hover Overlay */}
+                    <div className="aspect-[4/3] relative overflow-hidden bg-slate-100">
                       {skill.profilePicture ? (
                         <img
                           src={skill.profilePicture}
                           alt={skill.name}
-                          className="w-full h-48 object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-t-2xl"
                         />
                       ) : (
-                        <div className="w-full h-48 bg-gradient-to-br from-blue-200 to-purple-300 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-200 to-purple-300">
                           <span className="text-4xl font-bold text-white">
                             {skill.displayName.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
-
-                      {/* Expertise Badge */}
-                      <div className="absolute top-2 right-2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        {skill.expertiseLevel.charAt(0).toUpperCase() + skill.expertiseLevel.slice(1)}
-                      </div>
-
-                      {/* View Details Overlay */}
                       {hoveredSkill === skill.id && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedSkill(skill);
                               setModalOpen(true);
                             }}
-                            className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-6 py-2 rounded-lg font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                            className="bg-white text-zinc-900 px-6 py-2 rounded-lg font-semibold hover:bg-zinc-100 transition-colors"
                           >
                             View Details
                           </button>
                         </div>
                       )}
                     </div>
-
                     {/* Skill Details */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 line-clamp-1">
-                        {skill.name}
-                      </h3>
-
-                      <p className="text-sm text-blue-600 dark:text-blue-400 mb-2 font-medium">
-                        by {skill.displayName}
-                      </p>
-
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
-                        {skill.description}
-                      </p>
-
-                      <div className="flex justify-between items-center mb-3">
-                        <div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Experience
-                          </p>
-                          <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                            {skill.yearsOfExperience}+ years
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Views
-                          </p>
-                          <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                            {skill.visitors}
-                          </p>
-                        </div>
+                    <div className="flex-1 flex flex-col justify-between p-4">
+                      <div>
+                        <h4 className="font-bold text-slate-900 truncate mb-1" title={skill.name}>{skill.name}</h4>
+                        <p className="text-xs text-slate-500 font-medium truncate mb-2">by {skill.displayName}</p>
                       </div>
-
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3">
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-                          Availability: <span className="text-zinc-700 dark:text-zinc-300">{skill.serviceDays}</span>
-                        </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {skill._count.reviews} reviews
-                        </p>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="font-bold text-indigo-600 text-lg">₦{skill.startingPrice.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>

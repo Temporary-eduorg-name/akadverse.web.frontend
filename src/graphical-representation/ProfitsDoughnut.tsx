@@ -10,8 +10,8 @@
 
 // export default function ProfitsDoughnut({ data }: ProfitsDoughnutProps) {
 //   return (
-//     <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-//       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">Total Profits</h2>
+//     <div className="bg-white rounded-lg shadow-lg p-6">
+//       <h2 className="text-xl font-semibold text-zinc-900 mb-6">Total Profits</h2>
 
 //       <ResponsiveContainer width="100%" height={400}>
 //         <PieChart>

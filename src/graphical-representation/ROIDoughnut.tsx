@@ -10,8 +10,8 @@ const COLORS = ["#10b981", "#f59e0b", "#ef4444"];
 
 export default function ROIDoughnut({ data }: ROIDoughnutProps) {
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">ROI</h2>
+        <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-zinc-900 mb-6">ROI</h2>
 
             <ResponsiveContainer width="100%" height={400}>
                 <PieChart>

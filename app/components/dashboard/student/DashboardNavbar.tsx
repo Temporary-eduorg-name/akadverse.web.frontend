@@ -16,9 +16,11 @@ const MAIN_MENU_PATHS = [
 const DashboardNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const isMainMenuActive = MAIN_MENU_PATHS.some((basePath) => pathname.startsWith(basePath));
 
+  const ShieldCheck = require('lucide-react').ShieldCheck;
   const centerTabs = [
     {
       id: 'productivity',
@@ -52,10 +54,18 @@ const DashboardNavbar = () => {
       label: 'Main Menu',
       activeColor: 'text-purple-500', // purple
     },
+
+    // Admin tab for super-admins
+    ...(user?.role === 'super-admin' ? [{
+      id: 'admin',
+      icon: ShieldCheck,
+      path: '/studashboard/admin',
+      isActive: pathname.startsWith('/studashboard/admin'),
+      label: 'Admin',
+      activeColor: 'text-sky-600',
+    }] : []),
   ];
 
-
-  const { user } = useAuth();
   // Helper to capitalize first letter
   const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   const displayName = user ? `${capitalize(user.firstName)} ${capitalize(user.lastName)}` : '';
@@ -74,23 +84,32 @@ const DashboardNavbar = () => {
 
   useEffect(() => {
     if (!user) return;
-    // Connect to SSE endpoint for notifications
-    const es = new window.EventSource('/api/marketplace/realtime/events?scope=student');
-    eventSourceRef.current = es;
-    es.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        // Example: { type: 'order', message: 'New order received', ... }
-        setNotifications((prev) => [data, ...prev]);
-        setUnread(true);
-      } catch {}
-    };
-    es.onerror = () => {
-      es.close();
-    };
-    return () => {
-      es.close();
-    };
+      // Clean up any previous EventSource before creating a new one
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+
+      const es = new window.EventSource('/api/marketplace/realtime/events?scope=student');
+      eventSourceRef.current = es;
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          setNotifications((prev) => [data, ...prev]);
+          setUnread(true);
+        } catch {}
+      };
+      es.onerror = () => {
+        es.close();
+      };
+
+      // Cleanup on unmount
+      return () => {
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+      };
   }, [user]);
 
   // Close dropdown on outside click
@@ -107,7 +126,7 @@ const DashboardNavbar = () => {
   }, [dropdownOpen]);
 
   return (
-    <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
+    <div className="border-b border-gray-200 bg-white fixed w-full top-0 z-40">
       <div className="flex items-center justify-between px-3 py-3 sm:px-4 lg:hidden">
         <div
           className="flex min-w-0 items-center gap-2 cursor-pointer"

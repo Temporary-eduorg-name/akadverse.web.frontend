@@ -46,9 +46,9 @@ export default function PaymentVerifyPage() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8 text-center">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
+    <div className="min-h-screen bg-zinc-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <h1 className="text-2xl font-bold text-zinc-900 mb-4">
           {status === "loading"
             ? "Processing Payment"
             : status === "success"
@@ -56,7 +56,7 @@ export default function PaymentVerifyPage() {
             : "Payment Failed"}
         </h1>
 
-        <p className="text-zinc-600 dark:text-zinc-400 mb-6">{message}</p>
+        <p className="text-zinc-600 mb-6">{message}</p>
 
         {status === "loading" && (
           <div className="mb-6">
@@ -67,7 +67,7 @@ export default function PaymentVerifyPage() {
         <div className="space-y-3">
           <button
             onClick={() => router.push("/studashboard/main-menu/marketplace")}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+            className="w-full bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-zinc-700 transition-colors"
           >
             Continue Shopping
           </button>
@@ -75,7 +75,7 @@ export default function PaymentVerifyPage() {
           {status === "error" && (
             <button
               onClick={() => router.push("/studashboard/main-menu/marketplace/checkout")}
-              className="w-full bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-2 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+              className="w-full bg-zinc-200 text-zinc-900 px-6 py-2 rounded-md hover:bg-zinc-300 transition-colors"
             >
               Return to Checkout
             </button>

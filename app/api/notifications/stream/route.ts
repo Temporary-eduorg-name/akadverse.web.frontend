@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
+      let closed = false;
       const send = (event: string, data: unknown) => {
+        if (closed) return;
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
@@ -51,6 +53,7 @@ export async function GET(req: NextRequest) {
       }, 10000);
 
       const close = () => {
+        closed = true;
         clearInterval(interval);
         try {
           controller.close();

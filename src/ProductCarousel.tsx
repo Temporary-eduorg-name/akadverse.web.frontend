@@ -118,141 +118,98 @@ export default function ProductCarousel() {
         />
       )}
 
-      <div className="w-full py-12 bg-white dark:bg-zinc-900">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8 text-center">
-          New Products
-        </h2>
-
-        <div className="relative">
-          <Swiper
-          modules={[Autoplay, Navigation]}
-          spaceBetween={20}
-          slidesPerView={1}
-          navigation={true}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-          }}
-          speed={5000}
-          loop={true}
-          allowTouchMove={true}
-          freeMode
-          breakpoints={{
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20,
-            },
-            768: {
-              slidesPerView: 3,
-              spaceBetween: 24,
-            },
-            1024: {
-              slidesPerView: 4,
-              spaceBetween: 30,
-            },
-          }}
-          className="product-carousel"
-        >
-          {products.map((product) => (
-            <SwiperSlide key={product.id}>
-              <div
-                className="bg-zinc-50 dark:bg-zinc-800 rounded-lg shadow-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:shadow-xl transition-shadow"
-              >
-                {/* Product Image */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setHoveredProduct(product.id)}
-                  onMouseLeave={() => setHoveredProduct(null)}
-                >
-                  {product.secure_url || product.image ? (
-                    <img
-                      src={product.secure_url || product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center">
-                      <span className="text-zinc-400 dark:text-zinc-500 text-sm">
-                        No Image
-                      </span>
-                    </div>
-                  )}
-
-                  {hoveredProduct === product.id && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <button
-                        onClick={(e) =>
-                          handleViewProductDetails<ProductDetailsResponse>(product.id, e, {
-                            onLoadStart: (id) => setLoadingDetails(id),
-                            onLoadEnd: () => setLoadingDetails(null),
-                            onSuccess: (data) => {
-                              setProductData(data.product);
-                              setModalOpen(true);
-                            },
-                            onError: () => {},
-                          })
-                        }
-                        disabled={loadingDetails === product.id}
-                        className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-6 py-3 rounded-lg font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      <div className="w-full py-8 lg:my-14">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="mb-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-slate-900 mb-2">New Products</h2>
+            </div>
+          </div>
+          <div className="relative">
+            <Swiper
+              modules={[Autoplay, Navigation]}
+              spaceBetween={16}
+              slidesPerView={1}
+              navigation
+              loop
+              autoplay={{
+                delay: 3000,
+                disableOnInteraction: false,
+              }}
+              speed={500}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 },
+              }}
+              className="product-carousel"
+            >
+              {products.map((product) => (
+                <>
+                  <SwiperSlide key={product.id} className="!w-[260px] mx-2">
+                    <div
+                      className="group flex flex-col w-[260px] bg-white rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
+                    >
+                      {/* Product Image with Hover Overlay */}
+                      <div
+                        className="aspect-[4/3] relative overflow-hidden bg-slate-100"
+                        onMouseEnter={() => setHoveredProduct(product.id)}
+                        onMouseLeave={() => setHoveredProduct(null)}
                       >
-                        {loadingDetails === product.id ? "Loading..." : "View Details"}
-                      </button>
+                        {product.secure_url || product.image ? (
+                          <img
+                            src={product.secure_url || product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-t-2xl"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-200 to-zinc-300">
+                            <span className="text-zinc-400 text-sm">No Image</span>
+                          </div>
+                        )}
+                        {hoveredProduct === product.id && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewProductDetails<ProductDetailsResponse>(product.id, e, {
+                                  onLoadStart: (id) => setLoadingDetails(id),
+                                  onLoadEnd: () => setLoadingDetails(null),
+                                  onSuccess: (data) => {
+                                    setProductData(data.product);
+                                    setModalOpen(true);
+                                  },
+                                  onError: () => { },
+                                });
+                              }}
+                              disabled={loadingDetails === product.id}
+                              className="bg-white text-zinc-900 px-6 py-3 rounded-lg font-semibold hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {loadingDetails === product.id ? "Loading..." : "View Details"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {/* Product Details */}
+                      <div className="flex-1 flex flex-col justify-between p-4">
+                        <div>
+                          <h4 className="font-bold text-slate-900 truncate mb-1" title={product.name}>{product.name}</h4>
+                          <p className="text-xs text-slate-500 font-medium truncate mb-2">by {product.business.name}</p>
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="font-bold text-indigo-600 text-lg">{formatNaira(product.price)}</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </SwiperSlide>
+                </>
 
-                {/* Product Details */}
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 line-clamp-1">
-                    {product.name}
-                  </h3>
 
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
 
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Price
-                      </p>
-                      <p className="text-xl font-bold text-zinc-900 dark:text-white">
-                        {formatNaira(product.price)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Rating
-                      </p>
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                        {product.rating.toFixed(1)} ⭐
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-                    By: <Link href={`/business/${product.business.id}`} className="hover:underline text-zinc-700 dark:text-zinc-300 font-medium" onClick={(e) => e.stopPropagation()}>{product.business.name}</Link>
-                  </p>
-
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                    {product.stock > 0 ? (
-                      <span className="text-green-600 dark:text-green-400">
-                        In Stock ({product.stock} units)
-                      </span>
-                    ) : (
-                      <span className="text-red-600 dark:text-red-400">
-                        Out of Stock
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+              ))}
+            </Swiper>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

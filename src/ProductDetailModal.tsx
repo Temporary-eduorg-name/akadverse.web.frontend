@@ -199,13 +199,13 @@ export default function ProductDetailModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-zinc-900 rounded-lg shadow-2xl"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#f9fafb] rounded-2xl shadow-2xl border border-zinc-100 scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-zinc-50 scrollbar-corner-rounded-lg"
           >
             <div className="p-8">
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-2xl"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 text-2xl bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm border border-zinc-100 transition-colors"
               >
                 ×
               </button>
@@ -217,11 +217,11 @@ export default function ProductDetailModal({
                     <img
                       src={product.secure_url}
                       alt={product.name}
-                      className="w-full h-80 object-cover rounded-lg"
+                      className="w-full h-80 object-cover rounded-xl border border-zinc-100 bg-zinc-50"
                     />
                   ) : (
-                    <div className="w-full h-80 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 rounded-lg flex items-center justify-center">
-                      <span className="text-zinc-400">No Image</span>
+                    <div className="w-full h-80 bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-xl flex items-center justify-center border border-zinc-100">
+                      <span className="text-zinc-300">No Image</span>
                     </div>
                   )}
                 </div>
@@ -229,26 +229,32 @@ export default function ProductDetailModal({
                 {/* Product Details */}
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+                    <h2 className="text-3xl font-bold text-zinc-800 mb-2">
                       {product.name}
                     </h2>
                     <Link
                       href={`/business/${product.business.id}`}
-                      className="text-zinc-600 dark:text-zinc-400 hover:underline text-sm"
+                      className="text-zinc-500 hover:underline text-sm"
                     >
                       By {product.business.name}
                     </Link>
+                    {/* Stock Field */}
+                    <div className="mt-2">
+                      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold border bg-zinc-100 text-zinc-700 border-zinc-200">
+                        Stock: {getSelectedVariantStock()}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Price */}
                   <div className="flex items-baseline gap-4">
-                    <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-3xl font-bold text-indigo-700">
                       {formatNaira(currentPrice)}
                     </p>
                     {product.rating > 0 && (
                       <div className="flex items-center gap-1">
-                        <span className="text-yellow-500">⭐</span>
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <span className="text-amber-400">⭐</span>
+                        <span className="text-sm text-zinc-500">
                           {product.rating.toFixed(1)} ({product.stock} in stock)
                         </span>
                       </div>
@@ -257,18 +263,18 @@ export default function ProductDetailModal({
 
                   {/* Description */}
                   <div>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-zinc-900 mb-2">
                       Description
                     </h3>
-                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+                    <p className="text-zinc-600 text-sm leading-relaxed">
                       {product.description}
                     </p>
                   </div>
 
                   {/* Expected Delivery */}
                   {deliveryDate && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                      <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1 flex items-center gap-2">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-green-900 mb-1 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -288,7 +294,7 @@ export default function ProductDetailModal({
                   {/* Variants */}
                   {product.variantFields.length > 0 && (
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-zinc-900 dark:text-white">
+                      <h3 className="font-semibold text-zinc-900">
                         Customize
                       </h3>
                       {product.variantFields.map((field) => {
@@ -305,7 +311,7 @@ export default function ProductDetailModal({
 
                         return (
                           <div key={field.id}>
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
+                            <label className="text-sm font-medium text-zinc-700 block mb-2">
                               {field.name}
                             </label>
                             <div className="grid grid-cols-2 gap-2">
@@ -320,8 +326,8 @@ export default function ProductDetailModal({
                                   }
                                   className={`py-2 px-3 rounded border text-sm transition-colors ${
                                     selectedVariants[field.name] === value
-                                      ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
-                                      : "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-white"
+                                      ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                                      : "bg-white text-zinc-900 border-zinc-200 hover:border-indigo-400"
                                   }`}
                                 >
                                   {value}
@@ -336,7 +342,7 @@ export default function ProductDetailModal({
 
                   {/* Quantity */}
                   <div>
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
+                    <label className="text-sm font-medium text-zinc-700 block mb-2">
                       Quantity {product.variantFields.length > 0 && (
                         <span className="text-xs text-zinc-500 dark:text-zinc-400">
                           ({getSelectedVariantStock()} available)
@@ -347,17 +353,17 @@ export default function ProductDetailModal({
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={quantity <= 1}
-                        className="w-10 h-10 rounded border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-10 h-10 rounded border border-zinc-300 hover:bg-zinc-100 text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         −
                       </button>
-                      <span className="w-8 text-center text-zinc-900 dark:text-white font-medium">
+                      <span className="w-8 text-center text-zinc-900 font-medium">
                         {quantity}
                       </span>
                       <button
                         onClick={() => setQuantity(Math.min(getSelectedVariantStock(), quantity + 1))}
                         disabled={quantity >= getSelectedVariantStock()}
-                        className="w-10 h-10 rounded border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-10 h-10 rounded border border-zinc-300 hover:bg-zinc-100 text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         +
                       </button>
@@ -370,7 +376,7 @@ export default function ProductDetailModal({
                     whileTap={{ scale: 0.98 }}
                     onClick={handleAddToCart}
                     disabled={adding}
-                    className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 rounded-lg font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {adding ? "Adding..." : "Add to Cart"}
                   </motion.button>

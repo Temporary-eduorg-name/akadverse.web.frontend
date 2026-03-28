@@ -108,31 +108,31 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-zinc-50">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-200 mt-4">Loading dashboard...</p>
+          <p className="text-zinc-600 mt-4">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black px-4 py-8">
+    <div className="min-h-screen bg-zinc-50 px-4 py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">
+          <h1 className="text-4xl font-bold text-zinc-900 mb-2">
             Dashboard
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-zinc-600">
             Overview of your businesses and performance
           </p>
         </div>
 
         {/* Aggregate Stats Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
+          <h2 className="text-2xl font-bold text-zinc-900 mb-6">
             Total Performance
           </h2>
 
@@ -170,8 +170,8 @@ export default function DashboardPage() {
           {stats && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* ROI Percentage Circle */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-zinc-900 mb-6">
                   Return on Investment (ROI)
                 </h3>
                 <div className="flex justify-center">
@@ -196,7 +196,7 @@ export default function DashboardPage() {
         {/* Businesses Section */}
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-zinc-900">
               My Businesses
             </h2>
             <Link
@@ -208,13 +208,13 @@ export default function DashboardPage() {
           </div>
 
           {businesses.length === 0 ? (
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-12 text-center">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+            <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+              <p className="text-zinc-600 mb-4">
                 You haven't created any businesses yet
               </p>
               <Link
                 href="/studashboard/main-menu/marketplace/add-business"
-                className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors font-medium"
+                className="inline-block bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-zinc-700 transition-colors font-medium"
               >
                 Create Your First Business
               </Link>
@@ -225,22 +225,22 @@ export default function DashboardPage() {
                 <Link
                   key={business.id}
                   href={`/studashboard/main-menu/marketplace/dashboard/business/${business.id}`}
-                  className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer"
+                  className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer"
                 >
-                  <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-bold text-zinc-900 mb-2">
                     {business.name}
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+                  <p className="text-sm text-zinc-600 mb-2">
                     {business.industry}
                   </p>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-3">
+                  <p className="text-sm text-zinc-600 mb-4 line-clamp-3">
                     {business.description}
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                  <p className="text-xs text-zinc-500">
                     📍 {business.location}
                   </p>
                   <div className="mt-4 text-right">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <p className="text-sm font-medium text-zinc-900">
                       View Dashboard →
                     </p>
                   </div>

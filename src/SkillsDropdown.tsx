@@ -4,43 +4,23 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { getMarketplaceBase } from "./marketplaceRouteUtils";
+import { useMarketplaceActivity } from "./context/MarketplaceActivityContext";
 
 export default function SkillsDropdown() {
     const router = useRouter();
     const pathname = usePathname();
     const { isAuthenticated, user } = useAuth();
     const [hasSkillActivity, setHasSkillActivity] = useState(false);
-    const eventSourceRef = useRef<EventSource | null>(null);
-    const marketplaceBase = getMarketplaceBase(pathname);
+    const { setScope, registerOnUpdate, skillOwnerActivity } = useMarketplaceActivity();
 
     useEffect(() => {
         if (!isAuthenticated || !user) return;
-
-        try {
-            const eventSource = new EventSource("/api/marketplace/realtime/events?scope=skill_owner");
-            eventSourceRef.current = eventSource;
-
-            eventSource.addEventListener("update", (event) => {
-                const data = JSON.parse((event as MessageEvent).data);
-                setHasSkillActivity(data.unreadNotifications > 0);
-            });
-
-            eventSource.addEventListener("error", () => {
-                console.error("Real-time notification listener disconnected");
-                eventSource.close();
-                eventSourceRef.current = null;
-            });
-        } catch (error) {
-            console.error("Failed to setup real-time listener:", error);
-        }
-
-        return () => {
-            if (eventSourceRef.current) {
-                eventSourceRef.current.close();
-                eventSourceRef.current = null;
-            }
-        };
-    }, [isAuthenticated, user]);
+        setScope("skill_owner");
+        const unregister = registerOnUpdate(() => {
+            setHasSkillActivity(skillOwnerActivity.hasSkillUpdates);
+        });
+        return unregister;
+    }, [isAuthenticated, user, setScope, registerOnUpdate, skillOwnerActivity.hasSkillUpdates]);
 
     const handleClick = () => {
         if (!isAuthenticated) {
@@ -48,7 +28,7 @@ export default function SkillsDropdown() {
             return;
         }
 
-        router.push(`${marketplaceBase}/dashboard/skills`);
+        router.push(`${getMarketplaceBase}/dashboard/skills`);
         
         // Mark notifications as read when visiting dashboard
         fetch("/api/marketplace/skills/notifications", {
@@ -60,7 +40,7 @@ export default function SkillsDropdown() {
     return (
         <button
             onClick={handleClick}
-            className="text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative"
+            className="text-zinc-700 hover:text-zinc-900 transition-colors relative"
         >
             My Skills
             {hasSkillActivity && (
