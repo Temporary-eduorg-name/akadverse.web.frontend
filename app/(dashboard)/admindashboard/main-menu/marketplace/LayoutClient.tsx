@@ -12,11 +12,7 @@ function MarketplaceShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [sidebarWidth, setSidebarWidth] = useState(256);
   const mainStyle = useMemo(
-    () => ({
-      marginLeft: `${sidebarWidth}px`,
-      width: `calc(100vw - ${sidebarWidth}px)`,
-      maxWidth: `calc(100vw - ${sidebarWidth}px)`,
-    } as React.CSSProperties),
+    () => ({ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties),
     [sidebarWidth],
   );
 
@@ -33,17 +29,23 @@ function MarketplaceShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen overflow-hidden">
       <DashboardNavbar />
-      <div className="relative flex min-h-[calc(100vh-80px)] bg-zinc-50 dark:bg-black">
+      <div className="relative flex min-h-0 bg-zinc-50 dark:bg-black" style={{ height: "calc(100vh - 70px)" }}>
         <DashboardSidebar onWidthChange={setSidebarWidth} />
         <main
-          className="overflow-x-hidden transition-[margin,width] duration-300 ease-in-out"
+          className="ml-0 min-w-0 flex-1 transition-[margin] duration-300 ease-in-out lg:ml-[var(--sidebar-width)]"
           style={mainStyle}
         >
-          <Navbar />
-          <div className="w-full overflow-x-hidden">
-            {children}
+          <div className="flex h-full min-h-0 flex-col overflow-hidden">
+            <div className="shrink-0">
+              <Navbar />
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+              <div className="w-full overflow-x-hidden">
+                {children}
+              </div>
+            </div>
           </div>
         </main>
       </div>

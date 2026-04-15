@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Zap,
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { fetchRecentEmailsWithCache, type RecentEmailMessage } from '@/app/lib/recentEmailsCache';
 
+import DashboardNavbar from "@/app/components/dashboard/staff/DashboardNavbar";
+import DashboardSidebar from "@/app/components/dashboard/staff/DashboardSidebar";
 const EMAIL_ROUTE = '/staffdashboard/main-menu/essentials/email';
 const EMAIL_CACHE_KEY = 'staffdashboard-main-recent-emails';
 
@@ -28,6 +30,11 @@ const Page = () => {
   const [loadingEmails, setLoadingEmails] = useState(true);
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const mainStyle = useMemo(
+    () => ({ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties),
+    [sidebarWidth],
+  );
   useEffect(() => {
     let isMounted = true;
 
@@ -69,7 +76,17 @@ const Page = () => {
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="min-h-screen bg-[#f8f9fc] font-sans"> 
+      <DashboardNavbar />
+
+      <div className="relative" style={{ minHeight: 'calc(100vh - 70px)' }}>
+        <DashboardSidebar onWidthChange={setSidebarWidth} />
+
+        <div
+          style={mainStyle}
+          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-6 lg:p-7 min-w-0"
+        >
+          <div className="w-full space-y-8 pb-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -353,8 +370,11 @@ const Page = () => {
           </div>
 
         </div>
+        </div>
       </div>
     </div>
+  </div>
+  </div>
   );
 };
 

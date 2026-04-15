@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Zap, House, Bot, BookOpen } from 'lucide-react';
-import DashboardNavbar from '@/app/components/dashboard/staff/DashboardNavbar';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Zap, House, Bot, BookOpen } from "lucide-react";
+import DashboardNavbar from "@/app/components/dashboard/staff/DashboardNavbar";
 
 interface DashboardUser {
   firstName: string;
@@ -12,9 +12,9 @@ interface DashboardUser {
 const getTimeOfDayGreeting = () => {
   const hour = new Date().getHours();
 
-  if (hour < 12) return 'morning';
-  if (hour < 18) return 'afternoon';
-  return 'evening';
+  if (hour < 12) return "morning";
+  if (hour < 18) return "afternoon";
+  return "evening";
 };
 
 const Page = () => {
@@ -25,7 +25,9 @@ const Page = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/marketplace/user', { credentials: 'include' });
+        const response = await fetch("/api/marketplace/user", {
+          credentials: "include",
+        });
         if (!response.ok) return;
 
         const data = await response.json();
@@ -33,52 +35,56 @@ const Page = () => {
           setUser({ firstName: data.user.firstName });
         }
       } catch {
-        // Greeting gracefully falls back when user data is unavailable.
+        // Greeting falls back when session data is unavailable.
       }
     };
 
-    fetchUser();
+    void fetchUser();
     setTimeOfDay(getTimeOfDayGreeting());
   }, []);
 
-  const displayName = user?.firstName || 'Faculty';
+  const displayName = user?.firstName || "Faculty";
 
   const workspaces = [
     {
       id: 1,
-      title: 'Productivity Layer',
-      description: 'Tools to create, organize, and manage faculty work. This workspace includes tools such as Docs and Drive.',
+      title: "Productivity Layer",
+      description:
+        "Faculty tools for writing lecture notes, planning teaching work, and managing documents.",
       icon: Zap,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50',
-      path: '/staffdashboard/productivity-layer',
+      color: "text-blue-500",
+      bgColor: "bg-blue-50",
+      path: "/staffdashboard/productivity-layer",
     },
     {
       id: 2,
-      title: 'Main Menu',
-      description: 'Access campus tools, the faculty dashboard, marketplace, and faculty essentials.',
+      title: "Main Menu",
+      description:
+        "Open faculty dashboard, faculty essentials, marketplace, email, attendance, and schedule tools.",
       icon: House,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      path: '/staffdashboard/main-menu',
+      color: "text-purple-500",
+      bgColor: "bg-purple-50",
+      path: "/staffdashboard/main-menu/faculty-dashboard",
     },
     {
       id: 3,
-      title: 'E-Learning',
-      description: 'Access courses, learning materials, and track faculty progress. Includes learning dashboard, my learning, and learning resources.',
+      title: "E-Learning",
+      description:
+        "Go to faculty course overview, course control, academic records, and faculty resources.",
       icon: BookOpen,
-      color: 'text-green-500',
-      bgColor: 'bg-green-50',
-      path: '/staffdashboard/e-learning',
+      color: "text-green-500",
+      bgColor: "bg-green-50",
+      path: "/staffdashboard/e-learning",
     },
     {
       id: 4,
-      title: 'AI Studio',
-      description: 'Your AI-powered faculty assistant for research, writing, and planning support.',
+      title: "AI Studio",
+      description:
+        "Faculty AI workspace for teaching support, prompt-based drafting, and course material preparation.",
       icon: Bot,
-      color: 'text-pink-500',
-      bgColor: 'bg-pink-50',
-      path: '/staffdashboard/ai-studio',
+      color: "text-pink-500",
+      bgColor: "bg-pink-50",
+      path: "/staffdashboard/ai-studio",
     },
   ];
 
@@ -86,32 +92,37 @@ const Page = () => {
     <div className="min-h-screen bg-white font-sans">
       <DashboardNavbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12">
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 sm:pb-12 sm:pt-12">
         <div className="mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Good {timeOfDay}, {displayName}</h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+            Good {timeOfDay}, {displayName}
+          </h1>
           <p className="text-gray-500">Select a workspace to continue.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+        <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
           {workspaces.map((workspace) => {
             const Icon = workspace.icon;
-
             return (
               <div
                 key={workspace.id}
                 onClick={() => router.push(workspace.path)}
-                className="relative overflow-hidden p-6 sm:p-8 min-h-[240px] sm:min-h-[260px] border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:border-transparent hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer group"
+                className="group relative min-h-[240px] cursor-pointer overflow-hidden rounded-[20px] border border-transparent p-6 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:border-transparent hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:min-h-[260px] sm:p-8"
               >
-                <div className="pointer-events-none absolute top-3 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-2">
+                <div className="pointer-events-none absolute right-4 top-3 opacity-0 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100">
                   <Icon size={120} className="text-gray-200" />
                 </div>
-                <div className={`w-14 h-14 ${workspace.bgColor} rounded-xl flex items-center justify-center mb-6 shadow-[0_2px_6px_rgba(16,24,40,0.04)]`}>
+                <div
+                  className={`mb-6 flex h-14 w-14 items-center justify-center rounded-xl ${workspace.bgColor} shadow-[0_2px_6px_rgba(16,24,40,0.04)]`}
+                >
                   <Icon size={31} className={workspace.color} />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition">
+                <h3 className="mb-3 text-2xl font-semibold text-gray-900 transition group-hover:text-blue-600">
                   {workspace.title}
                 </h3>
-                <p className="text-md text-gray-500 leading-relaxed">{workspace.description}</p>
+                <p className="text-md leading-relaxed text-gray-500">
+                  {workspace.description}
+                </p>
               </div>
             );
           })}

@@ -11,7 +11,7 @@ import {
   Table2,
   Play,
 } from "lucide-react";
-import DashboardNavbar from '@/app/components/dashboard/staff/DashboardNavbar';
+import StaffDashboardShell from "@/app/components/dashboard/staff/StaffDashboardShell";
 
 const Page = () => {
   const router = useRouter();
@@ -71,11 +71,8 @@ const Page = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      <DashboardNavbar />
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+    <StaffDashboardShell contentClassName="bg-white px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto max-w-7xl">
         {/* Back Button */}
         <button
           onClick={() => router.back()}
@@ -275,7 +272,7 @@ const Page = () => {
           </div>
         </div>
       </div>
-    </div>
+    </StaffDashboardShell>
   );
 };
 

@@ -21,20 +21,22 @@ export default function LayoutClient({ children }: { children: React.ReactNode; 
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-[#f6f8fc] font-sans">
+      <div className="h-screen overflow-hidden bg-[#f6f8fc] font-sans">
         <DashboardNavbar />
-        <div className="relative" style={{ minHeight: "calc(100vh - 70px)" }}>
+        <div className="relative flex min-h-0" style={{ height: "calc(100vh - 70px)" }}>
           <DashboardSidebar onWidthChange={setSidebarWidth} />
           <main
             style={mainStyle}
-            className="p-7 lg:pt-[70px] ml-0 min-w-0 transition-[margin] duration-300 ease-out lg:ml-[var(--sidebar-width)]"
+            className="ml-0 min-w-0 flex-1 transition-[margin] duration-300 ease-out lg:ml-[var(--sidebar-width)]"
           >
-            <MarketplaceActivityProvider>
-
-              <Navbar />
-              {children}
-            </MarketplaceActivityProvider>
-
+            <div className="flex h-full min-h-0 flex-col overflow-hidden">
+              <MarketplaceActivityProvider>
+                <div className="shrink-0">
+                  <Navbar />
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+              </MarketplaceActivityProvider>
+            </div>
           </main>
         </div>
       </div>

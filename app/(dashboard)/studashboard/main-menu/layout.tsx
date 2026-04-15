@@ -55,15 +55,15 @@ export default function MainMenuLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] font-sans">
+    <div className="h-screen overflow-hidden bg-[#f8f9fc] font-sans">
       <DashboardNavbar />
 
-      <div className="relative" style={{ minHeight: 'calc(100vh - 70px)' }}>
+      <div className="relative flex min-h-0" style={{ height: 'calc(100vh - 70px)' }}>
         <DashboardSidebar onWidthChange={setSidebarWidth} />
 
-        <div
+        <main
           style={mainStyle}
-          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-4 sm:p-6 lg:p-7 pb-20 lg:pb-7 min-w-0"
+          className="min-w-0 flex-1 overflow-y-auto ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out p-4 sm:p-6 lg:p-7 pb-20 lg:pb-7"
         >
           <div className="flex min-h-[calc(100vh-140px)] items-center justify-center">
             <div className="w-full max-w-xl rounded-[28px] border border-[#dfe7f2] bg-white px-5 sm:px-8 py-8 sm:py-10 text-center shadow-[0_18px_50px_rgba(15,23,42,0.1)]">
@@ -97,7 +97,7 @@ export default function MainMenuLayout({
               )}
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
