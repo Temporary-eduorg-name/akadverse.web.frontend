@@ -120,16 +120,9 @@ export default function CourseLayout({
     () => ({ "--sidebar-width": `${sidebarWidth}px` }) as React.CSSProperties,
     [sidebarWidth],
   );
-  const { courseSlug: courseSlugParam } = useParams<{
-    courseSlug: string | string[];
-  }>();
-  const courseSlug = Array.isArray(courseSlugParam)
-    ? courseSlugParam.length > 0
-      ? courseSlugParam[0]
-      : undefined
-    : courseSlugParam;
+  const { courseSlug } = useParams<{ courseSlug: string }>();
 
-  if (!courseSlug) {
+  if (typeof courseSlug !== "string" || courseSlug.length === 0) {
     notFound();
   }
 
