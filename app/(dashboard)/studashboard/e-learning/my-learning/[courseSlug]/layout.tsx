@@ -122,7 +122,7 @@ export default function CourseLayout({
   );
   const { courseSlug } = useParams<{ courseSlug: string }>();
 
-  if (typeof courseSlug !== "string" || courseSlug.length === 0) {
+  if (!courseSlug) {
     notFound();
   }
 
