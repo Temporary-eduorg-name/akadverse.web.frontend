@@ -53,7 +53,7 @@ export default function QuizTakingPage() {
   const topic = searchParams.get("topic") || "Software Engineering";
 
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
-  const [answers, setAnswers] = React.useState<(number | string)[]>(
+  const [answers, setAnswers] = React.useState<(number | string | null)[]>(
     new Array(SAMPLE_QUESTIONS.length).fill(null),
   );
   const [flaggedQuestions, setFlaggedQuestions] = React.useState<Set<number>>(
