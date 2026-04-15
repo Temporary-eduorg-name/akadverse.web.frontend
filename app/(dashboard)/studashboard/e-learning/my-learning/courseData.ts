@@ -1,3 +1,4 @@
+import type { ElementType } from "react";
 import {
   Braces,
   Cloud,
@@ -21,7 +22,7 @@ export type LearningCourse = {
   totalModules: number;
   lastActivity: string;
   activitySortValue: number;
-  icon: React.ElementType;
+  icon: ElementType;
   progressColor: string;
   accentTextClass: string;
   accentBgClass: string;
