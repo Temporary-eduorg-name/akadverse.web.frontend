@@ -6,6 +6,7 @@ import { Bell, ChevronDown, ChevronUp, Check, X } from "lucide-react";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type CourseType = "Compulsory" | "Elective" | "General" | "Practical";
+type AdvisorDecision = "pending" | "approved" | "rejected";
 
 type Course = {
   code: string;
@@ -21,10 +22,19 @@ type StudentRecord = {
   creditUnits: number;
   maxUnits: number;
   courses: Course[];
+  advisorDecision?: AdvisorDecision;
   advisorNote?: string;
   /** undefined = pending, true = approved, false = rejected */
   hodDecision?: boolean;
   hodNote: string;
+};
+
+type LevelAdvisorDecision = {
+  studentId: string;
+  studentName: string;
+  decision: AdvisorDecision;
+  note: string;
+  updatedAt: string;
 };
 
 type LevelAdvisor = {
@@ -301,6 +311,8 @@ const ITEMS_PER_PAGE = 4;
 const DEFAULT_REGISTRATION_START = new Date("2026-03-01T08:45:19").getTime();
 const DEFAULT_REGISTRATION_DEADLINE = new Date("2026-03-26T08:45:19").getTime();
 const registrationStorageKey = "courseRegistrationWindow";
+const advisorDecisionStorageKey = "levelAdvisorRegistrationDecisions";
+const hodDecisionStorageKey = "hodRegistrationDecisions";
 const ZERO_COUNTDOWN = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -334,6 +346,14 @@ function StudentCourseRow({
   onNoteChange: (note: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const canReviewStudent =
+    student.advisorDecision === "approved" && student.hodDecision === undefined;
+  const reviewBlockedMessage =
+    !student.advisorDecision || student.advisorDecision === "pending"
+      ? "HOD review unlocks after the level adviser approves this registration."
+      : student.advisorDecision === "rejected"
+        ? "This registration was rejected by the level adviser and must be resubmitted before HOD review."
+        : null;
 
   return (
     <div className="border-t border-[#f1f5f9]">
@@ -356,6 +376,17 @@ function StudentCourseRow({
         <p className="flex-1 text-[14px] font-semibold text-[#0f172a]">
           {student.name}
         </p>
+
+        {student.advisorDecision === "approved" && (
+          <span className="mr-2 inline-flex items-center gap-1 rounded-full bg-[#dcfce7] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#166534]">
+            <Check size={10} strokeWidth={3} /> Advisor Approved
+          </span>
+        )}
+        {student.advisorDecision === "rejected" && (
+          <span className="mr-2 inline-flex items-center gap-1 rounded-full bg-[#fee2e2] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#991b1b]">
+            <X size={10} strokeWidth={3} /> Advisor Rejected
+          </span>
+        )}
 
         <div className="flex items-center gap-6 mr-2">
           <div>
@@ -449,13 +480,13 @@ function StudentCourseRow({
                 placeholder="Enter reason for rejection or special approval instructions..."
                 value={student.hodNote}
                 onChange={(e) => onNoteChange(e.target.value)}
-                disabled={student.hodDecision !== undefined}
+                disabled={!canReviewStudent}
               />
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={onReject}
-                  disabled={student.hodDecision !== undefined}
+                  disabled={!canReviewStudent || !student.hodNote.trim()}
                   className="flex items-center gap-1.5 rounded-[8px] border border-[#fca5a5] bg-white px-4 py-2 text-[13px] font-semibold text-[#dc2626] transition-colors hover:bg-[#fee2e2] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X size={14} strokeWidth={2.5} />
@@ -464,7 +495,7 @@ function StudentCourseRow({
                 <button
                   type="button"
                   onClick={onApprove}
-                  disabled={student.hodDecision !== undefined}
+                  disabled={!canReviewStudent}
                   className="flex items-center gap-1.5 rounded-[8px] bg-[#1d4ed8] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#1e40af] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Check size={14} strokeWidth={2.5} />
@@ -472,6 +503,12 @@ function StudentCourseRow({
                 </button>
               </div>
             </div>
+
+            {reviewBlockedMessage && student.hodDecision === undefined && (
+              <p className="mt-2 text-[11px] font-medium text-[#92400e]">
+                {reviewBlockedMessage}
+              </p>
+            )}
 
             {student.advisorNote && (
               <p className="mt-2 text-[11px] italic text-[#64748b]">
@@ -527,6 +564,46 @@ export default function HodApprovalPage() {
     } catch {
       // Ignore malformed values and continue with fallback defaults.
     }
+  }, []);
+
+  useEffect(() => {
+    const syncAdvisorDecisions = () => {
+      const storedAdvisorDecisions = window.localStorage.getItem(
+        advisorDecisionStorageKey,
+      );
+      if (!storedAdvisorDecisions) return;
+
+      try {
+        const parsed = JSON.parse(
+          storedAdvisorDecisions,
+        ) as LevelAdvisorDecision[];
+        setAdvisors((prev) =>
+          prev.map((advisor) => ({
+            ...advisor,
+            students: advisor.students.map((student) => {
+              const matched = parsed.find(
+                (item) =>
+                  item.studentName.toLowerCase() === student.name.toLowerCase(),
+              );
+              if (!matched) return student;
+
+              return {
+                ...student,
+                advisorDecision: matched.decision,
+                advisorNote: matched.note || "",
+              };
+            }),
+          })),
+        );
+      } catch {
+        // Ignore malformed adviser decision payloads.
+      }
+    };
+
+    syncAdvisorDecisions();
+    const interval = window.setInterval(syncAdvisorDecisions, 3000);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -595,8 +672,25 @@ export default function HodApprovalPage() {
     );
   };
 
+  useEffect(() => {
+    const payload = advisors
+      .flatMap((advisor) => advisor.students)
+      .filter((student) => student.hodDecision !== undefined)
+      .map((student) => ({
+        studentName: student.name,
+        decision: student.hodDecision ? "approved" : "rejected",
+        note: student.hodNote,
+      }));
+
+    window.localStorage.setItem(hodDecisionStorageKey, JSON.stringify(payload));
+  }, [advisors]);
+
   const pendingCount = (advisor: LevelAdvisor) =>
-    advisor.students.filter((s) => s.hodDecision === undefined).length;
+    advisor.students.filter(
+      (student) =>
+        student.advisorDecision === "approved" &&
+        student.hodDecision === undefined,
+    ).length;
 
   // Visible students per advisor on this page
   const visibleStudentIds = (advisor: LevelAdvisor) =>
@@ -609,6 +703,26 @@ export default function HodApprovalPage() {
     countdown.hours * 60 * 60 +
     countdown.minutes * 60 +
     countdown.seconds;
+  const shouldShowWarningBanner =
+    registrationStatus === "closed" ||
+    (registrationStatus === "open" && countdown.days <= 3);
+  const bannerWrapperClass = shouldShowWarningBanner
+    ? "bg-gradient-to-r from-[#ef4444] to-[#b91c1c]"
+    : "bg-gradient-to-r from-[#4f46e5] to-[#1e40af]";
+  const timerTileClass = shouldShowWarningBanner
+    ? "bg-[#f97316]/60"
+    : "bg-[#4f6ce9]/70";
+  const timerTextClass = shouldShowWarningBanner
+    ? "text-[#fee2e2]"
+    : "text-[#c7d2fe]";
+  const statusPillClass = shouldShowWarningBanner
+    ? "text-[#fee2e2]"
+    : "text-[#dbeafe]";
+  const statusDotClass = shouldShowWarningBanner
+    ? "bg-[#facc15]"
+    : registrationStatus === "closed"
+      ? "bg-[#facc15]"
+      : "bg-[#22c55e]";
   const statusLabel =
     registrationStatus === "open"
       ? "SYSTEM STATUS: REGISTRATION ACTIVE"
@@ -631,7 +745,7 @@ export default function HodApprovalPage() {
   return (
     <div
       className="min-h-screen bg-[#f8fafc]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 flex h-[57px] items-center justify-between border-b border-[#e2e8f0] bg-white px-6 shadow-sm">
@@ -670,16 +784,14 @@ export default function HodApprovalPage() {
         </div>
 
         {/* ── Countdown banner (synced with student registration timer) ── */}
-        <div className="mt-8 overflow-hidden rounded-[14px] bg-gradient-to-r from-[#4f46e5] to-[#1e40af] px-8 py-9 text-white shadow-md">
+        <div
+          className={`mt-8 overflow-hidden rounded-[14px] px-8 py-9 text-white shadow-md ${bannerWrapperClass}`}
+        >
           <div className="text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#dbeafe]">
-              <span
-                className={`size-2 rounded-full ${
-                  registrationStatus === "closed"
-                    ? "bg-[#facc15]"
-                    : "bg-[#22c55e]"
-                }`}
-              />
+            <p
+              className={`inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${statusPillClass}`}
+            >
+              <span className={`size-2 rounded-full ${statusDotClass}`} />
               {statusLabel}
             </p>
             <h2 className="mt-3 text-[32px] font-extrabold leading-tight md:text-[42px]">
@@ -721,16 +833,22 @@ export default function HodApprovalPage() {
                 },
               ].map((part) => (
                 <div key={part.label} className="text-center">
-                  <div className="flex size-[68px] items-center justify-center rounded-[12px] bg-[#4f6ce9]/70 text-[32px] font-extrabold leading-none">
+                  <div
+                    className={`flex size-[68px] items-center justify-center rounded-[12px] text-[32px] font-extrabold leading-none ${timerTileClass}`}
+                  >
                     {String(part.value).padStart(2, "0")}
                   </div>
-                  <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#c7d2fe]">
+                  <p
+                    className={`mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] ${timerTextClass}`}
+                  >
                     {part.label}
                   </p>
                 </div>
               ))}
             </div>
-            <p className="mx-auto mt-5 max-w-[580px] text-[13px] font-medium leading-relaxed text-[#dbeafe]">
+            <p
+              className={`mx-auto mt-5 max-w-[580px] text-[13px] font-medium leading-relaxed ${statusPillClass}`}
+            >
               {bannerBody}
             </p>
           </div>
@@ -802,12 +920,13 @@ export default function HodApprovalPage() {
                       visibleStudents.map((student) => (
                         <StudentCourseRow
                           key={student.id}
-                          student={student}
-                          onApprove={() =>
-                            updateStudent(advisor.id, student.id, {
-                              hodDecision: true,
-                            })
-                          }
+                            student={student}
+                            onApprove={() =>
+                              updateStudent(advisor.id, student.id, {
+                                hodDecision: true,
+                                hodNote: "",
+                              })
+                            }
                           onReject={() =>
                             updateStudent(advisor.id, student.id, {
                               hodDecision: false,

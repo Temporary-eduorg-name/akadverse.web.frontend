@@ -3,7 +3,9 @@
 import { use } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import DashboardNavbar from "@/app/components/dashboard/student/DashboardNavbar";
+import DashboardSidebar from "@/app/components/dashboard/student/DashboardSidebar";
 
 type CourseMeta = {
   title: string;
@@ -14,6 +16,14 @@ type CourseMeta = {
 };
 
 const COURSE_META: Record<string, CourseMeta> = {
+  "advanced-software-engineering": {
+    title: "Advanced Software Engineering",
+    code: "CS402",
+    summary:
+      "Master CI/CD pipelines and enterprise system design principles for scale.",
+    department: "COMPUTER SCIENCE DEPARTMENT",
+    credits: 6,
+  },
   "software-engineering": {
     title: "Advanced Software Engineering",
     code: "CS402",
@@ -108,6 +118,11 @@ export default function CourseLayout({
   children: React.ReactNode;
   params: Promise<{ courseSlug: string }>;
 }) {
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const mainStyle = useMemo(
+    () => ({ "--sidebar-width": `${sidebarWidth}px` }) as React.CSSProperties,
+    [sidebarWidth],
+  );
   const { courseSlug } = use(params);
   const course = COURSE_META[courseSlug];
   const pathname = usePathname();
@@ -121,77 +136,90 @@ export default function CourseLayout({
     TABS.find((tab) => pathname.includes(tab.id))?.id || "course-overview";
 
   return (
-    <main className="min-h-screen bg-white pb-12">
-      {/* Header Section */}
-      <div className="border-b border-gray-200">
-        <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-8">
-          {/* Breadcrumb */}
-          <div className="mb-6 flex gap-2 text-sm text-gray-600">
-            <Link
-              href="/studashboard/e-learning/my-learning"
-              className="hover:text-blue-600"
-            >
-              My Learning
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{course.code}</span>
-          </div>
+    <div className="h-screen overflow-hidden bg-[#F8F6F6] font-sans">
+      <DashboardNavbar />
+      <div
+        className="relative bg-[#F8F6F6]"
+        style={{ minHeight: "calc(100vh - 70px)" }}
+      >
+        <DashboardSidebar onWidthChange={setSidebarWidth} desktopSticky />
+        <main
+          style={mainStyle}
+          className="ml-0 lg:ml-[var(--sidebar-width)] transition-[margin] duration-300 ease-out min-w-0 h-[calc(100vh-70px)] overflow-y-auto"
+        >
+          <section className="min-h-full pb-12">
+            <div className="border-b border-gray-200 bg-[#F8F6F6]">
+              <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-8">
+                <div className="mb-6 flex gap-2 text-sm text-gray-600">
+                  <Link
+                    href="/studashboard/e-learning/my-learning"
+                    className="hover:text-blue-600"
+                  >
+                    My Learning
+                  </Link>
+                  <span>/</span>
+                  <span className="text-gray-900 font-medium">
+                    {course.code}
+                  </span>
+                </div>
 
-          {/* Title Section */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-[0.09em] text-blue-600 mb-2">
-                {course.department}
-              </p>
-              <h1 className="text-4xl font-black text-gray-900 mb-2">
-                {course.title}
-              </h1>
-              <p className="text-sm text-gray-600">
-                Course Code: {course.code}
-              </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-xs font-bold uppercase tracking-[0.09em] text-blue-600 mb-2">
+                      {course.department}
+                    </p>
+                    <h1 className="text-4xl font-black text-gray-900 mb-2">
+                      {course.title}
+                    </h1>
+                    <p className="text-sm text-gray-600">
+                      Course Code: {course.code}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <span className="inline-block rounded-full bg-blue-600 px-4 py-2 text-white text-sm font-semibold">
+                      {course.credits} Credit Units
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="shrink-0">
-              <span className="inline-block rounded-full bg-blue-600 px-4 py-2 text-white text-sm font-semibold">
-                {course.credits} Credit Units
-              </span>
+
+            <div className="sticky top-0 z-10 border-b border-gray-200 bg-[#F8F6F6]">
+              <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+                <div className="flex gap-8 overflow-x-auto">
+                  {TABS.map((tab) => {
+                    const isActive = currentTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() =>
+                          router.push(
+                            `/studashboard/e-learning/my-learning/${courseSlug}/${tab.href}`,
+                          )
+                        }
+                        className={`relative px-1 py-4 text-sm font-semibold transition-colors whitespace-nowrap ${
+                          isActive
+                            ? "text-blue-600"
+                            : "text-gray-700 hover:text-gray-900"
+                        }`}
+                      >
+                        {tab.label}
+                        {isActive && (
+                          <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Tabs Navigation */}
-      <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-          <div className="flex gap-8 overflow-x-auto">
-            {TABS.map((tab) => {
-              const isActive = currentTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() =>
-                    router.push(
-                      `/studashboard/e-learning/my-learning/${courseSlug}/${tab.href}`,
-                    )
-                  }
-                  className={`relative px-1 py-4 text-sm font-semibold transition-colors whitespace-nowrap ${
-                    isActive
-                      ? "text-blue-600"
-                      : "text-gray-700 hover:text-gray-900"
-                  }`}
-                >
-                  {tab.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            <div className="mx-auto max-w-[1280px] px-4 py-8 md:px-8">
+              {children}
+            </div>
+          </section>
+        </main>
       </div>
-
-      {/* Content */}
-      <div className="mx-auto max-w-[1280px] px-4 py-8 md:px-8">{children}</div>
-    </main>
+    </div>
   );
 }

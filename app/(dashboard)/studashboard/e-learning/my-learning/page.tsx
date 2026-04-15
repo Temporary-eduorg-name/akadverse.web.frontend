@@ -1,202 +1,17 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Braces,
-  Cloud,
-  Database,
-  Grid3X3,
-  List,
-  MonitorPlay,
-  Network,
-  Palette,
-  Shield,
-  Sparkles,
-  Cpu,
-} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Grid3X3, List } from "lucide-react";
+import DashboardNavbar from "@/app/components/dashboard/student/DashboardNavbar";
+import DashboardSidebar from "@/app/components/dashboard/student/DashboardSidebar";
+import { MY_LEARNING_COURSES, type LearningCourse } from "./courseData";
 
 type SortOption = "recent" | "progress-high" | "progress-low" | "az";
 type ViewMode = "grid" | "list";
+const COURSE_DATA = MY_LEARNING_COURSES;
 
-type LearningCourse = {
-  id: string;
-  code: string;
-  slug: string;
-  title: string;
-  description: string;
-  progress: number;
-  completedModules: number;
-  totalModules: number;
-  lastActivity: string;
-  activitySortValue: number;
-  icon: React.ElementType;
-  ringClass: string;
-  accentTextClass: string;
-  accentBgClass: string;
-};
-
-const COURSE_DATA: LearningCourse[] = [
-  {
-    id: "csc-301",
-    code: "CSC 301",
-    slug: "software-engineering",
-    title: "Software Engineering",
-    description:
-      "Master CI/CD pipelines and enterprise system design principles for scale.",
-    progress: 65,
-    completedModules: 13,
-    totalModules: 20,
-    lastActivity: "2 hours ago",
-    activitySortValue: 2,
-    icon: MonitorPlay,
-    ringClass: "ring-blue",
-    accentTextClass: "text-blue-600",
-    accentBgClass: "bg-blue-50",
-  },
-  {
-    id: "csc-303",
-    code: "CSC 303",
-    slug: "cloud-infrastructure",
-    title: "Cloud Infrastructure",
-    description:
-      "Scaling applications using AWS, Azure, and Google Cloud Platform.",
-    progress: 65,
-    completedModules: 14,
-    totalModules: 16,
-    lastActivity: "3 days ago",
-    activitySortValue: 72,
-    icon: Cloud,
-    ringClass: "ring-indigo",
-    accentTextClass: "text-indigo-600",
-    accentBgClass: "bg-indigo-50",
-  },
-  {
-    id: "csc-315",
-    code: "CSC 315",
-    slug: "cybersecurity-basics",
-    title: "Cybersecurity Basics",
-    description:
-      "Fundamental concepts of network security, crypto, and ethical hacking.",
-    progress: 100,
-    completedModules: 3,
-    totalModules: 12,
-    lastActivity: "Yesterday",
-    activitySortValue: 24,
-    icon: Shield,
-    ringClass: "ring-pink",
-    accentTextClass: "text-pink-600",
-    accentBgClass: "bg-pink-50",
-  },
-  {
-    id: "csc-401",
-    code: "CSC 401",
-    slug: "full-stack-development",
-    title: "Full Stack Development",
-    description:
-      "Build modern responsive apps with React, Node.js, and MongoDB.",
-    progress: 75,
-    completedModules: 8,
-    totalModules: 20,
-    lastActivity: "4 days ago",
-    activitySortValue: 96,
-    icon: Braces,
-    ringClass: "ring-violet",
-    accentTextClass: "text-violet-600",
-    accentBgClass: "bg-violet-50",
-  },
-  {
-    id: "csc-203",
-    code: "CSC 203",
-    slug: "computer-graphics",
-    title: "Computer Graphics",
-    description:
-      "3D rendering pipelines, shaders, and geometry processing basics.",
-    progress: 45,
-    completedModules: 2,
-    totalModules: 18,
-    lastActivity: "5 days ago",
-    activitySortValue: 120,
-    icon: Palette,
-    ringClass: "ring-amber",
-    accentTextClass: "text-amber-600",
-    accentBgClass: "bg-amber-50",
-  },
-  {
-    id: "csc-304",
-    code: "CSC 304",
-    slug: "database-systems",
-    title: "Database Systems",
-    description:
-      "Relational algebra, SQL optimization, and NoSQL architecture.",
-    progress: 100,
-    completedModules: 7,
-    totalModules: 14,
-    lastActivity: "Oct 24, 2024",
-    activitySortValue: 999,
-    icon: Database,
-    ringClass: "ring-green",
-    accentTextClass: "text-green-600",
-    accentBgClass: "bg-green-50",
-  },
-  {
-    id: "csc-302",
-    code: "CSC 302",
-    slug: "deep-learning-ai-ethics",
-    title: "Artificial Intelligence",
-    description:
-      "Search algorithms, logic programming, and machine learning foundations.",
-    progress: 67,
-    completedModules: 12,
-    totalModules: 15,
-    lastActivity: "Yesterday",
-    activitySortValue: 24,
-    icon: Sparkles,
-    ringClass: "ring-purple",
-    accentTextClass: "text-purple-600",
-    accentBgClass: "bg-purple-50",
-  },
-  {
-    id: "csc-305",
-    code: "CSC 305",
-    slug: "computer-networks",
-    title: "Computer Networks",
-    description:
-      "TCP/IP stack, routing protocols, and network performance analysis.",
-    progress: 100,
-    completedModules: 4,
-    totalModules: 12,
-    lastActivity: "Oct 20, 2024",
-    activitySortValue: 1005,
-    icon: Network,
-    ringClass: "ring-orange",
-    accentTextClass: "text-orange-600",
-    accentBgClass: "bg-orange-50",
-  },
-  {
-    id: "csc-306",
-    code: "CSC 306",
-    slug: "operating-systems",
-    title: "Operating Systems",
-    description:
-      "Processes, scheduling, memory management, and concurrency control.",
-    progress: 45,
-    completedModules: 6,
-    totalModules: 16,
-    lastActivity: "Oct 15, 2024",
-    activitySortValue: 1012,
-    icon: Cpu,
-    ringClass: "ring-deep-purple",
-    accentTextClass: "text-fuchsia-700",
-    accentBgClass: "bg-fuchsia-50",
-  },
-];
-
-const sortCourses = (
-  courses: LearningCourse[],
-  sortBy: SortOption,
-): LearningCourse[] => {
+function sortCourses(courses: LearningCourse[], sortBy: SortOption) {
   const sorted = [...courses];
 
   switch (sortBy) {
@@ -216,36 +31,109 @@ const sortCourses = (
   }
 
   return sorted;
-};
+}
 
-const ProgressRing = ({
+function normalizeCourseText(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function matchesIncomingCourse(course: LearningCourse, query: string) {
+  const normalizedQuery = normalizeCourseText(query);
+  if (!normalizedQuery) return false;
+
+  const candidates = [course.code, course.title, course.slug].map(
+    normalizeCourseText,
+  );
+
+  return candidates.some(
+    (candidate) =>
+      candidate.includes(normalizedQuery) ||
+      normalizedQuery.includes(candidate),
+  );
+}
+
+function ProgressCircle({
   progress,
-  ringClass,
+  color,
+  size = 58,
+  strokeWidth = 7,
 }: {
   progress: number;
-  ringClass: string;
-}) => {
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = circumference - (progress / 100) * circumference;
+
   return (
-    <div
-      className={`relative h-11 w-11 rounded-full progress-ring ${ringClass}`}
-      style={{ ["--progress" as string]: `${progress}%` }}
-      aria-label={`${progress}% complete`}
-    >
-      <div className="absolute inset-[4px] rounded-full bg-white" />
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg
+        className="-rotate-90"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden="true"
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#dbe4ef"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+        />
+      </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-700">
         {progress}%
       </span>
     </div>
   );
-};
+}
 
-const Page = () => {
+export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const incomingCourseQuery = searchParams.get("course")?.trim() ?? "";
 
-  // Replace with a real backend query (SWR/React Query/fetch) when API is connected.
-  const courses = useMemo(() => sortCourses(COURSE_DATA, sortBy), [sortBy]);
+  const courses = useMemo(() => {
+    const sorted = sortCourses(COURSE_DATA, sortBy);
+    if (!incomingCourseQuery) return sorted;
+
+    const matchIndex = sorted.findIndex((course) =>
+      matchesIncomingCourse(course, incomingCourseQuery),
+    );
+
+    if (matchIndex <= 0) return sorted;
+
+    const next = [...sorted];
+    const [matchedCourse] = next.splice(matchIndex, 1);
+    next.unshift(matchedCourse);
+    return next;
+  }, [sortBy, incomingCourseQuery]);
+
+  const highlightedCourseId = useMemo(() => {
+    if (!incomingCourseQuery) return null;
+
+    const matched = courses.find((course) =>
+      matchesIncomingCourse(course, incomingCourseQuery),
+    );
+    return matched?.id ?? null;
+  }, [courses, incomingCourseQuery]);
 
   const openCourse = (course: LearningCourse) => {
     router.push(
@@ -254,192 +142,221 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f5f9] px-4 py-6 md:px-7 md:py-9 text-slate-900">
-      <div className="mx-auto max-w-[1360px]">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-[#10182d]">
-              My Learning
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Understanding all of your semester courses
-            </p>
-          </div>
-          <div className="flex items-center gap-2 self-start rounded-xl border border-slate-200 bg-white p-1 shadow-[0_3px_10px_rgba(16,24,45,0.06)]">
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                viewMode === "grid"
-                  ? "bg-[#edf0f8] text-[#111827]"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-              }`}
-            >
-              Grid
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                viewMode === "list"
-                  ? "bg-[#edf0f8] text-[#111827]"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-              }`}
-            >
-              List
-            </button>
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value as SortOption)}
-              className="ml-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
-              aria-label="Sort my learning courses"
-            >
-              <option value="recent">Sort by recent</option>
-              <option value="progress-high">Progress high to low</option>
-              <option value="progress-low">Progress low to high</option>
-              <option value="az">Course title A-Z</option>
-            </select>
-          </div>
-        </div>
+    <div className="h-screen overflow-hidden bg-[#F8F6F6] font-sans">
+      <DashboardNavbar />
 
-        {viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {courses.slice(0, 8).map((course) => {
-              const Icon = course.icon;
+      <div className="flex min-h-0" style={{ height: "calc(100vh - 70px)" }}>
+        <DashboardSidebar desktopSticky />
 
-              return (
-                <article
-                  key={course.id}
-                  className="group rounded-2xl border border-[#dfe4ee] bg-white p-4 shadow-[0_1px_0_rgba(16,24,40,0.02)] transition duration-300 hover:-translate-y-0.5 hover:border-[#ccd6ea] hover:shadow-[0_14px_30px_rgba(16,24,40,0.09)]"
-                >
-                  <div className="mb-4 flex items-start justify-between">
-                    <ProgressRing
-                      progress={course.progress}
-                      ringClass={course.ringClass}
-                    />
-                    <div className={`rounded-full p-2 ${course.accentBgClass}`}>
-                      <Icon className={`h-4 w-4 ${course.accentTextClass}`} />
-                    </div>
-                  </div>
-
-                  <h2 className="text-[28px] leading-tight font-extrabold tracking-tight text-[#111c32]">
-                    {course.title}
-                  </h2>
-                  <p className="mt-2 min-h-14 text-sm leading-6 text-slate-600">
-                    {course.description}
+        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-8 mt-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <h1 className="text-4xl font-black tracking-tight text-[#10182d]">
+                  My Learning
+                </h1>
+                <p className="mt-2 text-sm text-slate-600">
+                  Understanding all of your semester courses
+                </p>
+                {incomingCourseQuery && highlightedCourseId ? (
+                  <p className="mt-2 inline-flex items-center rounded-full bg-[#eaf0ff] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#1f43b2]">
+                    Course from Course Control prioritized:{" "}
+                    {incomingCourseQuery}
                   </p>
+                ) : null}
+              </div>
 
-                  <div className="mt-8 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8b94a6]">
-                    <span>
-                      {course.completedModules} of {course.totalModules} modules
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => openCourse(course)}
-                      className={`inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] ${course.accentTextClass} transition hover:translate-x-0.5`}
-                    >
-                      Continue <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {courses.map((course) => {
-              const Icon = course.icon;
+              <div className="flex flex-wrap items-center gap-3 self-start rounded-2xl border border-[#dce5f1] bg-white p-2 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                <div className="flex items-center gap-2 rounded-xl bg-slate-50 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                      viewMode === "grid"
+                        ? "bg-white text-[#111827] shadow-sm"
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    }`}
+                  >
+                    <Grid3X3 size={14} />
+                    <span>Grid</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("list")}
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                      viewMode === "list"
+                        ? "bg-white text-[#111827] shadow-sm"
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    }`}
+                  >
+                    <List size={14} />
+                    <span>List</span>
+                  </button>
+                </div>
 
-              return (
-                <article
-                  key={course.id}
-                  className="group flex items-center gap-4 rounded-2xl border border-[#dfe4ee] bg-white px-4 py-4 transition duration-300 hover:border-[#ccd6ea] hover:shadow-[0_12px_25px_rgba(16,24,40,0.08)]"
+                <select
+                  value={sortBy}
+                  onChange={(event) =>
+                    setSortBy(event.target.value as SortOption)
+                  }
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.06em] text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
+                  aria-label="Sort my learning courses"
                 >
-                  <div className={`rounded-xl p-3 ${course.accentBgClass}`}>
-                    <Icon className={`h-5 w-5 ${course.accentTextClass}`} />
-                  </div>
+                  <option value="recent">Sort by recent</option>
+                  <option value="progress-high">Progress high to low</option>
+                  <option value="progress-low">Progress low to high</option>
+                  <option value="az">Course title A-Z</option>
+                </select>
+              </div>
+            </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={`text-sm ${course.accentTextClass}`}
-                    >
-                      {course.code}
-                    </p>
-                    <h2 className="truncate text-xl font-bold leading-tight tracking-tight text-[#111c32]">
-                      {course.title}
-                    </h2>
-                    <p className="text-sm text-slate-600">
-                      Last activity: {course.lastActivity}
-                    </p>
-                  </div>
+            {viewMode === "grid" ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {courses.slice(0, 8).map((course) => {
+                  const Icon = course.icon;
 
-                  <div className="flex items-center gap-3">
-                    <ProgressRing
-                      progress={course.progress}
-                      ringClass={course.ringClass}
-                    />
-                    <button
-                      type="button"
+                  return (
+                    <article
+                      key={course.id}
+                      typeof="button"
                       onClick={() => openCourse(course)}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2b4fbf] text-white transition hover:-translate-y-0.5 hover:bg-[#1f43b2]"
-                      aria-label={`Open ${course.title}`}
+                      className={`group flex h-full flex-col rounded-[24px] border bg-white p-5 shadow-[0_1px_0_rgba(16,24,40,0.02)] transition duration-300 hover:-translate-y-0.5 hover:border-[#ccd6ea] hover:shadow-[0_14px_30px_rgba(16,24,40,0.09)] ${
+                        highlightedCourseId === course.id
+                          ? "border-[#2b4fbf] ring-2 ring-[#2b4fbf]/20"
+                          : "border-[#dfe4ee]"
+                      }`}
                     >
-                      <ArrowRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                      <div className="mb-4 flex items-start justify-between">
+                        <ProgressCircle
+                          progress={course.progress}
+                          color={course.progressColor}
+                          size={62}
+                          strokeWidth={7}
+                        />
+                        <div
+                          className={`rounded-full p-2.5 ${course.accentBgClass}`}
+                        >
+                          <Icon
+                            className={`h-4 w-4 ${course.accentTextClass}`}
+                          />
+                        </div>
+                      </div>
+
+                      <p
+                        className={`text-sm font-semibold ${course.accentTextClass}`}
+                      >
+                        {course.code}
+                      </p>
+                      <h2 className="mt-1 text-2xl font-extrabold leading-tight tracking-tight text-[#111c32]">
+                        {course.title}
+                      </h2>
+                      <p className="mt-2 min-h-14 text-sm leading-6 text-slate-600">
+                        {course.description}
+                      </p>
+
+                      <div className="mt-auto pt-8">
+                        <div className="mb-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{
+                              width: `${course.progress}%`,
+                              backgroundColor: course.progressColor,
+                            }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8b94a6]">
+                          <span>
+                            {course.completedModules} of {course.totalModules}{" "}
+                            modules
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => openCourse(course)}
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] ${course.accentTextClass} transition hover:translate-x-0.5`}
+                          >
+                            Continue <ArrowRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {courses.map((course) => {
+                  const Icon = course.icon;
+
+                  return (
+                    <article
+                      key={course.id}
+                      onClick={() => openCourse(course)}
+                      className={`group flex flex-col gap-4 rounded-2xl border bg-white px-4 py-4 transition duration-300 hover:border-[#ccd6ea] hover:shadow-[0_12px_25px_rgba(16,24,40,0.08)] md:flex-row md:items-center ${
+                        highlightedCourseId === course.id
+                          ? "border-[#2b4fbf] ring-2 ring-[#2b4fbf]/20"
+                          : "border-[#dfe4ee]"
+                      }`}
+                    >
+                      <div className={`rounded-xl p-3 ${course.accentBgClass}`}>
+                        <Icon className={`h-5 w-5 ${course.accentTextClass}`} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`text-sm font-semibold ${course.accentTextClass}`}
+                        >
+                          {course.code}
+                        </p>
+                        <h2 className="truncate text-xl font-bold leading-tight tracking-tight text-[#111c32]">
+                          {course.title}
+                        </h2>
+                        <p className="text-sm text-slate-600">
+                          Last activity: {course.lastActivity}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-4 self-end md:self-auto">
+                        <div className="hidden min-w-[140px] md:block">
+                          <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                            <span>Progress</span>
+                            <span>{course.progress}%</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${course.progress}%`,
+                                backgroundColor: course.progressColor,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <ProgressCircle
+                          progress={course.progress}
+                          color={course.progressColor}
+                          size={56}
+                          strokeWidth={7}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => openCourse(course)}
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2b4fbf] text-white transition hover:-translate-y-0.5 hover:bg-[#1f43b2]"
+                          aria-label={`Open ${course.title}`}
+                        >
+                          <ArrowRight className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </main>
       </div>
-
-      <style jsx>{`
-        .progress-ring {
-          background: conic-gradient(
-            var(--ring-color) var(--progress),
-            #e9edf5 0
-          );
-        }
-
-        .ring-blue {
-          --ring-color: #3d63dd;
-        }
-
-        .ring-indigo {
-          --ring-color: #2f5ccf;
-        }
-
-        .ring-pink {
-          --ring-color: #ef476f;
-        }
-
-        .ring-violet {
-          --ring-color: #7083ef;
-        }
-
-        .ring-amber {
-          --ring-color: #e49a2f;
-        }
-
-        .ring-green {
-          --ring-color: #1fb881;
-        }
-
-        .ring-purple {
-          --ring-color: #7d56f1;
-        }
-
-        .ring-orange {
-          --ring-color: #ea6b11;
-        }
-
-        .ring-deep-purple {
-          --ring-color: #6c2bd9;
-        }
-      `}</style>
     </div>
   );
-};
-
-export default Page;
+}

@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import ProductCarousel from "@/src/ProductCarousel";
-import TrendingProductsCarousel from "@/src/TrendingProductsCarousel";
-import NewBusinessCarousel from "@/src/NewBusinessCarousel";
-import TrendingBusinessCarousel from "@/src/TrendingBusinessCarousel";
-import NewSkillsCarousel from "@/src/NewSkillsCarousel";
-import TrendingSkillsCarousel from "@/src/TrendingSkillsCarousel";
-import CategoriesCarousel from "@/src/CategoriesCarousel";
-import SkillsCarousel from "@/src/SkillsCarousel";
+import ProductCarousel from "@/components/ProductCarousel";
+import TrendingProductsCarousel from "@/components/TrendingProductsCarousel";
+import NewBusinessCarousel from "@/components/NewBusinessCarousel";
+import TrendingBusinessCarousel from "@/components/TrendingBusinessCarousel";
+import NewSkillsCarousel from "@/components/NewSkillsCarousel";
+import TrendingSkillsCarousel from "@/components/TrendingSkillsCarousel";
+import CategoriesCarousel from "@/components/CategoriesCarousel";
+import SkillsCarousel from "@/components/SkillsCarousel";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
@@ -49,13 +49,13 @@ export default function Home() {
           {!isLoading && !isAuthenticated && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/signup"
+                href="/studashboard/main-menu/marketplace"
                 className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-lg font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
               >
                 Get Started
               </Link>
               <Link
-                href="/login"
+                href="/studashboard/main-menu/marketplace"
                 className="bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-3 rounded-lg font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
               >
                 Sign In

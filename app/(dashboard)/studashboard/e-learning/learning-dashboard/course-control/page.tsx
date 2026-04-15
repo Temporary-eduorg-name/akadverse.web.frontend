@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import gradCap from "@/src/icons/graduation-cap.svg";
 import seal from "@/src/icons/seal.svg";
@@ -23,7 +23,7 @@ import {
   X,
   Target,
   Link as LinkIcon,
-  TrendingUp,
+  ArrowDown,
   CheckCircle2,
   Clock,
   PlayCircle,
@@ -207,6 +207,40 @@ const EXTENDED_COURSES = [
   },
 ];
 
+const MY_LEARNING_SLUG_BY_CODE: Record<string, string> = {
+  cs302: "database-systems",
+  it204: "cybersecurity-basics",
+  se401: "software-engineering",
+  spc301: "deep-learning-ai-ethics",
+  spc401: "deep-learning-ai-ethics",
+};
+
+type PrerequisiteNode = {
+  code: string;
+  title: string;
+};
+
+function parsePrerequisites(prerequisites: string): PrerequisiteNode[] {
+  const value = prerequisites.trim();
+  if (!value || value.toLowerCase() === "none") return [];
+
+  return value
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [code, ...titleParts] = entry.split(":");
+      if (titleParts.length === 0) {
+        return { code: "COURSE", title: entry };
+      }
+
+      return {
+        code: code.trim().toUpperCase(),
+        title: titleParts.join(":").trim(),
+      };
+    });
+}
+
 interface SemesterCourse {
   code: string;
   name: string;
@@ -336,10 +370,44 @@ type RegistrationStatus = "upcoming" | "open" | "closed";
 type SelectionMap = Record<string, RegistrationCourse[]>;
 type CollapseMap = Record<string, boolean>;
 
+type RegisteredCourseSnapshot = {
+  semesterLabel: string;
+  registeredAt: string;
+  courses: Array<{
+    code: string;
+    title: string;
+    units: number;
+    tag: RegistrationTag;
+  }>;
+};
+
+type AdvisorDecisionStatus = "pending" | "approved" | "rejected";
+
+type LevelAdvisorDecision = {
+  studentId?: string;
+  studentName?: string;
+  decision?: AdvisorDecisionStatus;
+  note?: string;
+  updatedAt?: string;
+};
+
+type HodDecision = {
+  studentName?: string;
+  decision?: "approved" | "rejected";
+  note?: string;
+};
+
 const DEFAULT_REGISTRATION_START = new Date("2026-03-01T08:45:19").getTime();
 const DEFAULT_REGISTRATION_DEADLINE = new Date("2026-03-26T08:45:19").getTime();
 const registrationStorageKey = "courseRegistrationWindow";
+const advisorDecisionStorageKey = "levelAdvisorRegistrationDecisions";
+const hodDecisionStorageKey = "hodRegistrationDecisions";
+const registeredCoursesStorageKey = "studentRegisteredCourses";
 const DEFAULT_MAX_ALLOWED_UNITS = 24;
+const CURRENT_STUDENT = {
+  id: "CS-2023-301",
+  name: "Alex Johnson",
+};
 
 const REGISTRATION_GROUPS: RegistrationGroup[] = [
   {
@@ -453,6 +521,58 @@ function getTagColor(tag: RegistrationTag) {
   return "bg-[#e0e7ff] text-[#4338ca]";
 }
 
+function getGroupTheme(groupId: string) {
+  if (groupId === "current") {
+    return {
+      panelClass: "border-[#bfdbfe] bg-[#eff6ff]",
+      bodyClass: "border-[#dbeafe] bg-[#f8fbff]",
+      availableCardClass:
+        "border-[#bfdbfe] bg-[#ffffff] hover:border-[#1d4ed8] hover:bg-[#dbeafe]",
+      addedPanelClass: "border-[#bfdbfe] bg-[#dbeafe]",
+      addedItemClass: "border-[#93c5fd] bg-[#eff6ff]",
+      codeClass: "text-[#1d4ed8]",
+      mutedClass: "text-[#1e3a8a]",
+    };
+  }
+
+  if (groupId === "carryover") {
+    return {
+      panelClass: "border-[#fecaca] bg-[#fef2f2]",
+      bodyClass: "border-[#fee2e2] bg-[#fff7f7]",
+      availableCardClass:
+        "border-[#fecaca] bg-[#ffffff] hover:border-[#dc2626] hover:bg-[#fee2e2]",
+      addedPanelClass: "border-[#fecaca] bg-[#fee2e2]",
+      addedItemClass: "border-[#fca5a5] bg-[#fff1f2]",
+      codeClass: "text-[#b91c1c]",
+      mutedClass: "text-[#7f1d1d]",
+    };
+  }
+
+  if (groupId === "pending") {
+    return {
+      panelClass: "border-[#bbf7d0] bg-[#ecfdf5]",
+      bodyClass: "border-[#dcfce7] bg-[#f4fff9]",
+      availableCardClass:
+        "border-[#bbf7d0] bg-[#ffffff] hover:border-[#15803d] hover:bg-[#dcfce7]",
+      addedPanelClass: "border-[#bbf7d0] bg-[#dcfce7]",
+      addedItemClass: "border-[#86efac] bg-[#f0fdf4]",
+      codeClass: "text-[#166534]",
+      mutedClass: "text-[#14532d]",
+    };
+  }
+
+  return {
+    panelClass: "border-[#ddd6fe] bg-[#f5f3ff]",
+    bodyClass: "border-[#ede9fe] bg-[#faf7ff]",
+    availableCardClass:
+      "border-[#ddd6fe] bg-[#ffffff] hover:border-[#7c3aed] hover:bg-[#ede9fe]",
+    addedPanelClass: "border-[#ddd6fe] bg-[#ede9fe]",
+    addedItemClass: "border-[#c4b5fd] bg-[#f5f3ff]",
+    codeClass: "text-[#6d28d9]",
+    mutedClass: "text-[#4c1d95]",
+  };
+}
+
 function getTimeLeft(targetTime: number, fromTime: number) {
   const remaining = Math.max(targetTime - fromTime, 0);
   const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
@@ -482,13 +602,102 @@ function getTotalUnitsFromSelection(selection: SelectionMap) {
     .reduce((sum, course) => sum + course.units, 0);
 }
 
+function buildRegisteredCourseSnapshot(
+  selection: SelectionMap,
+): RegisteredCourseSnapshot {
+  const courses = Object.values(selection).flat();
+  return {
+    semesterLabel: "Semester 1",
+    registeredAt: new Date().toISOString(),
+    courses: courses.map((course) => ({
+      code: course.code,
+      title: course.title,
+      units: course.units,
+      tag: course.tag,
+    })),
+  };
+}
+
+function restoreSelectionFromSnapshot(
+  snapshot: RegisteredCourseSnapshot,
+): SelectionMap {
+  const restoredSelection = buildDefaultSelectionMap();
+
+  snapshot.courses.forEach((storedCourse) => {
+    const matchedGroup = REGISTRATION_GROUPS.find((group) =>
+      group.courses.some((course) => course.code === storedCourse.code),
+    );
+    const matchedCourse = matchedGroup?.courses.find(
+      (course) => course.code === storedCourse.code,
+    );
+
+    if (!matchedGroup || !matchedCourse) return;
+
+    restoredSelection[matchedGroup.id] = [
+      ...restoredSelection[matchedGroup.id],
+      matchedCourse,
+    ];
+  });
+
+  return restoredSelection;
+}
+
+function matchesCurrentStudent(studentId?: string, studentName?: string) {
+  return (
+    studentId?.toLowerCase() === CURRENT_STUDENT.id.toLowerCase() ||
+    studentName?.toLowerCase() === CURRENT_STUDENT.name.toLowerCase()
+  );
+}
+
+function getVerificationStatusClass(status: string) {
+  const normalizedStatus = status.toLowerCase();
+
+  if (normalizedStatus.includes("rejected")) {
+    return "text-[#b91c1c]";
+  }
+
+  if (normalizedStatus.includes("approved")) {
+    return "text-[#166534]";
+  }
+
+  return "text-[#475569]";
+}
+
 // ═══════════════════ MAIN PAGE ═══════════════════
 
 export default function CourseControlPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>("program-overview");
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    tabParam === "course-registration"
+      ? "course-registration"
+      : "program-overview",
+  );
+
+  useEffect(() => {
+    setActiveTab(
+      tabParam === "course-registration"
+        ? "course-registration"
+        : "program-overview",
+    );
+  }, [tabParam]);
+
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (tab === "course-registration") {
+      params.set("tab", "course-registration");
+    } else {
+      params.delete("tab");
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname);
+  };
 
   // — Program Overview state —
   const [activeCourseId, setActiveCourseId] = useState<string | null>("cs302");
@@ -496,6 +705,29 @@ export default function CourseControlPage() {
   const [activeYear, setActiveYear] = useState<number>(4);
 
   const activeCourse = EXTENDED_COURSES.find((c) => c.id === activeCourseId);
+  const prerequisiteNodes = activeCourse
+    ? parsePrerequisites(activeCourse.prerequisites)
+    : [];
+  const hasPrerequisites = prerequisiteNodes.length > 0;
+
+  const handleContinueLearning = () => {
+    if (!activeCourse) return;
+
+    const normalizedCode = activeCourse.code.replace(/\s+/g, "").toLowerCase();
+    const mappedSlug = MY_LEARNING_SLUG_BY_CODE[normalizedCode];
+
+    if (mappedSlug) {
+      router.push(
+        `/studashboard/e-learning/my-learning/${mappedSlug}/course-overview`,
+      );
+      return;
+    }
+
+    router.push(
+      `/studashboard/e-learning/my-learning?course=${encodeURIComponent(activeCourse.code)}`,
+    );
+  };
+
   const filteredCourses =
     activeFilter === "all"
       ? EXTENDED_COURSES
@@ -527,6 +759,20 @@ export default function CourseControlPage() {
   const [selectionNotice, setSelectionNotice] = useState<string | null>(null);
   const [hasSubmittedRegistration, setHasSubmittedRegistration] =
     useState(false);
+  const [isRegistrationRejected, setIsRegistrationRejected] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [levelAdvisorReviewStatus, setLevelAdvisorReviewStatus] = useState(
+    "No registration submitted yet",
+  );
+  const [levelAdvisorReviewNote, setLevelAdvisorReviewNote] = useState<
+    string | null
+  >(null);
+  const [hodReviewStatus, setHodReviewStatus] = useState(
+    "Awaiting student registration submission",
+  );
+  const [isInEditMode, setIsInEditMode] = useState(false);
+  const [editableSelectedCourses, setEditableSelectedCourses] =
+    useState<SelectionMap>(buildDefaultSelectionMap);
 
   useEffect(() => {
     const storedWindow = window.localStorage.getItem(registrationStorageKey);
@@ -556,6 +802,31 @@ export default function CourseControlPage() {
   }, []);
 
   useEffect(() => {
+    if (isInEditMode) return;
+
+    const storedRegistration = window.localStorage.getItem(
+      registeredCoursesStorageKey,
+    );
+    if (!storedRegistration) {
+      setHasSubmittedRegistration(false);
+      return;
+    }
+
+    try {
+      const parsedRegistration = JSON.parse(
+        storedRegistration,
+      ) as RegisteredCourseSnapshot;
+      const restoredSelection =
+        restoreSelectionFromSnapshot(parsedRegistration);
+
+      setSelectedCoursesByGroup(restoredSelection);
+      setHasSubmittedRegistration(parsedRegistration.courses.length > 0);
+    } catch {
+      // Ignore malformed registration payloads.
+    }
+  }, [isInEditMode]);
+
+  useEffect(() => {
     const computeRegistrationState = () => {
       const now = Date.now();
       const start = registrationWindow.startDateTime;
@@ -578,22 +849,165 @@ export default function CourseControlPage() {
     return () => window.clearInterval(interval);
   }, [registrationWindow]);
 
-  const allSelectedCourses = useMemo(
-    () =>
-      REGISTRATION_GROUPS.flatMap((group) =>
-        (selectedCoursesByGroup[group.id] ?? []).map((course) => ({
-          ...course,
-          groupId: group.id,
-          groupTitle: group.title,
-        })),
-      ),
-    [selectedCoursesByGroup],
-  );
+  useEffect(() => {
+    const syncDecisions = () => {
+      if (!hasSubmittedRegistration) {
+        setLevelAdvisorReviewStatus("No registration submitted yet");
+        setLevelAdvisorReviewNote(null);
+        setHodReviewStatus("Awaiting student registration submission");
+        setIsRegistrationRejected(false);
+        setRejectionReason(null);
+        return;
+      }
 
-  const totalUnits = useMemo(
-    () => getTotalUnitsFromSelection(selectedCoursesByGroup),
-    [selectedCoursesByGroup],
-  );
+      let advisorDecision: AdvisorDecisionStatus = "pending";
+      let advisorNote: string | null = null;
+      let hodDecision: "pending" | "approved" | "rejected" = "pending";
+      let hodNote: string | null = null;
+
+      try {
+        const storedAdvisorDecisions = window.localStorage.getItem(
+          advisorDecisionStorageKey,
+        );
+        if (storedAdvisorDecisions) {
+          const parsed = JSON.parse(
+            storedAdvisorDecisions,
+          ) as LevelAdvisorDecision[];
+          const advisorMatch = parsed.find((item) =>
+            matchesCurrentStudent(item.studentId, item.studentName),
+          );
+          if (advisorMatch?.decision) {
+            advisorDecision = advisorMatch.decision;
+            advisorNote = advisorMatch.note?.trim() || null;
+          }
+        }
+      } catch {
+        // Ignore malformed advisor decision payloads.
+      }
+
+      try {
+        const storedHodDecisions = window.localStorage.getItem(
+          hodDecisionStorageKey,
+        );
+        if (storedHodDecisions) {
+          const parsed = JSON.parse(storedHodDecisions) as HodDecision[];
+          const hodMatch = parsed.find(
+            (item) =>
+              item.studentName?.toLowerCase() ===
+              CURRENT_STUDENT.name.toLowerCase(),
+          );
+          if (hodMatch?.decision) {
+            hodDecision = hodMatch.decision;
+            hodNote = hodMatch.note?.trim() || null;
+          }
+        }
+      } catch {
+        // Ignore malformed HOD decision payloads.
+      }
+
+      if (advisorDecision === "approved") {
+        setLevelAdvisorReviewStatus("Approved by Level Advisor");
+      } else if (advisorDecision === "rejected") {
+        setLevelAdvisorReviewStatus("Rejected by Level Advisor");
+      } else {
+        setLevelAdvisorReviewStatus("Awaiting Level Advisor review");
+      }
+
+      setLevelAdvisorReviewNote(
+        advisorDecision === "rejected" ? advisorNote : null,
+      );
+
+      if (advisorDecision === "pending") {
+        setHodReviewStatus("Awaiting Level Advisor approval");
+      } else if (advisorDecision === "rejected") {
+        setHodReviewStatus("Waiting for student resubmission");
+      } else if (hodDecision === "approved") {
+        setHodReviewStatus("Approved by Head of Department");
+      } else if (hodDecision === "rejected") {
+        setHodReviewStatus("Rejected by Head of Department");
+      } else {
+        setHodReviewStatus("Awaiting Head of Department review");
+      }
+
+      const rejected =
+        advisorDecision === "rejected" || hodDecision === "rejected";
+      const reason =
+        hodDecision === "rejected"
+          ? hodNote || "Rejected by HOD."
+          : advisorDecision === "rejected"
+            ? advisorNote || "Rejected by Level Adviser."
+            : null;
+
+      setIsRegistrationRejected(rejected);
+      setRejectionReason(reason);
+    };
+
+    syncDecisions();
+    const interval = window.setInterval(syncDecisions, 3000);
+    return () => window.clearInterval(interval);
+  }, [hasSubmittedRegistration]);
+
+  const clearCurrentStudentVerificationStatus = () => {
+    try {
+      const storedAdvisorDecisions = window.localStorage.getItem(
+        advisorDecisionStorageKey,
+      );
+      if (storedAdvisorDecisions) {
+        const parsed = JSON.parse(
+          storedAdvisorDecisions,
+        ) as LevelAdvisorDecision[];
+        const filteredAdvisorDecisions = parsed.filter(
+          (item) => !matchesCurrentStudent(item.studentId, item.studentName),
+        );
+        window.localStorage.setItem(
+          advisorDecisionStorageKey,
+          JSON.stringify(filteredAdvisorDecisions),
+        );
+      }
+    } catch {
+      // Ignore malformed advisor decision payloads.
+    }
+
+    try {
+      const storedHodDecisions = window.localStorage.getItem(
+        hodDecisionStorageKey,
+      );
+      if (storedHodDecisions) {
+        const parsed = JSON.parse(storedHodDecisions) as HodDecision[];
+        const filteredHodDecisions = parsed.filter(
+          (item) =>
+            item.studentName?.toLowerCase() !==
+            CURRENT_STUDENT.name.toLowerCase(),
+        );
+        window.localStorage.setItem(
+          hodDecisionStorageKey,
+          JSON.stringify(filteredHodDecisions),
+        );
+      }
+    } catch {
+      // Ignore malformed HOD decision payloads.
+    }
+  };
+
+  const allSelectedCourses = useMemo(() => {
+    const courseMap = isInEditMode
+      ? editableSelectedCourses
+      : selectedCoursesByGroup;
+    return REGISTRATION_GROUPS.flatMap((group) =>
+      (courseMap[group.id] ?? []).map((course) => ({
+        ...course,
+        groupId: group.id,
+        groupTitle: group.title,
+      })),
+    );
+  }, [selectedCoursesByGroup, editableSelectedCourses, isInEditMode]);
+
+  const totalUnits = useMemo(() => {
+    const courseMap = isInEditMode
+      ? editableSelectedCourses
+      : selectedCoursesByGroup;
+    return getTotalUnitsFromSelection(courseMap);
+  }, [selectedCoursesByGroup, editableSelectedCourses, isInEditMode]);
 
   const maxAllowedUnits = registrationWindow.maxAllowedUnits;
   const progress = Math.min((totalUnits / maxAllowedUnits) * 100, 100);
@@ -651,9 +1065,18 @@ export default function CourseControlPage() {
   };
 
   const addCourse = (groupId: string, course: RegistrationCourse) => {
-    if (hasSubmittedRegistration || registrationStatus !== "open") return;
+    if (
+      !isInEditMode &&
+      (hasSubmittedRegistration || registrationStatus !== "open")
+    )
+      return;
     setSelectionNotice(null);
-    setSelectedCoursesByGroup((prev) => {
+
+    const setTargetMap = isInEditMode
+      ? setEditableSelectedCourses
+      : setSelectedCoursesByGroup;
+
+    setTargetMap((prev) => {
       const currentGroup = prev[groupId] ?? [];
       if (currentGroup.some((item) => item.code === course.code)) return prev;
       const projectedTotal = getTotalUnitsFromSelection(prev) + course.units;
@@ -668,9 +1091,18 @@ export default function CourseControlPage() {
   };
 
   const removeCourse = (groupId: string, courseCode: string) => {
-    if (hasSubmittedRegistration || registrationStatus !== "open") return;
+    if (
+      !isInEditMode &&
+      (hasSubmittedRegistration || registrationStatus !== "open")
+    )
+      return;
     setSelectionNotice(null);
-    setSelectedCoursesByGroup((prev) => ({
+
+    const setTargetMap = isInEditMode
+      ? setEditableSelectedCourses
+      : setSelectedCoursesByGroup;
+
+    setTargetMap((prev) => ({
       ...prev,
       [groupId]: (prev[groupId] ?? []).filter((c) => c.code !== courseCode),
     }));
@@ -678,6 +1110,11 @@ export default function CourseControlPage() {
 
   const submitRegistration = () => {
     if (registrationStatus !== "open" || totalUnits === 0) return;
+    clearCurrentStudentVerificationStatus();
+    window.localStorage.setItem(
+      registeredCoursesStorageKey,
+      JSON.stringify(buildRegisteredCourseSnapshot(selectedCoursesByGroup)),
+    );
     setHasSubmittedRegistration(true);
     setSelectionNotice(
       "Registration submitted successfully. Awaiting advisor review.",
@@ -685,83 +1122,54 @@ export default function CourseControlPage() {
   };
 
   const resetRegistration = () => {
+    clearCurrentStudentVerificationStatus();
+    window.localStorage.removeItem(registeredCoursesStorageKey);
     setHasSubmittedRegistration(false);
-    setSelectionNotice(
-      "Registration unlocked. You can edit your selected courses.",
+    setIsRegistrationRejected(false);
+    setRejectionReason(null);
+    setLevelAdvisorReviewStatus("No registration submitted yet");
+    setLevelAdvisorReviewNote(null);
+    setHodReviewStatus("Awaiting student registration submission");
+    setIsInEditMode(false);
+    setSelectedCoursesByGroup(buildDefaultSelectionMap());
+    setEditableSelectedCourses(buildDefaultSelectionMap());
+    setSelectionNotice("Registration reset. All courses have been cleared.");
+  };
+
+  const startEditRegistration = () => {
+    setIsInEditMode(true);
+    setEditableSelectedCourses(selectedCoursesByGroup);
+    setHasSubmittedRegistration(false);
+    setSelectionNotice(null);
+  };
+
+  const cancelEditRegistration = () => {
+    setIsInEditMode(false);
+    setEditableSelectedCourses(buildDefaultSelectionMap());
+    setHasSubmittedRegistration(true);
+    setSelectionNotice(null);
+  };
+
+  const confirmEditRegistration = () => {
+    clearCurrentStudentVerificationStatus();
+    window.localStorage.setItem(
+      registeredCoursesStorageKey,
+      JSON.stringify(buildRegisteredCourseSnapshot(editableSelectedCourses)),
     );
+    setSelectedCoursesByGroup(editableSelectedCourses);
+    setIsInEditMode(false);
+    setEditableSelectedCourses(buildDefaultSelectionMap());
+    setIsRegistrationRejected(false);
+    setRejectionReason(null);
+    setSelectionNotice("Registration updated and resubmitted for approval.");
+    setHasSubmittedRegistration(true);
   };
 
   return (
     <div
       className="min-h-screen bg-[#f8fafc]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-20 flex h-[57px] items-center border-b border-[#e2e8f0] bg-white px-6">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Go back"
-            onClick={() => router.back()}
-            className="rounded-md border border-[#e2e8f0] bg-white p-2 text-[#64748b] transition-colors hover:bg-[#f8fafc] hover:text-[#334155]"
-          >
-            <ChevronLeft size={17} strokeWidth={2.5} />
-          </button>
-
-          <div className="w-[316px] rounded-full border border-[#e2e8f0] bg-white px-4 py-2 transition-colors hover:border-[#cbd5e1] focus-within:border-[#93c5fd] focus-within:ring-2 focus-within:ring-[#dbeafe]">
-            <label className="flex items-center gap-2 text-[#94a3b8]">
-              <Search size={18} strokeWidth={2} />
-              <input
-                type="text"
-                placeholder="Search courses..."
-                className="w-full bg-transparent text-[13px] font-medium text-[#334155] outline-none placeholder:text-[#94a3b8]"
-              />
-            </label>
-          </div>
-        </div>
-
-        <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-10">
-          {topNavIcons.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.id === "course-control"
-                ? pathname.startsWith(
-                    "/studashboard/e-learning/learning-dashboard/course-control",
-                  )
-                : pathname === item.path;
-            return (
-              <button
-                key={item.id}
-                aria-label={item.label}
-                onClick={() => router.push(item.path)}
-                className={`transition-colors ${
-                  isActive
-                    ? "text-[#2563eb]"
-                    : "text-[#94a3b8] hover:text-[#64748b]"
-                }`}
-              >
-                <Icon size={20} strokeWidth={2.5} />
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="ml-auto flex items-center gap-4">
-          <button className="relative rounded-md p-2 text-[#94a3b8] hover:text-[#64748b]">
-            <Bell size={18} strokeWidth={2} />
-            <span className="absolute right-2 top-2 size-[7px] rounded-full bg-[#ef4444]" />
-          </button>
-          <div className="h-8 w-px bg-[#e2e8f0]" />
-          <div className="text-right">
-            <p className="text-[13px] font-bold text-[#0f172a]">Alex Rivers</p>
-            <p className="text-[11px] text-[#64748b]">Student ID: 49201</p>
-          </div>
-          <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fce0df] text-[13px] font-bold text-[#b03028] shadow-sm">
-            AR
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-[1240px] px-10 py-8">
         {/* Page Title */}
         <h1
@@ -777,7 +1185,7 @@ export default function CourseControlPage() {
         {/* ── Tabs ── */}
         <div className="mt-8 flex gap-8 border-b border-[#e2e8f0]">
           <button
-            onClick={() => setActiveTab("program-overview")}
+            onClick={() => handleTabChange("program-overview")}
             className={`relative pb-[12px] text-[13px] font-bold transition-colors ${
               activeTab === "program-overview"
                 ? "text-[#0f172a]"
@@ -790,7 +1198,7 @@ export default function CourseControlPage() {
             )}
           </button>
           <button
-            onClick={() => setActiveTab("course-registration")}
+            onClick={() => handleTabChange("course-registration")}
             className={`relative pb-[12px] text-[13px] font-bold transition-colors ${
               activeTab === "course-registration"
                 ? "text-[#1d4ed8]"
@@ -1057,20 +1465,49 @@ export default function CourseControlPage() {
                           </div>
                           Prerequisites
                         </h4>
-                        <div className="ml-[28px] mt-3 inline-block rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-3 py-1.5 text-[11px] font-bold text-[#475569]">
-                          {activeCourse.prerequisites}
+                        <div className="ml-[28px] mt-3 rounded-xl border border-[#dbe4f0] bg-[#f8fafc] px-4 py-5">
+                          {hasPrerequisites ? (
+                            <div className="flex flex-col items-center">
+                              {prerequisiteNodes.map((node, index) => (
+                                <React.Fragment key={`${node.code}-${index}`}>
+                                  <div className="rounded-[10px] border border-[#d8e0ea] bg-white px-4 py-2 text-center shadow-sm">
+                                    <p className="text-[10px] font-bold uppercase tracking-wide text-[#2563eb]">
+                                      {node.code}
+                                    </p>
+                                    <p className="text-[14px] font-semibold text-[#1e293b]">
+                                      {node.title}
+                                    </p>
+                                  </div>
+                                  <ArrowDown
+                                    size={30}
+                                    strokeWidth={2.8}
+                                    className="my-2 text-[#64748b]"
+                                  />
+                                </React.Fragment>
+                              ))}
+
+                              <div className="rounded-[10px] border border-[#d8e0ea] bg-white px-4 py-2 text-center shadow-sm">
+                                <p className="text-[10px] font-bold uppercase tracking-wide text-[#2563eb]">
+                                  {activeCourse.code}
+                                </p>
+                                <p className="text-[14px] font-semibold text-[#1e293b]">
+                                  {activeCourse.title}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="rounded-[10px] border border-dashed border-[#cbd5e1] bg-white px-4 py-3 text-center text-[12px] font-semibold text-[#64748b]">
+                              This course has no prerequisite requirements.
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <h4 className="flex items-center gap-2 text-[13px] font-bold text-[#0f172a]">
-                          <div className="flex size-5 items-center justify-center rounded bg-[#eff6ff] text-[#2563eb]">
-                            <TrendingUp size={12} strokeWidth={2.5} />
-                          </div>
-                          Career Paths
-                        </h4>
-                      </div>
                     </div>
-                    <button className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563eb] py-3 text-[13px] font-bold text-white shadow-sm shadow-blue-200 hover:bg-[#1d4ed8]">
+                    <button
+                      type="button"
+                      onClick={handleContinueLearning}
+                      className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563eb] py-3 text-[13px] font-bold text-white shadow-sm shadow-blue-200 hover:bg-[#1d4ed8]"
+                    >
                       Continue Learning{" "}
                       <ArrowRight size={15} strokeWidth={2.5} />
                     </button>
@@ -1412,12 +1849,14 @@ export default function CourseControlPage() {
                   {REGISTRATION_GROUPS.map((group) => {
                     const Icon = group.icon;
                     const isCollapsed = collapsedGroups[group.id];
-                    const selectedCourses =
-                      selectedCoursesByGroup[group.id] ?? [];
+                    const theme = getGroupTheme(group.id);
+                    const selectedCourses = isInEditMode
+                      ? (editableSelectedCourses[group.id] ?? [])
+                      : (selectedCoursesByGroup[group.id] ?? []);
                     return (
                       <article
                         key={group.id}
-                        className="overflow-hidden rounded-[12px] border border-[#d9e2ec] bg-white"
+                        className={`overflow-hidden rounded-[12px] border ${theme.panelClass}`}
                       >
                         <button
                           type="button"
@@ -1449,7 +1888,9 @@ export default function CourseControlPage() {
                           </span>
                         </button>
                         {!isCollapsed && (
-                          <div className="space-y-4 border-t border-[#e8eef5] px-4 py-4">
+                          <div
+                            className={`space-y-4 border-t px-4 py-4 ${theme.bodyClass}`}
+                          >
                             <div>
                               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748b]">
                                 Available Courses - click to add
@@ -1467,7 +1908,8 @@ export default function CourseControlPage() {
                                       key={course.code}
                                       type="button"
                                       disabled={
-                                        hasSubmittedRegistration ||
+                                        (!isInEditMode &&
+                                          hasSubmittedRegistration) ||
                                         wouldExceedLimit ||
                                         isSelected
                                       }
@@ -1479,11 +1921,13 @@ export default function CourseControlPage() {
                                           ? "cursor-not-allowed border-[#bbf7d0] bg-[#f0fdf4]"
                                           : wouldExceedLimit
                                             ? "cursor-not-allowed border-[#fecaca] bg-[#fef2f2]"
-                                            : "border-[#d9e2ec] bg-white hover:border-[#1d4ed8] hover:bg-[#eff6ff]"
+                                            : theme.availableCardClass
                                       }`}
                                     >
                                       <span>
-                                        <p className="text-[13px] font-bold text-[#1d4ed8]">
+                                        <p
+                                          className={`text-[13px] font-bold ${theme.codeClass}`}
+                                        >
                                           {course.code}
                                         </p>
                                         <p className="text-[12px] font-medium text-[#334155]">
@@ -1491,7 +1935,9 @@ export default function CourseControlPage() {
                                         </p>
                                       </span>
                                       <div className="text-right">
-                                        <p className="text-[11px] font-semibold text-[#64748b]">
+                                        <p
+                                          className={`text-[11px] font-semibold ${theme.mutedClass}`}
+                                        >
                                           {course.units} Units
                                         </p>
                                         <span
@@ -1509,8 +1955,12 @@ export default function CourseControlPage() {
                                 })}
                               </div>
                             </div>
-                            <div className="rounded-[10px] border border-[#d9e2ec] bg-[#f8fafc] p-3">
-                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748b]">
+                            <div
+                              className={`rounded-[10px] border p-3 ${theme.addedPanelClass}`}
+                            >
+                              <p
+                                className={`mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] ${theme.mutedClass}`}
+                              >
                                 Added {group.title}
                               </p>
                               {selectedCourses.length === 0 ? (
@@ -1522,10 +1972,12 @@ export default function CourseControlPage() {
                                   {selectedCourses.map((course) => (
                                     <div
                                       key={course.code}
-                                      className="flex items-center justify-between rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2"
+                                      className={`flex items-center justify-between rounded-md border px-3 py-2 ${theme.addedItemClass}`}
                                     >
                                       <div>
-                                        <p className="text-[12px] font-bold text-[#166534]">
+                                        <p
+                                          className={`text-[12px] font-bold ${theme.codeClass}`}
+                                        >
                                           {course.code}
                                         </p>
                                         <p className="text-[12px] font-medium text-[#334155]">
@@ -1533,12 +1985,17 @@ export default function CourseControlPage() {
                                         </p>
                                       </div>
                                       <div className="flex items-center gap-3">
-                                        <span className="text-[11px] font-semibold text-[#166534]">
+                                        <span
+                                          className={`text-[11px] font-semibold ${theme.mutedClass}`}
+                                        >
                                           {course.units} Units
                                         </span>
                                         <button
                                           type="button"
-                                          disabled={hasSubmittedRegistration}
+                                          disabled={
+                                            !isInEditMode &&
+                                            hasSubmittedRegistration
+                                          }
                                           onClick={() =>
                                             removeCourse(group.id, course.code)
                                           }
@@ -1615,14 +2072,13 @@ export default function CourseControlPage() {
                             <th className="px-4 py-3">Course Title</th>
                             <th className="px-4 py-3">Units</th>
                             <th className="px-4 py-3">Category</th>
-                            <th className="px-4 py-3">Verification</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e8eef5] text-[13px]">
                           {allSelectedCourses.length === 0 ? (
                             <tr>
                               <td
-                                colSpan={5}
+                                colSpan={4}
                                 className="px-4 py-6 text-center text-[13px] font-medium text-[#94a3b8]"
                               >
                                 No courses selected yet. Select courses from any
@@ -1647,12 +2103,6 @@ export default function CourseControlPage() {
                                 <td className="px-4 py-3 font-medium text-[#334155]">
                                   {course.groupTitle}
                                 </td>
-                                <td className="px-4 py-3">
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-[#059669]">
-                                    <CheckCircle2 size={12} strokeWidth={2.5} />{" "}
-                                    Pending
-                                  </span>
-                                </td>
                               </tr>
                             ))
                           )}
@@ -1667,7 +2117,7 @@ export default function CourseControlPage() {
                               <td className="px-4 py-3 text-[14px] font-extrabold text-[#1d4ed8]">
                                 {totalUnits}
                               </td>
-                              <td colSpan={2} className="px-4 py-3" />
+                              <td className="px-4 py-3" />
                             </tr>
                           )}
                         </tbody>
@@ -1687,12 +2137,63 @@ export default function CourseControlPage() {
                     </p>
                   )}
 
-                  {hasSubmittedRegistration ? (
+                  {isInEditMode ? (
+                    <div className="mt-8 grid gap-3 md:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={confirmEditRegistration}
+                        className="w-full rounded-[8px] bg-[#2563eb] py-4 text-[18px] font-semibold text-white hover:bg-[#1d4ed8]"
+                      >
+                        Confirm Registration
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditRegistration}
+                        className="w-full rounded-[8px] border border-[#e2e8f0] bg-white py-4 text-[18px] font-semibold text-[#334155] hover:bg-[#f8fafc]"
+                      >
+                        Cancel Edit
+                      </button>
+                    </div>
+                  ) : hasSubmittedRegistration && !isRegistrationRejected ? (
+                    // Submitted and approved - show only Print button
                     <div className="mt-8 rounded-[12px] bg-white px-4 py-5 shadow-sm">
                       <h3 className="text-[22px] font-bold text-[#0f172a] mb-4">
-                        Alpha Semester Course Verification
+                        Registration Submitted
                       </h3>
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <p className="text-[13px] font-medium text-[#64748b] mb-6">
+                        Your registration has been submitted successfully and is
+                        awaiting advisor review.
+                      </p>
+                      <div className="grid gap-4">
+                        <button
+                          className="w-full rounded-[8px] bg-[#2563eb] py-4 text-[18px] font-semibold text-white hover:bg-[#1d4ed8]"
+                          onClick={() =>
+                            router.push(
+                              "/studashboard/e-learning/learning-dashboard/course-control/print",
+                            )
+                          }
+                        >
+                          Print Registration
+                        </button>
+                      </div>
+                    </div>
+                  ) : hasSubmittedRegistration && isRegistrationRejected ? (
+                    // Submitted and rejected - show Print, Edit, Reset buttons
+                    <div className="mt-8 rounded-[12px] bg-white px-4 py-5 shadow-sm">
+                      <h3 className="text-[22px] font-bold text-[#0f172a] mb-4">
+                        Registration Rejected
+                      </h3>
+                      {rejectionReason && (
+                        <div className="mb-4 p-3 rounded-md bg-[#fee2e2] border border-[#fecaca]">
+                          <p className="text-[12px] font-semibold text-[#991b1b] mb-1">
+                            Reason for Rejection:
+                          </p>
+                          <p className="text-[13px] text-[#dc2626]">
+                            {rejectionReason}
+                          </p>
+                        </div>
+                      )}
+                      <div className="grid gap-4 md:grid-cols-3">
                         <button
                           className="w-full rounded-[8px] bg-[#2563eb] py-4 text-[18px] font-semibold text-white hover:bg-[#1d4ed8]"
                           onClick={() =>
@@ -1705,24 +2206,15 @@ export default function CourseControlPage() {
                         </button>
                         <button
                           className="w-full rounded-[8px] bg-[#a855f7] py-4 text-[18px] font-semibold text-white hover:bg-[#7c3aed]"
-                          onClick={resetRegistration}
+                          onClick={startEditRegistration}
                         >
                           Edit Registration
                         </button>
                         <button
                           className="w-full rounded-[8px] bg-[#dc2626] py-4 text-[18px] font-semibold text-white hover:bg-[#b91c1c]"
-                          onClick={() => {
-                            setHasSubmittedRegistration(false);
-                            setSelectedCoursesByGroup(
-                              buildDefaultSelectionMap(),
-                            );
-                            setSelectionNotice(null);
-                          }}
+                          onClick={resetRegistration}
                         >
                           Reset Registration
-                        </button>
-                        <button className="w-full rounded-[8px] bg-[#2563eb] py-4 text-[18px] font-semibold text-white hover:bg-[#1d4ed8]">
-                          Verify Registration
                         </button>
                       </div>
                     </div>
@@ -1736,6 +2228,58 @@ export default function CourseControlPage() {
                       Submit for Approval
                     </button>
                   )}
+
+                  <section className="mt-6 rounded-[16px] border border-[#e2e8f0] bg-[#f8fafc] px-4 py-5 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-[20px] font-bold text-[#0f172a]">
+                        Course Verification Status
+                      </h3>
+                      <ChevronUp
+                        size={18}
+                        className="text-[#334155]"
+                        strokeWidth={2.5}
+                      />
+                    </div>
+
+                    <div className="mt-4 grid gap-4">
+                      <article className="rounded-[12px] border border-[#e2e8f0] bg-white px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-10 items-center justify-center rounded-full bg-[#f3e8ff] text-[#7c3aed]">
+                            <CheckCircle2 size={18} strokeWidth={2.4} />
+                          </div>
+                          <h4 className="text-[18px] font-semibold text-[#0f172a]">
+                            Level Advisor Review
+                          </h4>
+                        </div>
+                        <p
+                          className={`mt-3 text-[14px] font-medium ${getVerificationStatusClass(levelAdvisorReviewStatus)}`}
+                        >
+                          {levelAdvisorReviewStatus}
+                        </p>
+                        <p
+                          className={`${levelAdvisorReviewNote ? "mt-2 text-[13px] text-[#7f1d1d]" : "hidden"}`}
+                        >
+                          Adviser&apos;s note: {levelAdvisorReviewNote}
+                        </p>
+                      </article>
+
+                      <article className="rounded-[12px] border border-[#e2e8f0] bg-white px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-10 items-center justify-center rounded-full bg-[#eef2ff] text-[#475569]">
+                            <Shield size={18} strokeWidth={2.3} />
+                          </div>
+                          <h4 className="text-[18px] font-semibold text-[#0f172a]">
+                            Head of Department Review
+                          </h4>
+                        </div>
+                        <p
+                          className={`mt-3 text-[14px] font-medium ${getVerificationStatusClass(hodReviewStatus)}`}
+                        >
+                          {hodReviewStatus}
+                        </p>
+                      </article>
+                    </div>
+                  </section>
                 </section>
               </>
             ) : (

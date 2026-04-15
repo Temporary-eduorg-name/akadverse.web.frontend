@@ -15,7 +15,7 @@ export async function handleViewProductDetails<TResponse>(
   callbacks.onLoadStart(productId);
 
   try {
-    const response = await fetch(`/api/products/${productId}/details`);
+    const response = await fetch(`/api/marketplace/products/${productId}/details`);
     if (response.ok) {
       const data: TResponse = await response.json();
       callbacks.onSuccess(data);
@@ -27,3 +27,4 @@ export async function handleViewProductDetails<TResponse>(
     callbacks.onLoadEnd();
   }
 }
+

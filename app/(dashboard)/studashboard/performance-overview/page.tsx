@@ -1,2 +1,2 @@
 "use client";
-export { default } from "../courses/page";
+export { default } from "../e-learning/learning-dashboard/records/performance-overview/page";

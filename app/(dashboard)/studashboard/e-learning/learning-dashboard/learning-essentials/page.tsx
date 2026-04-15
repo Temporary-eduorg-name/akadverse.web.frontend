@@ -1,376 +1,188 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
 import {
-  ArrowLeft,
-  LayoutGrid,
-  BookOpen,
-  FileText,
-  Bell,
-  Home,
-  ClipboardList,
-  BarChart3,
+  ChevronDown,
   Lightbulb,
   Rocket,
   SlidersHorizontal,
-  ChevronDown,
 } from "lucide-react";
+import ELearningTopNav from "@/app/components/dashboard/student/ELearningTopNav";
+import { MY_LEARNING_COURSES } from "../../my-learning/courseData";
 
-const Page = () => {
+const CGPA_TARGET = 3.85;
+const CREDIT_TARGET = 78;
+const RADIUS = 50;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+const recentGrades = [
+  {
+    name: "Calculus II",
+    subtitle: "Midterm Exam",
+    grade: "A-",
+    iconBg: "bg-[#ffedd5]",
+    iconColor: "text-orange-600",
+    symbol: "S",
+  },
+  {
+    name: "Data Structures",
+    subtitle: "Project 01",
+    grade: "A+",
+    iconBg: "bg-[#dbeafe]",
+    iconColor: "text-blue-600",
+    symbol: "</>",
+  },
+  {
+    name: "Genetics",
+    subtitle: "Lab Report",
+    grade: "B+",
+    iconBg: "bg-[#f3e8ff]",
+    iconColor: "text-purple-600",
+    symbol: "L",
+  },
+];
+
+const courses = [
+  {
+    name: "Introduction to Machine Learning",
+    code: "CS304",
+    instructor: "Dr. Sarah Williams",
+    category: "Technology",
+    categoryTextColor: "text-[#2563eb]",
+    categoryBgColor: "bg-[#eff6ff]",
+    credits: "4.0",
+    status: "Open",
+    statusDot: "bg-[#10b981]",
+    statusTextColor: "text-[#475569]",
+    action: "Register",
+  },
+  {
+    name: "Advanced Quantum Physics",
+    code: "PH402",
+    instructor: "Prof. Liam Chen",
+    category: "Science",
+    categoryTextColor: "text-[#9333ea]",
+    categoryBgColor: "bg-[#faf5ff]",
+    credits: "3.0",
+    status: "Registered",
+    statusDot: "bg-[#cbd5e1]",
+    statusTextColor: "text-[#94a3b8]",
+    action: "Details",
+  },
+  {
+    name: "Entrepreneurship & Innovation",
+    code: "BS101",
+    instructor: "Martha Stewart",
+    category: "Business",
+    categoryTextColor: "text-[#ea580c]",
+    categoryBgColor: "bg-[#fff7ed]",
+    credits: "2.0",
+    status: "Limited Spots",
+    statusDot: "bg-[#f59e0b]",
+    statusTextColor: "text-[#475569]",
+    action: "Register",
+  },
+];
+
+function getCreditBarColor(pct: number) {
+  if (pct < 20) return "#ef4444";
+  if (pct < 45) return "#f97316";
+  if (pct < 65) return "#eab308";
+  return "#0066ff";
+}
+
+export default function LearningEssentialsPage() {
   const router = useRouter();
-  const pathname = usePathname();
-
-  // ── Animation state ──────────────────────────────────────────
-  const CGPA_TARGET = 3.85;
-  const CREDIT_TARGET = 78; // percent
-
-  const [cgpaDisplay, setCgpaDisplay] = React.useState(0);
-  const [creditProgress, setCreditProgress] = React.useState(0);
-  const [animationDone, setAnimationDone] = React.useState(false);
+  const [animationRatio, setAnimationRatio] = React.useState(0);
+  const [myLearningCourses, setMyLearningCourses] = React.useState(() =>
+    MY_LEARNING_COURSES.slice(0, 3).map((course) => ({
+      title: course.title,
+      progress: course.progress,
+      slug: course.slug,
+      status:
+        course.progress >= 85
+          ? "AHEAD"
+          : course.progress >= 60
+            ? "ACTIVE"
+            : "ON TRACK",
+    })),
+  );
 
   React.useEffect(() => {
-    if (animationDone) return;
-    const duration = 1800; // ms
+    const shuffled = [...MY_LEARNING_COURSES].sort(() => Math.random() - 0.5);
+    setMyLearningCourses(
+      shuffled.slice(0, 3).map((course) => ({
+        title: course.title,
+        progress: course.progress,
+        slug: course.slug,
+        status:
+          course.progress >= 85
+            ? "AHEAD"
+            : course.progress >= 60
+              ? "ACTIVE"
+              : "ON TRACK",
+      })),
+    );
+  }, []);
+
+  React.useEffect(() => {
     const start = performance.now();
+    const duration = 2600;
 
     const tick = (now: number) => {
-      const elapsed = now - start;
-      const t = Math.min(elapsed / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - t, 3);
+      const progress = Math.min((now - start) / duration, 1);
+      const eased =
+        progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
-      setCgpaDisplay(parseFloat((eased * CGPA_TARGET).toFixed(2)));
-      setCreditProgress(Math.round(eased * CREDIT_TARGET));
+      setAnimationRatio(progress < 1 ? eased : 1);
 
-      if (t < 1) {
+      if (progress < 1) {
         requestAnimationFrame(tick);
-      } else {
-        setAnimationDone(true);
       }
     };
 
-    const raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [animationDone]);
+    const frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
-  // Credit bar colour transitions: red → orange → yellow → blue
-  function getCreditBarColor(pct: number): string {
-    if (pct < 20) return "#ef4444";
-    if (pct < 45) return "#f97316";
-    if (pct < 65) return "#eab308";
-    return "#0066ff";
-  }
-
+  const cgpaDisplay = animationRatio * CGPA_TARGET;
+  const creditProgress = animationRatio * CREDIT_TARGET;
   const creditBarColor = getCreditBarColor(creditProgress);
+  const creditStrokeOffset =
+    CIRCUMFERENCE - (creditProgress / 100) * CIRCUMFERENCE;
 
-  // ── Donut animation ──────────────────────────────────────────
-  const RADIUS = 50;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-  const PROGRESS_PERCENT = creditProgress / 100;
-
-  const topNavIcons = [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: LayoutGrid,
-      path: "/studashboard/e-learning/learning-dashboard/learning-essentials",
-    },
-    {
-      id: "course-control",
-      label: "Course Control",
-      icon: BookOpen,
-      path: "/studashboard/e-learning/learning-dashboard/course-control",
-    },
-    {
-      id: "records",
-      label: "Records",
-      icon: FileText,
-      path: "/studashboard/e-learning/learning-dashboard/records/performance-overview",
-    },
-    {
-      id: "ideas",
-      label: "Ideas",
-      icon: Lightbulb,      
-      path: "",
-    },
-  ];
-
-  /* ── Dummy Data ── */
-  const recentGrades = [
-    {
-      name: "Calculus II",
-      subtitle: "Midterm Exam",
-      grade: "A-",
-      iconBg: "bg-[#ffedd5]" /* Figma: orange tint */,
-      iconColor: "text-orange-600",
-      symbol: "Σ",
-    },
-    {
-      name: "Data Structures",
-      subtitle: "Project 01",
-      grade: "A+",
-      iconBg: "bg-[#dbeafe]" /* Figma: blue tint */,
-      iconColor: "text-blue-600",
-      symbol: "</>",
-    },
-    {
-      name: "Genetics",
-      subtitle: "Lab Report",
-      grade: "B+",
-      iconBg: "bg-[#f3e8ff]" /* Figma: purple tint */,
-      iconColor: "text-purple-600",
-      symbol: "Λ",
-    },
-  ];
-
-  const myLearningCourses = [
-    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
-    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
-    { title: "Data Structures & Algos", progress: 78, status: "ON TRACK" },
-  ];
-
-  const courses = [
-    {
-      name: "Introduction to Machine Learning",
-      code: "CS304",
-      instructor: "Dr. Sarah Williams",
-      category: "Technology",
-      categoryTextColor: "text-[#2563eb]" /* Figma blue */,
-      categoryBgColor: "bg-[#eff6ff]",
-      credits: "4.0",
-      status: "Open",
-      statusDot: "bg-[#10b981]" /* Figma green */,
-      statusTextColor: "text-[#475569]",
-      action: "Register",
-    },
-    {
-      name: "Advanced Quantum Physics",
-      code: "PH402",
-      instructor: "Prof. Liam Chen",
-      category: "Science",
-      categoryTextColor: "text-[#9333ea]" /* Figma purple */,
-      categoryBgColor: "bg-[#faf5ff]",
-      credits: "3.0",
-      status: "Registered",
-      statusDot: "bg-[#cbd5e1]" /* Figma gray */,
-      statusTextColor: "text-[#94a3b8]",
-      action: "Details",
-    },
-    {
-      name: "Entrepreneurship & Innovation",
-      code: "BS101",
-      instructor: "Martha Stewart",
-      category: "Business",
-      categoryTextColor: "text-[#ea580c]" /* Figma orange */,
-      categoryBgColor: "bg-[#fff7ed]",
-      credits: "2.0",
-      status: "Limited Spots",
-      statusDot: "bg-[#f59e0b]" /* Figma amber */,
-      statusTextColor: "text-[#475569]",
-      action: "Register",
-    },
-  ];
-
-  const sidebarNav = [
-    {
-      id: "dashboard",
-      label: "Dashboard",
-      icon: Home,
-      path: "/studashboard/e-learning/learning-dashboard/learning-essentials",
-    },
-    {
-      id: "courses",
-      label: "Courses",
-      icon: BookOpen,
-      path: "/studashboard/e-learning/learning-dashboard/course-control",
-    },
-    {
-      id: "records",
-      label: "Records",
-      icon: ClipboardList,
-      path: "/studashboard/e-learning/learning-dashboard/records/performance-overview",
-    },
-    { id: "mylearning", label: "Mylearning", icon: BarChart3, path: "" },
-    { id: "suggestions", label: "Suggestions", icon: Lightbulb, path: "" },
-  ];
   return (
-    <div className="flex min-h-screen font-sans">
-      {/* ─── Sidebar — fixed, z-50, above navbar ─── */}
-      {/* Figma: #1e40af, 288px wide, border-r rgba(30,64,175,0.2) */}
-      <aside className="w-[288px] bg-[#1e40af] text-white flex flex-col fixed top-0 left-0 h-screen z-50 border-r border-[rgba(30,64,175,0.2)]">
-        {/* Header — "Learning Essentials" + compass icon */}
-        <div className="px-6 pt-6 pb-5 flex items-center gap-3">
-          <div className="w-10 h-10 bg-[rgba(255,255,255,0.2)] rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg
-              width="22"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polygon
-                points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
-                fill="white"
-                stroke="white"
-              />
-            </svg>
-          </div>
-          <div>
-            {/* Figma: 18px Bold white */}
-            <p className="font-bold text-[18px] leading-[22.5px] text-white">
-              Learning Essentials
-            </p>
-            {/* Figma: 12px Regular white/60% */}
-            <p className="font-normal text-[12px] leading-4 text-[rgba(255,255,255,0.6)]">
-              Vibrant Blue Edition
-            </p>
-          </div>
-        </div>
-
-        {/* Back to Workspace — user explicitly requested this */}
-        <div className="px-6 pb-4">
-          <button
-            onClick={() => router.push("/studashboard/e-learning")}
-            className="flex items-center gap-2 text-[rgba(255,255,255,0.5)] hover:text-white transition-colors text-[13px]"
-          >
-            <ArrowLeft size={14} />
-            <span>Back</span>
-          </button>
-        </div>
-
-        {/* Navigation — Figma: 8px gap, px-16, py-12 per link, rounded-[12px] */}
-        <nav className="flex-1 px-4 space-y-2">
-          {sidebarNav.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.path
-              ? pathname === item.path || pathname.startsWith(item.path + "/")
-              : false;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.path) router.push(item.path);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-[16px] ${
-                  isActive
-                    ? "bg-[rgba(255,255,255,0.45)] text-white font-medium"
-                    : "text-[rgba(255,255,255,0.8)] hover:text-white hover:bg-[rgba(255,255,255,0.1)] font-normal"
-                }`}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* ─── Main Content — offset by sidebar width ─── */}
-      {/* Figma: page bg #f0f4f8 */}
-      <div className="flex-1 flex flex-col ml-[288px] bg-[#f0f4f8] min-h-screen">
-        {/* Top Toolbar / Header — Figma: white, border-b #e2e8f0, 60px height */}
-        <header className="h-[60px] bg-white border-b border-[#e2e8f0] flex items-center relative sticky top-0 z-40 px-6">
-          {/* Left: Top toolbar icons — absolutely centered */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-10">
-            {topNavIcons.map((item, index) => {
-              const Icon = item.icon;
-              const isActive =
-                pathname === item.path ||
-                (item.id === "course-control" &&
-                  pathname.startsWith(item.path + "/"));
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => router.push(item.path)}
-                  aria-label={item.label}
-                  className={`transition-colors ${
-                    isActive
-                      ? "text-[#1e40af] p-2 bg-[#eff6ff] rounded-lg"
-                      : "text-[#9ca3af] hover:text-[#4b5563]"
-                  }`}
-                >
-                  <Icon size={20} strokeWidth={2.2} />
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Right: bell + user info + avatar */}
-          <div className="flex items-center gap-6 ml-auto">
-            {/* Notification Bell with red dot — Figma: #ef4444 dot, white border */}
-            <button className="relative text-gray-500 hover:text-gray-700 p-2">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#ef4444] border-2 border-white rounded-full" />
-            </button>
-
-            {/* Vertical Divider — Figma: #e2e8f0, 32px tall */}
-            <div className="w-px h-8 bg-[#e2e8f0]" />
-
-            {/* User Info + Avatar */}
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                {/* Figma: 14px Bold #0f172a */}
-                <p className="text-[14px] font-bold text-[#0f172a] leading-5">
-                  Alex Rivers
-                </p>
-                {/* Figma: 12px Regular #64748b */}
-                <p className="text-[12px] font-normal text-[#64748b] leading-4">
-                  Student ID: 49201
-                </p>
-              </div>
-              {/* Figma: 40px avatar, rgba(30,64,175,0.1) bg, rgba(30,64,175,0.2) border */}
-              <div className="w-10 h-10 rounded-full bg-[rgba(30,64,175,0.1)] border-2 border-[rgba(30,64,175,0.2)] flex items-center justify-center overflow-hidden">
-                <span className="text-[#1e40af] font-bold text-sm">AR</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* ─── Page Body ─── */}
-        <div className="flex-1 overflow-y-auto px-8 py-8">
-          {/* Academic Overview Title + Download Report */}
-          {/* Figma: title 30px Extra Bold #0f172a, tracking -0.75px */}
+    <div className="min-h-screen bg-[#f0f4f8] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="mt-6">
           <div className="mb-8">
-            <div className="flex items-end justify-between">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h1 className="text-[30px] font-extrabold text-[#0f172a] leading-9 tracking-[-0.75px] mb-1">
-                  Academic Overview
+                <h1 className="mb-1 text-[30px] font-extrabold leading-9 tracking-[-0.75px] text-[#0f172a]">
+                  Learning Dashboard
                 </h1>
-                {/* Figma: 16px Regular #64748b */}
-                <p className="text-[16px] font-normal text-[#64748b] leading-6">
+                <p className="text-[16px] leading-6 text-[#64748b]">
                   Welcome back, your performance this semester is excellent.
                 </p>
               </div>
-              {/* Figma: white bg, #e2e8f0 border, rounded-[12px], 14px Semi Bold #475569 */}
-              <button className="px-[17px] py-[9px] bg-white border border-[#e2e8f0] rounded-xl text-[14px] font-semibold text-[#475569] hover:bg-gray-50 transition-colors whitespace-nowrap">
+              <button className="whitespace-nowrap rounded-xl border border-[#e2e8f0] bg-white px-[17px] py-[9px] text-[14px] font-semibold text-[#475569] transition-colors hover:bg-gray-50">
                 Download Report
               </button>
             </div>
           </div>
 
-          {/* ──── Two-Column Master Layout ──── */}
-          <div className="flex gap-6">
-            {/* ── Left Column ── */}
-            <div className="flex-1 min-w-0">
-              {/* Academic Records: CGPA card + Recent Grades side by side */}
-              {/* Figma: 24px gap between the two cards */}
-              <div className="flex gap-6 mb-6">
-                {/* ── CGPA & Credit Progress Card ── */}
-                {/* Figma: white, #e2e8f0 border, rounded-[24px], shadow */}
-                <div className="flex-1 bg-white rounded-3xl p-6 border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-                  <div className="flex gap-5 items-center">
-                    {/* Donut Chart — left side */}
-                    {/* Figma: 128px circle, stroke #06f (0066ff), gray track */}
-                    <div className="flex-shrink-0">
-                      <div className="relative w-[128px] h-[128px]">
+          <div className="flex flex-col gap-6 xl:flex-row">
+            <div className="min-w-0 flex-1">
+              <div className="mb-6 flex flex-col gap-6 2xl:flex-row">
+                <div className="flex-1 rounded-3xl border border-[#e2e8f0] bg-white p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+                    <div className="shrink-0">
+                      <div className="relative h-[128px] w-[128px]">
                         <svg
-                          className="w-full h-full -rotate-90"
+                          className="h-full w-full -rotate-90"
                           viewBox="0 0 128 128"
                         >
                           <circle
@@ -388,75 +200,60 @@ const Page = () => {
                             fill="none"
                             stroke={creditBarColor}
                             strokeWidth="10"
-                            strokeDasharray={`${PROGRESS_PERCENT * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+                            strokeDasharray={CIRCUMFERENCE}
+                            strokeDashoffset={creditStrokeOffset}
                             strokeLinecap="round"
-                            style={{
-                              transition:
-                                "stroke-dasharray 0.05s linear, stroke 0.3s ease",
-                            }}
                           />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          {/* Figma: 24px Bold #0f172a */}
-                          <span className="text-[24px] font-bold text-[#0f172a] leading-8">
-                            {animationDone ? "3.85" : cgpaDisplay.toFixed(2)}
+                          <span className="text-[24px] font-bold leading-8 text-[#0f172a]">
+                            {cgpaDisplay.toFixed(2)}
                           </span>
-                          {/* Figma: 10px Bold #64748b uppercase */}
-                          <span className="text-[10px] font-bold text-[#64748b] uppercase leading-[15px]">
+                          <span className="text-[10px] font-bold uppercase leading-[15px] text-[#64748b]">
                             CGPA
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Right side: Credit Progress label + bar + status boxes */}
-                    <div className="flex-1 flex flex-col gap-2">
-                      {/* Figma: 14px Bold #0f172a "Credit Progress" */}
-                      <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                    <div className="flex flex-1 flex-col gap-2">
+                      <p className="text-[14px] font-bold leading-5 text-[#0f172a]">
                         Credit Progress
                       </p>
 
-                      {/* Figma: 12px height, #f1f5f9 track, #06f fill, rounded-full */}
-                      <div className="w-full bg-[#f1f5f9] rounded-full h-3">
+                      <div className="h-3 w-full rounded-full bg-[#f1f5f9]">
                         <div
                           className="h-3 rounded-full"
                           style={{
                             width: `${creditProgress}%`,
                             backgroundColor: creditBarColor,
                             transition:
-                              "width 0.05s linear, background-color 0.3s ease",
+                              "width 120ms linear, background-color 180ms ease",
                           }}
                         />
                       </div>
 
-                      {/* Two status boxes below — Figma: 15px gap, 16px top padding */}
                       <div className="flex gap-[15px] pt-4">
-                        {/* Status box — Figma: #f8fafc bg, #f1f5f9 border, rounded-[16px], 13px padding */}
-                        <div className="flex-1 bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-[13px]">
-                          {/* Figma: 10px Bold #94a3b8 uppercase "STATUS" */}
-                          <p className="text-[10px] font-bold text-[#94a3b8] uppercase leading-[15px] mb-1">
+                        <div className="flex-1 rounded-2xl border border-[#f1f5f9] bg-[#f8fafc] p-[13px]">
+                          <p className="mb-1 text-[10px] font-bold uppercase leading-[15px] text-[#94a3b8]">
                             Status
                           </p>
                           <div className="flex items-center gap-1">
-                            {/* Figma: green check icon + 14px Bold #10b981 "Distinction" */}
-                            <span className="text-[#10b981] text-xs">✓</span>
-                            <span className="text-[14px] font-bold text-[#10b981] leading-5">
+                            <span className="text-xs text-[#10b981]">✓</span>
+                            <span className="text-[14px] font-bold leading-5 text-[#10b981]">
                               Distinction
                             </span>
                           </div>
                         </div>
 
-                        {/* Remaining box — same container styling */}
-                        <div className="flex-1 bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-[13px]">
-                          {/* Figma: 10px Bold #94a3b8 uppercase */}
-                          <p className="text-[10px] font-bold text-[#94a3b8] uppercase leading-[15px] mb-1">
+                        <div className="flex-1 rounded-2xl border border-[#f1f5f9] bg-[#f8fafc] p-[13px]">
+                          <p className="mb-1 text-[10px] font-bold uppercase leading-[15px] text-[#94a3b8]">
                             Remaining
                           </p>
-                          {/* Figma: 14px Bold #0f172a "26\nCredits" multi-line */}
-                          <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                          <p className="text-[14px] font-bold leading-5 text-[#0f172a]">
                             26
                           </p>
-                          <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                          <p className="text-[14px] font-bold leading-5 text-[#0f172a]">
                             Credits
                           </p>
                         </div>
@@ -465,19 +262,18 @@ const Page = () => {
                   </div>
                 </div>
 
-                {/* ── Recent Grades Card ── */}
-                {/* Figma: white, #e2e8f0 border, rounded-[24px], shadow, 25px padding */}
-                <div className="w-[193px] flex-shrink-0 bg-white rounded-3xl p-[25px] border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col">
-                  {/* Figma: 14px Bold #0f172a */}
-                  <h3 className="text-[14px] font-bold text-[#0f172a] leading-5 mb-4">
+                <div className="flex w-full flex-col rounded-3xl border border-[#e2e8f0] bg-white p-[25px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] 2xl:w-[193px]">
+                  <h3 className="mb-4 text-[14px] font-bold leading-5 text-[#0f172a]">
                     Recent Grades
                   </h3>
-                  <div className="space-y-4 flex-1">
-                    {recentGrades.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        {/* Figma: 32px icon box, rounded-[8px] */}
+                  <div className="flex-1 space-y-4">
+                    {recentGrades.map((item) => (
+                      <div
+                        key={`${item.name}-${item.subtitle}`}
+                        className="flex items-center gap-3"
+                      >
                         <div
-                          className={`w-8 h-8 ${item.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${item.iconBg}`}
                         >
                           <span
                             className={`text-[10px] font-bold ${item.iconColor}`}
@@ -485,108 +281,91 @@ const Page = () => {
                             {item.symbol}
                           </span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          {/* Figma: 12px Bold #0f172a */}
-                          <p className="text-[12px] font-bold text-[#0f172a] leading-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-bold leading-4 text-[#0f172a]">
                             {item.name}
                           </p>
-                          {/* Figma: 10px Regular #64748b */}
-                          <p className="text-[10px] font-normal text-[#64748b] leading-[15px]">
+                          <p className="text-[10px] leading-[15px] text-[#64748b]">
                             {item.subtitle}
                           </p>
                         </div>
-                        {/* Figma: 14px Bold #0f172a */}
-                        <span className="text-[14px] font-bold text-[#0f172a] leading-5">
+                        <span className="text-[14px] font-bold leading-5 text-[#0f172a]">
                           {item.grade}
                         </span>
                       </div>
                     ))}
                   </div>
-                  {/* Figma: 10px Bold #94a3b8 uppercase, tracking 1px, centered */}
-                  <button className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[1px] mt-4 py-2 text-center w-full hover:text-[#64748b] transition-colors">
+                  <button className="mt-4 w-full py-2 text-center text-[10px] font-bold uppercase tracking-[1px] text-[#94a3b8] transition-colors hover:text-[#64748b]">
                     View All Records
                   </button>
                 </div>
               </div>
 
-              {/* ── Course Control Section ── */}
               <div className="mb-6">
-                {/* Header row — outside the table card */}
-                {/* Figma: 20px Bold #0f172a title, controls on right */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[20px] font-bold text-[#0f172a] leading-7">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="text-[20px] font-bold leading-7 text-[#0f172a]">
                     Course Control
                   </h3>
                   <div className="flex items-center gap-2">
-                    {/* Figma: white bg, #e2e8f0 border, rounded-[8px], 12px Regular #0f172a */}
-                    <button className="flex items-center gap-1.5 px-2 py-1 bg-white border border-[#e2e8f0] rounded-lg text-[12px] font-normal text-[#0f172a]">
+                    <button className="flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-white px-2 py-1 text-[12px] text-[#0f172a]">
                       All Departments
                       <ChevronDown size={14} />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
+                    <button className="p-1 text-gray-400 transition-colors hover:text-gray-600">
                       <SlidersHorizontal size={16} />
                     </button>
                   </div>
                 </div>
 
-                {/* Table Card — Figma: white, #e2e8f0 border, rounded-[24px], shadow */}
-                <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div className="overflow-hidden rounded-3xl border border-[#e2e8f0] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
                   <table className="w-full text-sm">
-                    {/* Figma: #f8fafc header bg, 10px Bold #64748b uppercase, tracking 0.5px */}
                     <thead>
                       <tr className="bg-[#f8fafc]">
-                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                        <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.5px] text-[#64748b]">
                           Course Name
                         </th>
-                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                        <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.5px] text-[#64748b]">
                           Category
                         </th>
-                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                        <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.5px] text-[#64748b]">
                           Credits
                         </th>
-                        <th className="px-6 py-4 text-left text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                        <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.5px] text-[#64748b]">
                           Status
                         </th>
-                        <th className="px-6 py-4 text-right text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                        <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-[0.5px] text-[#64748b]">
                           Action
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {courses.map((course, idx) => (
+                      {courses.map((course) => (
                         <tr
-                          key={idx}
-                          className="border-t border-[#f1f5f9] hover:bg-gray-50/40 transition-colors"
+                          key={course.code}
+                          className="border-t border-[#f1f5f9] transition-colors hover:bg-gray-50/40"
                         >
-                          {/* Course Name — Figma: 14px Bold #0f172a, code 10px Regular #94a3b8 */}
                           <td className="px-6 py-4">
-                            <p className="text-[14px] font-bold text-[#0f172a] leading-5">
+                            <p className="text-[14px] font-bold leading-5 text-[#0f172a]">
                               {course.name}
                             </p>
-                            <p className="text-[10px] font-normal text-[#94a3b8] mt-0.5">
+                            <p className="mt-0.5 text-[10px] text-[#94a3b8]">
                               {course.code} • {course.instructor}
                             </p>
                           </td>
-
-                          {/* Category Pill — Figma: colored bg pill, 10px Bold text, rounded-full */}
                           <td className="px-6 py-4">
                             <span
-                              className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${course.categoryTextColor} ${course.categoryBgColor}`}
+                              className={`inline-block rounded-full px-2 py-1 text-[10px] font-bold ${course.categoryTextColor} ${course.categoryBgColor}`}
                             >
                               {course.category}
                             </span>
                           </td>
-
-                          {/* Credits — Figma: 14px Regular #0f172a */}
-                          <td className="px-6 py-4 text-[14px] font-normal text-[#0f172a]">
+                          <td className="px-6 py-4 text-[14px] text-[#0f172a]">
                             {course.credits}
                           </td>
-
-                          {/* Status — Figma: dot + 10px Bold text */}
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <span
-                                className={`w-2 h-2 rounded-full ${course.statusDot}`}
+                                className={`h-2 w-2 rounded-full ${course.statusDot}`}
                               />
                               <span
                                 className={`text-[10px] font-bold ${course.statusTextColor}`}
@@ -595,15 +374,13 @@ const Page = () => {
                               </span>
                             </div>
                           </td>
-
-                          {/* Action — Figma: Register = #06f blue, Details = outlined */}
                           <td className="px-6 py-4 text-right">
                             {course.action === "Register" ? (
-                              <button className="px-4 py-1.5 bg-[#0066ff] text-white text-[12px] font-bold rounded-lg shadow-[0px_10px_15px_-3px_rgba(0,102,255,0.2),0px_4px_6px_-4px_rgba(0,102,255,0.2)] hover:bg-[#0052cc] transition-colors">
+                              <button className="rounded-lg bg-[#0066ff] px-4 py-1.5 text-[12px] font-bold text-white shadow-[0px_10px_15px_-3px_rgba(0,102,255,0.2),0px_4px_6px_-4px_rgba(0,102,255,0.2)] transition-colors hover:bg-[#0052cc]">
                                 Register
                               </button>
                             ) : (
-                              <button className="px-[17px] py-[7px] border border-[#e2e8f0] text-[12px] font-bold text-[#475569] rounded-lg hover:bg-gray-50 transition-colors">
+                              <button className="rounded-lg border border-[#e2e8f0] px-[17px] py-[7px] text-[12px] font-bold text-[#475569] transition-colors hover:bg-gray-50">
                                 Details
                               </button>
                             )}
@@ -616,49 +393,43 @@ const Page = () => {
               </div>
             </div>
 
-            {/* ── Right Column — MyLearning ── */}
-            <div className="w-[274px] flex-shrink-0 space-y-4">
-              {/* MyLearning heading + View all link */}
-              {/* Figma: rocket icon, ~18px Bold #0f172a, "View all" #1e40af 14px Bold */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Rocket size={20} className="text-[#0f172a]" />
-                  <h3 className="text-[18px] font-bold text-[#0f172a] leading-7">
-                    MyLearning
-                  </h3>
-                </div>
+            <div className="w-full shrink-0 space-y-4 xl:w-[274px]">
+              <div className="flex items-center gap-2">
+                <Rocket size={20} className="text-[#0f172a]" />
+                <h3 className="text-[18px] font-bold leading-7 text-[#0f172a]">
+                  MyLearning
+                </h3>
               </div>
 
-              {/* Figma: #e4edff bg wrapper, rounded-[15px] */}
-              <div className="bg-[#e4edff] rounded-[15px] p-4 space-y-[15px]">
-                {myLearningCourses.map((course, idx) => (
-                  /* Figma: white, #e2e8f0 border 0.833px, rounded-[13.333px], 95px height */
-                  <div
-                    key={idx}
-                    className="bg-white rounded-[13px] p-[10px] border border-[#e2e8f0]"
+              <div className="space-y-[15px] rounded-[15px] bg-[#e4edff] p-4">
+                {myLearningCourses.map((course) => (
+                  <button
+                    key={`${course.title}-${course.status}`}
+                    type="button"
+                    onClick={() =>
+                      router.push(
+                        `/studashboard/e-learning/my-learning/${course.slug}/course-overview`,
+                      )
+                    }
+                    className="w-full rounded-[13px] border border-[#e2e8f0] bg-white p-[10px] text-left transition hover:border-[#93c5fd] hover:shadow-sm"
                   >
-                    {/* Top row: icon + ON TRACK badge */}
-                    <div className="flex justify-between items-start mb-1">
-                      {/* Figma: #eff6ff bg, rounded-[8.75px], 35x23 */}
-                      <div className="w-[35px] h-[23px] bg-[#eff6ff] rounded-[9px] flex items-center justify-center">
-                        <span className="text-blue-600 font-bold text-[10px]">
+                    <div className="mb-1 flex items-start justify-between">
+                      <div className="flex h-[23px] w-[35px] items-center justify-center rounded-[9px] bg-[#eff6ff]">
+                        <span className="text-[10px] font-bold text-blue-600">
                           {"{ }"}
                         </span>
                       </div>
-                      {/* Figma: #dcfce7 bg, #16a34a text, ~7px Bold uppercase */}
-                      <span className="text-[7px] font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded-sm uppercase">
+                      <span className="rounded-sm bg-[#dcfce7] px-1.5 py-0.5 text-[7px] font-bold uppercase text-[#16a34a]">
                         {course.status}
                       </span>
                     </div>
 
-                    {/* Figma: ~11px Bold #1e293b */}
-                    <p className="text-[11px] font-bold text-[#1e293b] leading-[17px] mb-1">
+                    <p className="mb-1 text-[11px] font-bold leading-[17px] text-[#1e293b]">
                       {course.title}
                     </p>
 
-                    {/* Progress row — Figma: ~9px Semi Bold #94a3b8 / #1e40af */}
-                    <div className="flex items-center justify-between text-[9px] mb-1">
-                      <span className="font-semibold text-[#94a3b8] uppercase tracking-tight">
+                    <div className="mb-1 flex items-center justify-between text-[9px]">
+                      <span className="font-semibold uppercase tracking-tight text-[#94a3b8]">
                         Course Progress
                       </span>
                       <span className="font-semibold text-[#1e40af]">
@@ -666,32 +437,26 @@ const Page = () => {
                       </span>
                     </div>
 
-                    {/* Figma: #f1f5f9 track ~4px, #1e40af fill */}
-                    <div className="w-full bg-[#f1f5f9] rounded-full h-1">
+                    <div className="h-1 w-full rounded-full bg-[#f1f5f9]">
                       <div
-                        className="bg-[#1e40af] h-1 rounded-full"
+                        className="h-1 rounded-full bg-[#1e40af]"
                         style={{ width: `${course.progress}%` }}
                       />
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
 
-              {/* ── New Suggestions Card ── */}
-              {/* Figma: #1e40af solid bg, rounded-[16px], shadow, 93px tall, 265px wide */}
-              <div className="animate-float-card bg-[#1e40af] rounded-2xl p-5 text-white shadow-[0px_10px_15px_-3px_rgba(30,64,175,0.2),0px_4px_6px_-4px_rgba(30,64,175,0.2)] relative overflow-hidden">
+              <div className="relative overflow-hidden rounded-2xl bg-[#1e40af] p-5 text-white shadow-[0px_10px_15px_-3px_rgba(30,64,175,0.2),0px_4px_6px_-4px_rgba(30,64,175,0.2)] animate-float-card">
                 <div className="flex items-start gap-3">
-                  {/* Figma: #c7daff bg box, rounded-[13.333px], 50x47, with bulb icon */}
-                  <div className="w-[50px] h-[47px] bg-[#c7daff] rounded-[13px] flex items-center justify-center flex-shrink-0">
+                  <div className="flex h-[47px] w-[50px] shrink-0 items-center justify-center rounded-[13px] bg-[#c7daff]">
                     <Lightbulb size={18} className="text-[#1e40af]" />
                   </div>
                   <div>
-                    {/* Figma: 14px Bold white */}
-                    <h4 className="font-bold text-[14px] leading-5 text-white mb-1">
+                    <h4 className="mb-1 text-[14px] font-bold leading-5 text-white">
                       New Suggestions
                     </h4>
-                    {/* Figma: ~7px Extra Light white */}
-                    <p className="text-[7px] font-extralight text-white leading-[11px]">
+                    <p className="text-[7px] font-extralight leading-[11px] text-white">
                       Explore personalized course
                       <br />
                       recommendations tailored to your
@@ -707,6 +472,4 @@ const Page = () => {
       </div>
     </div>
   );
-};
-
-export default Page;
+}

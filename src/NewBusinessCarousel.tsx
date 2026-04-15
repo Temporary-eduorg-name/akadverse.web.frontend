@@ -25,7 +25,7 @@ export default function NewBusinessCarousel() {
   useEffect(() => {
     const fetchNewBusinesses = async () => {
       try {
-        const response = await fetch("/api/businesses/new");
+        const response = await fetch("/api/marketplace/businesses/new");
         if (response.ok) {
           const data = await response.json();
           setBusinesses(data.businesses || []);
@@ -117,4 +117,5 @@ export default function NewBusinessCarousel() {
     </div>
   );
 }
+
 

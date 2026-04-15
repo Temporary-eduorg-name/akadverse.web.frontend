@@ -34,8 +34,8 @@ export function useCategoriesAndSkills() {
 
         // Fetch both in parallel
         const [categoriesRes, skillTypesRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/skill-types"),
+          fetch("/api/marketplace/categories"),
+          fetch("/api/marketplace/skill-types"),
         ]);
 
         if (!categoriesRes.ok || !skillTypesRes.ok) {
@@ -74,3 +74,4 @@ export function useCategoriesAndSkills() {
 
   return { categories, skillTypes, loading, error };
 }
+

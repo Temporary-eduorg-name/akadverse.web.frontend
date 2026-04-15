@@ -62,7 +62,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
     if (!businessId) return;
 
     const eventSource = new EventSource(
-      `/api/realtime/events?scope=seller&businessId=${businessId}`
+      `/api/marketplace/realtime/events?scope=seller&businessId=${businessId}`
     );
 
     const onUpdate = (event: MessageEvent) => {
@@ -113,7 +113,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
       if (showLoading) {
         setLoading(true);
       }
-      const response = await fetch(`/api/businesses/${businessId}/orders`, {
+      const response = await fetch(`/api/marketplace/businesses/${businessId}/orders`, {
         credentials: "include",
       });
 
@@ -145,7 +145,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
 
     setActionLoading(orderId);
     try {
-      const response = await fetch(`/api/orders/${orderId}/status`, {
+      const response = await fetch(`/api/marketplace/orders/${orderId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -170,7 +170,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
   const handleRequestShipOtp = async (orderId: string) => {
     setActionLoading(orderId);
     try {
-      const response = await fetch(`/api/orders/${orderId}/ship`, {
+      const response = await fetch(`/api/marketplace/orders/${orderId}/ship`, {
         method: "POST",
         credentials: "include",
       });
@@ -198,7 +198,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
 
     setActionLoading(orderId);
     try {
-      const response = await fetch(`/api/orders/${orderId}/ship`, {
+      const response = await fetch(`/api/marketplace/orders/${orderId}/ship`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -228,7 +228,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
 
     setActionLoading(orderId);
     try {
-      const response = await fetch(`/api/orders/${orderId}/deliver`, {
+      const response = await fetch(`/api/marketplace/orders/${orderId}/deliver`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -260,7 +260,7 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
 
     setActionLoading(orderId);
     try {
-      const response = await fetch(`/api/orders/${orderId}/dispute`, {
+      const response = await fetch(`/api/marketplace/orders/${orderId}/dispute`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -551,3 +551,4 @@ export default function OrdersComponent({ onActivityChange }: OrdersComponentPro
     </div>
   );
 }
+

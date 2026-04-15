@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCategoriesAndSkills } from "@/hooks/useCategoriesAndSkills";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 interface SearchBarProps {
   onSearchSubmit?: (query: string, category: string) => void;
@@ -16,7 +17,9 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [hoveredType, setHoveredType] = useState<"categories" | "skills" | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const marketplaceBase = getMarketplaceBase(pathname);
   
   const { categories, skillTypes } = useCategoriesAndSkills();
 
@@ -46,7 +49,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
       if (onSearchSubmit) {
         onSearchSubmit(searchQuery, selectedCategory);
       } else {
-        router.push(`/search?${queryParams.toString()}`);
+        router.push(`${marketplaceBase}/search?${queryParams.toString()}`);
       }
     }, 2000);
 
@@ -70,7 +73,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
     if (onSearchSubmit) {
       onSearchSubmit(searchQuery, selectedCategory);
     } else {
-      router.push(`/search?${queryParams.toString()}`);
+      router.push(`${marketplaceBase}/search?${queryParams.toString()}`);
     }
   };
 
@@ -109,21 +112,21 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
   };
 
   return (
-    <form onSubmit={handleSearch} className="relative flex items-center gap-2">
-      <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+    <form onSubmit={handleSearch} className="relative flex w-full items-center gap-2">
+      <div className="flex w-full items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg">
         <input
           type="text"
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none w-56 rounded-l-lg"
+          className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none w-full min-w-0 sm:w-56 rounded-l-lg"
         />
 
         {/* Filter Dropdown Button */}
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="px-3 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors border-l border-zinc-300 dark:border-zinc-700 text-sm whitespace-nowrap"
+          className="shrink-0 px-3 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors border-l border-zinc-300 dark:border-zinc-700 text-sm whitespace-nowrap"
           title="Filter search"
         >
           {selectedCategory || (selectedSkill && selectedSkill) || "Filter"}
@@ -132,7 +135,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
 
         <button
           type="submit"
-          className="px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors rounded-r-lg"
+          className="shrink-0 px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors rounded-r-lg"
           title="Search"
         >
           <svg

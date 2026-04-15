@@ -3,14 +3,18 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getMarketplaceBase } from "./marketplaceRouteUtils";
 
 export default function ActivityDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const [hasOfferActivity, setHasOfferActivity] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const marketplaceBase = getMarketplaceBase(pathname);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -26,7 +30,7 @@ export default function ActivityDropdown() {
     if (!isAuthenticated) return;
 
     try {
-      const eventSource = new EventSource("/api/realtime/events?scope=buyer");
+      const eventSource = new EventSource("/api/marketplace/realtime/events?scope=buyer");
       eventSourceRef.current = eventSource;
 
       eventSource.addEventListener("update", (event) => {
@@ -63,7 +67,7 @@ export default function ActivityDropdown() {
           setIsOpen(!isOpen);
           // Mark notifications as read when opening dropdown
           if (!isOpen) {
-            fetch("/api/buyer-notifications", {
+            fetch("/api/marketplace/buyer-notifications", {
               method: "PATCH",
               credentials: "include",
             }).catch((error) => console.error("Failed to mark notifications as read:", error));
@@ -93,14 +97,14 @@ export default function ActivityDropdown() {
           >
             <div className="p-2">
               <Link
-                href="/activity/orders"
+                href={`${marketplaceBase}/activity/orders`}
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-2 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-sm"
               >
                 My Orders
               </Link>
               <Link
-                href="/activity/offers"
+                href={`${marketplaceBase}/activity/offers`}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-between px-4 py-2 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-sm"
               >
@@ -116,3 +120,4 @@ export default function ActivityDropdown() {
     </div>
   );
 }
+

@@ -84,7 +84,7 @@ export default function RecordsPerformanceOverviewPage() {
   return (
     <div
       className="min-h-screen bg-[#f5f7fb] text-[#334155]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       <main className="mx-auto max-w-[1220px] px-4 py-4 md:px-8">
         <AcademicRecordsTabs activeTab="performance" />

@@ -1,91 +1,120 @@
-export default function LearningOutcomesPage() {
-  const outcomes = [
-    {
-      icon: "A",
-      title: "Understand advanced SDLC models",
-      description: "Master Material, Agile, and DevOps methodologies in-depth.",
-    },
-    {
-      icon: "📊",
-      title: "Analyze architectural patterns",
-      description:
-        "Evaluate microservices, serverless, and monolithic architectures for scalability.",
-    },
-    {
-      icon: "🔒",
-      title: "Implement secure protocols",
-      description:
-        "Apply authentication and encryption. Implement lifecycle management.",
-    },
-    {
-      icon: "⚡",
-      title: "Optimize system performance",
-      description:
-        "Identify bottlenecks and implement caching and database tuning strategies.",
-    },
-  ];
+"use client";
 
-  const competencies = [
-    { name: "System Design", icon: "🏗️" },
-    { name: "Agile Methodology", icon: "🔄" },
-    { name: "Refactoring", icon: "⚙️" },
-    { name: "Cloud Infrastructure", icon: "☁️" },
-    { name: "SQL & NoSQL", icon: "💾" },
-    { name: "Test Automation", icon: "✅" },
-    { name: "App Security", icon: "🔐" },
-    { name: "Linux Systems", icon: "🐧" },
-  ];
+import {
+  Bug,
+  Cloud,
+  Database,
+  Gauge,
+  GitBranch,
+  Layers3,
+  Shield,
+  SquareChartGantt,
+  TerminalSquare,
+  Users,
+  Wrench,
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { getCourseLearningContent } from "../learningData";
+import {
+  SHARED_COMPETENCY_ICON_MAP,
+  SHARED_OUTCOME_ICON_MAP,
+} from "@/app/lib/sharedCourseWorkspace";
+import { useSharedCourseWorkspace } from "@/app/lib/useSharedCourseWorkspace";
+
+const outcomeIconMap = {
+  git: GitBranch,
+  blocks: SquareChartGantt,
+  shield: Shield,
+  gauge: Gauge,
+} as const;
+
+const competencyIconMap = {
+  layers: Layers3,
+  users: Users,
+  wrench: Wrench,
+  cloud: Cloud,
+  database: Database,
+  bug: Bug,
+  shield: Shield,
+  terminal: TerminalSquare,
+} as const;
+
+export default function LearningOutcomesPage() {
+  const params = useParams<{ courseSlug: string }>();
+  const courseSlug = params?.courseSlug ?? "software-engineering";
+  const { course, isSharedCourse } = useSharedCourseWorkspace(courseSlug);
+  const content = isSharedCourse && course
+    ? {
+        outcomes: course.learningOutcomes,
+        competencies: course.competencies,
+      }
+    : getCourseLearningContent(courseSlug);
 
   return (
-    <div className="space-y-10">
-      {/* Learning Outcomes Section */}
+    <div className="space-y-10 pt-4">
       <section>
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+        <h2 className="mb-2 text-[32px] font-black leading-[1.1] tracking-[-0.02em] text-[#0f172a] sm:text-[36px]">
           Learning Outcome
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="mb-7 text-[15px] leading-6 text-[#52637f]">
           What you will achieve by the end of this course.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {outcomes.map((outcome, i) => (
-            <div
-              key={i}
-              className="flex gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg hover:border-blue-400 hover:shadow-[0_4px_12px_rgba(59,130,246,0.1)] transition-all"
-            >
-              <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-blue-600 text-white font-bold rounded-lg">
-                {outcome.icon}
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-gray-900 text-sm mb-1">
-                  {outcome.title}
-                </h3>
-                <p className="text-gray-600 text-xs">{outcome.description}</p>
-              </div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {content.outcomes.map((outcome) => {
+            const Icon = isSharedCourse
+              ? SHARED_OUTCOME_ICON_MAP[outcome.icon]
+              : outcomeIconMap[outcome.icon];
+            return (
+              <article
+                key={outcome.title}
+                className="flex min-h-[122px] gap-4 rounded-[14px] border border-[#d8deea] bg-white px-4 py-4"
+              >
+                <div className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] bg-[#2143b6] text-white">
+                  <Icon className="h-5 w-5" strokeWidth={2.2} />
+                </div>
+                <div>
+                  <h3 className="mb-1 text-[18px] font-extrabold leading-6 text-[#121927]">
+                    {outcome.title}
+                  </h3>
+                  <p className="text-[14px] leading-[1.45] text-[#4d5d78]">
+                    {outcome.description}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      {/* Key Competencies Section */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <span className="text-2xl">✓</span>
-          <h2 className="text-2xl font-bold text-gray-900">Key Competencies</h2>
+        <div className="mb-6 flex items-center gap-2">
+          <Shield className="h-6 w-6 text-[#2143b6]" strokeWidth={2.1} />
+          <h2 className="text-[30px] font-black leading-none tracking-[-0.02em] text-[#0f172a] sm:text-[34px]">
+            Key Competencies
+          </h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {competencies.map((comp, i) => (
-            <div
-              key={i}
-              className="flex flex-col items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all"
-            >
-              <span className="text-3xl">{comp.icon}</span>
-              <p className="text-sm font-semibold text-center text-gray-900">
-                {comp.name}
-              </p>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {content.competencies.map((competency) => {
+            const Icon = isSharedCourse
+              ? SHARED_COMPETENCY_ICON_MAP[competency.icon]
+              : competencyIconMap[competency.icon];
+            return (
+              <article
+                key={competency.name}
+                className="flex min-h-[116px] flex-col items-center justify-center rounded-[12px] border border-[#d9dfeb] bg-white px-4 py-4 text-center"
+              >
+                <Icon
+                  className="mb-3 h-6 w-6 text-[#2f52c6]"
+                  strokeWidth={2.1}
+                />
+                <p className="text-[15px] font-semibold text-[#0f172a]">
+                  {competency.name}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>

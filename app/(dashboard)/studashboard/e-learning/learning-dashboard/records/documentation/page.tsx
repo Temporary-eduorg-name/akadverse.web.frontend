@@ -38,7 +38,7 @@ export default function RecordsDocumentationPage() {
   return (
     <div
       className="min-h-screen bg-[#f8fafc] text-[#334155]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       <main className="mx-auto max-w-[1260px] px-6 py-4 lg:px-10">
         <AcademicRecordsTabs activeTab="documentation" />

@@ -93,7 +93,7 @@ export default function CourseRegistrationPrintPage() {
   return (
     <div
       className="min-h-screen bg-[#f1f5f9] flex flex-col items-center py-10 px-4"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       {/* Backmake this link back to course registration / Print controls */}
       <div className="w-full max-w-[740px] flex items-center justify-between mb-6 print:hidden">

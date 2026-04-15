@@ -5,11 +5,436 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_PUBLIC_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  role      String   @default("user")  // "super-admin" or "user"
+  location  String?  // User's address/location
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  businesses       Business[]
+  skills           Skill[]
+  cartItems        CartItem[]
+  orders           Order[]
+  skillOffers      SkillOffer[] @relation("BuyerOffers")
+  skillReviews     SkillReview[] @relation("BuyerReviews")
+  suggestions      Suggestion[]
+  emailConnection  EmailConnection?
+  schedules        Schedule[]
+  tasks            Task[]
+  
+  @@index([email])
+  @@index([createdAt])
+}
+
+model EmailConnection {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email        String
+  accessToken  String    @db.Text
+  refreshToken String    @db.Text
+  tokenExpiry  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Suggestion {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        String
+  message         String   @db.Text
+  hasAttachments  Boolean  @default(false)
+  attachmentCount Int      @default(0)
+  attachmentNames Json?
+  source          String   @default("studashboard/essentials/suggestions")
+  status          String   @default("new") // "new" | "reviewed" | "resolved"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Business {
+  id                 String   @id @default(uuid())
+  name               String
+  industry           String
+  description        String   @db.Text
+  paymentMethod      String   // "cash" or "transfer"
+  bankName           String?
+  accountNumber      String?
+  accountHolderName  String?
+  paystackRecipientCode String?
+  location           String
+  serviceDays        String   // e.g., "Monday-Friday"
+  serviceTimes       String   // e.g., "9AM-5PM"
+  instagram          String?
+  linkedin           String?
+  website            String?
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products           Product[]
+  orders             Order[]
+  visitors           Int      @default(0)  // Total number of visitors
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([industry])
+  @@index([createdAt])
+  @@index([visitors])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @db.Text
+  price       Float
+  cost        Float    // Cost to produce
+  image       String?
+  public_id   String?  // Cloudinary public ID
+  secure_url  String?  // Cloudinary secure URL
+  stock       Int      @default(0)
+  rating      Float    @default(0)
+  ratingCount Int      @default(0)
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  variants    ProductVariant[]
+  variantFields VariantField[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([rating])
+}
+
+model VariantField {
+  id        String   @id @default(uuid())
+  name      String   // e.g., "Size", "Color"
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values    VariantValue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([productId, name]) // One field name per product
+}
+
+model VariantValue {
+  id           String   @id @default(uuid())
+  value        String   // e.g., "S", "M", "L", "XL" for Size
+  fieldId      String
+  field        VariantField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  variantValues VariantValueOnProductVariant[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([fieldId, value]) // One value per field
+}
+
+model ProductVariant {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price        Float    // Custom price, or base price if not specified
+  isCustomPrice Boolean  @default(false) // true if custom price, false if same as base
+  variantValues VariantValueOnProductVariant[]
+  cartItems    CartItem[]
+  stock        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VariantValueOnProductVariant {
+  id           String   @id @default(uuid())
+  variantId    String
+  variant      ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  valueId      String
+  value        VariantValue   @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  
+  @@unique([variantId, valueId]) // Each value appears once per variant
+}
+
+model Order {
+  id                    String   @id @default(uuid())
+  status                String   @default("pending")  // "pending", "processing", "declined", "shipped", "delivered", "disputed"
+  totalAmount           Float
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId            String
+  business              Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  items                 OrderItem[]
+  
+  // OTP fields
+  shipOtp               String?  // OTP for seller to confirm shipping
+  shipOtpExpiry         DateTime?
+  deliveryOtp           String?  // OTP for buyer to give seller for delivery confirmation
+  deliveryOtpExpiry     DateTime?
+  deliveryOtpAttempts   Int      @default(0)  // Track OTP attempts (max 5)
+  
+  // Dispute management
+  isDisputed            Boolean  @default(false)
+  disputeReason         String?  @db.Text
+  disputeCreatedAt      DateTime?
+  disputeResolvedAt     DateTime?
+  disputeResolvedBy     String?  // Admin user ID
+  disputeResolution     String?  @db.Text
+  
+  // Expected delivery
+  expectedDeliveryDate  DateTime?
+  
+  // Payment
+  paystackReference     String?  @unique
+  escrowReleaseAt       DateTime?
+  escrowReleased        Boolean  @default(false)
+  escrowReleasedAt      DateTime?
+  escrowTransferReference String?
+  escrowTransferCode    String?
+  escrowReleaseStatus   String   @default("pending") // "pending", "released", "failed"
+  escrowFailureReason   String?  @db.Text
+  
+  @@index([userId])
+  @@index([businessId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([businessId, status, createdAt])
+  @@index([escrowReleased, escrowReleaseAt])
+  paymentStatus         String   @default("pending")  // "pending", "verified", "failed"
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model OrderItem {
+  id               String  @id @default(uuid())
+  quantity         Int
+  
+  @@index([orderId])
+  @@index([productId])
+  price            Float   // Price at time of order
+  orderId          String
+  order            Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  selectedVariants String? @db.LongText // JSON string storing selected variant values {fieldName: value}
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      // 1-5
+  comment   String?  @db.Text
+  businessId String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // "order", "payment", "review", etc
+  message   String
+  read      Boolean  @default(false)
+  businessId String?
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Skill {
+  id                  String   @id @default(uuid())
+  name                String
+  description         String   @db.Text
+  displayName         String   // The name to display for this skill (firstName, lastName, or full name)
+  yearsOfExperience   Int
+  expertiseLevel      String   // "beginner", "semi-pro", "pro", "master"
+  paymentMethod       String   // "cash" or "transfer"
+  profilePicture      String?
+  profilePicturePublicId String?
+  startingPrice       Float
+  serviceDays         String   // e.g., "Monday-Friday"
+  serviceTimes        String   // e.g., "9AM-5PM"
+  mostActiveSocial    String?  // "instagram", "linkedin", "twitter", "website"
+  instagram           String?
+  linkedin            String?
+  twitter             String?
+  website             String?
+  achievements        String?  @db.Text
+  visitors            Int      @default(0)
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offers              SkillOffer[]
+  reviews             SkillReview[]
+  
+  @@index([userId])
+  @@index([visitors])
+  @@index([createdAt])
+  notifications       SkillNotification[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SkillOffer {
+  id              String   @id @default(uuid())
+  status          String   @default("pending")  // "pending", "negotiated", "ongoing", "completed", "rejected", "cancelled", "disputed", "ignored"
+  offerFrom       DateTime // Start date of offer
+  offerTo         DateTime // End date of offer
+  description     String?  @db.Text  // What the buyer wants from the skill owner
+  originalPrice   Float    // Starting price from skill
+  currentPrice    Float?   // Current negotiated price
+  skillOwnerAcceptedPrice Float?  // Price skill owner accepted
+  buyerAcceptedPrice Float?  // Price buyer accepted
+  skillId         String
+  skill           Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  buyerId         String
+  buyer           User     @relation("BuyerOffers", fields: [buyerId], references: [id], onDelete: Cascade)
+  counterOffers   SkillCounterOffer[]
+  fulfillmentOtp  String?
+  fulfillmentOtpExpiry DateTime?
+  fulfillmentOtpAttempts Int @default(0)
+  completedAt     DateTime?  // When offer was marked as completed
+  cancelledAt     DateTime?  // When offer was cancelled
+  cancelledBy     String?    // "buyer" | "skill_owner"
+  cancellationReason String? @db.Text
+  rejectedAt      DateTime?  // When offer was rejected
+  rejectedBy      String?    // "buyer" | "skill_owner"
+  disputedAt      DateTime?  // When offer was disputed
+  disputedBy      String?    // "buyer" | "skill_owner"
+  disputeReason   String?    @db.Text
+  ignoredAt       DateTime?  // When offer was marked as ignored
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([skillId])
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SkillCounterOffer {
+  id          String   @id @default(uuid())
+  offerId     String
+  offer       SkillOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  counterPrice Float
+  madeBy      String   @default("buyer") // "buyer" | "skill_owner"
+  reason      String   @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model SkillReview {
+  id          String   @id @default(uuid())
+  skillId     String
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  buyerId     String
+  buyer       User     @relation("BuyerReviews", fields: [buyerId], references: [id], onDelete: Cascade)
+  rating      Int      // 1-5
+  comment     String?  @db.Text
+  sentiment   String   // "positive", "negative", "neutral"
+  createdAt   DateTime @default(now())
+}
+
+model SkillNotification {
+  id        String   @id @default(uuid())
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  message   String   @db.Text
+  type      String   // "new_offer", "offer_accepted", "offer_rejected", "offer_fulfilled"
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model CartItem {
+  id               String   @id @default(uuid())
+  quantity         Int      @default(1)
+  userId           String
+  
+  @@index([userId])
+  @@index([productId])
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  selectedVariants String?  @db.LongText // JSON string storing selected variant values {fieldName: value}
+  variantId        String?
+  variant          ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model SkillType {
+  id        String   @id @default(uuid())
+  name      String   @unique  // e.g., "Web Development", "Photography"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([name])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique  // e.g., "Food", "Clothing", "Electronics"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([name])
+}
+
+model Schedule {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("#3498db")
+  focus     Boolean  @default(false)
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Task {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduleId String?
+  schedule  Schedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  title     String
+  category  String
+  details   String?  @db.Text
+  date      String   // YYYY-MM-DD format
+  startTime String   // HH:MM format
+  duration  Int      // in minutes
+  color     String   @default("#3498db")
+  completed Boolean  @default(false)
+  ignored   Boolean  @default(false)
+  ignoredAt DateTime?
+  focus     Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([scheduleId])
+  @@index([date])
+  @@index([completed])
+  @@index([ignored])
+  @@index([createdAt])
 }

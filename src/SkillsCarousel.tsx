@@ -59,7 +59,7 @@ export default function SkillsCarousel() {
           slidesPerView={1}
           navigation
           pagination={{ clickable: true }}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          autoplay={{ delay: 2500, disableOnInteraction: false }}
           breakpoints={{
             640: { slidesPerView: 2 },
             768: { slidesPerView: 3 },

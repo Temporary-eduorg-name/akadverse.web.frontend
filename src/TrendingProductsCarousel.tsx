@@ -78,7 +78,7 @@ export default function TrendingProductsCarousel() {
     useEffect(() => {
         const fetchTrendingProducts = async () => {
             try {
-                const response = await fetch("/api/products/trending");
+                const response = await fetch("/api/marketplace/products/trending");
                 if (response.ok) {
                     const data = await response.json();
                     setProducts(data.products || []);
@@ -253,3 +253,4 @@ export default function TrendingProductsCarousel() {
         </>
     );
 }
+

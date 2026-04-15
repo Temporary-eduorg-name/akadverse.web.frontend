@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Calculator, Lightbulb, Plus, Save, Trash2, X } from "lucide-react";
 import AcademicRecordsTabs from "@/src/AcademicRecordsTabs";
 
-type GradeOption = "A" | "B" | "C" | "D" | "F";
+type GradeOption = "UNSET" | "A" | "B" | "C" | "D" | "F";
 
 type CourseInput = {
   id: string;
@@ -20,6 +20,7 @@ type SemesterProjection = {
 };
 
 const gradePointMap: Record<GradeOption, number> = {
+  UNSET: 0,
   A: 4.0,
   B: 3.0,
   C: 2.0,
@@ -27,32 +28,71 @@ const gradePointMap: Record<GradeOption, number> = {
   F: 0.0,
 };
 
-const initialSemesters: SemesterProjection[] = [
-  {
-    id: "semester-1",
-    title: "Semester 1 - Fall 2023",
-    courses: [
-      { id: "c1", name: "CS101: Intro to Computing", units: 4, grade: "A" },
-      { id: "c2", name: "MATH202: Linear Algebra", units: 3, grade: "B" },
-      { id: "c3", name: "CS201: Data Structures", units: 4, grade: "B" },
-      { id: "c4", name: "ENG301: Technical Writing", units: 2, grade: "A" },
-    ],
-  },
+type RegisteredCourse = {
+  code: string;
+  title: string;
+  units: number;
+};
+
+type RegisteredCourseSnapshot = {
+  semesterLabel?: string;
+  courses?: RegisteredCourse[];
+};
+
+const registeredCoursesStorageKey = "studentRegisteredCourses";
+
+const FALLBACK_REGISTERED_COURSES: RegisteredCourse[] = [
+  { code: "CSC 301", title: "Software Engineering", units: 3 },
+  { code: "CSC 303", title: "Database Management Systems", units: 3 },
+  { code: "CSC 305", title: "Operating Systems Concepts", units: 3 },
+  { code: "CSC 311", title: "Human Computer Interaction", units: 2 },
+  { code: "GST 311", title: "Entrepreneurship Studies", units: 2 },
+  { code: "MTH 311", title: "Numerical Analysis I", units: 4 },
 ];
 
-function buildEmptyCourse(id: string): CourseInput {
+function buildCoursesFromRegistered(
+  registeredCourses: RegisteredCourse[],
+  semesterId: string,
+): CourseInput[] {
+  return registeredCourses.map((course, index) => ({
+    id: `${semesterId}-course-${index}`,
+    name: `${course.code}: ${course.title}`,
+    units: course.units,
+    grade: "UNSET",
+  }));
+}
+
+function buildSemesterProjection(
+  semesterId: string,
+  title: string,
+  registeredCourses: RegisteredCourse[],
+): SemesterProjection {
   return {
-    id,
-    name: "",
-    units: 0,
-    grade: "A",
+    id: semesterId,
+    title,
+    courses: buildCoursesFromRegistered(registeredCourses, semesterId),
   };
 }
 
+const initialSemesters: SemesterProjection[] = [
+  buildSemesterProjection(
+    "semester-1",
+    "Semester 1 - Projection",
+    FALLBACK_REGISTERED_COURSES,
+  ),
+];
+
 function getSemesterStats(courses: CourseInput[]) {
-  const totalUnits = courses.reduce((sum, course) => sum + course.units, 0);
+  const gradedCourses = courses.filter((course) => course.grade !== "UNSET");
+  const totalUnits = gradedCourses.reduce(
+    (sum, course) => sum + course.units,
+    0,
+  );
   const totalPoints = courses.reduce(
-    (sum, course) => sum + course.units * gradePointMap[course.grade],
+    (sum, course) =>
+      course.grade === "UNSET"
+        ? sum
+        : sum + course.units * gradePointMap[course.grade],
     0,
   );
 
@@ -64,7 +104,41 @@ function getSemesterStats(courses: CourseInput[]) {
 
 export default function CgpaCalculatorPage() {
   const [semesters, setSemesters] = useState(initialSemesters);
+  const [registeredCourses, setRegisteredCourses] = useState<
+    RegisteredCourse[]
+  >(FALLBACK_REGISTERED_COURSES);
+  const [semesterLabel, setSemesterLabel] = useState("Semester 1");
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(registeredCoursesStorageKey);
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored) as RegisteredCourseSnapshot;
+      if (parsed.semesterLabel) {
+        setSemesterLabel(parsed.semesterLabel);
+      }
+      if (Array.isArray(parsed.courses) && parsed.courses.length > 0) {
+        const loadedCourses = parsed.courses.map((course) => ({
+          code: course.code,
+          title: course.title,
+          units: Number(course.units) || 0,
+        }));
+
+        setRegisteredCourses(loadedCourses);
+        setSemesters([
+          buildSemesterProjection(
+            "semester-1",
+            `${parsed.semesterLabel ?? "Semester 1"} - Projection`,
+            loadedCourses,
+          ),
+        ]);
+      }
+    } catch {
+      // Ignore malformed storage payload and keep fallback data.
+    }
+  }, []);
 
   const totals = useMemo(() => {
     const units = semesters.reduce(
@@ -108,48 +182,17 @@ export default function CgpaCalculatorPage() {
     );
   };
 
-  const addCourse = (semesterId: string) => {
-    setNotice(null);
-    setSemesters((previous) =>
-      previous.map((semester) =>
-        semester.id !== semesterId
-          ? semester
-          : {
-              ...semester,
-              courses: [
-                ...semester.courses,
-                buildEmptyCourse(`${semesterId}-${Date.now()}`),
-              ],
-            },
-      ),
-    );
-  };
-
-  const removeCourse = (semesterId: string, courseId: string) => {
-    setNotice(null);
-    setSemesters((previous) =>
-      previous.map((semester) =>
-        semester.id !== semesterId
-          ? semester
-          : {
-              ...semester,
-              courses: semester.courses.filter(
-                (course) => course.id !== courseId,
-              ),
-            },
-      ),
-    );
-  };
-
   const addSemester = () => {
     setNotice(null);
+    const nextIndex = semesters.length + 1;
+    const semesterId = `semester-${Date.now()}`;
     setSemesters((previous) => [
       ...previous,
-      {
-        id: `semester-${Date.now()}`,
-        title: `Semester ${previous.length + 1} - New Projection`,
-        courses: [buildEmptyCourse(`new-course-${Date.now()}`)],
-      },
+      buildSemesterProjection(
+        semesterId,
+        `${semesterLabel} - Projection ${nextIndex}`,
+        registeredCourses,
+      ),
     ]);
   };
 
@@ -161,8 +204,16 @@ export default function CgpaCalculatorPage() {
   };
 
   const clearAll = () => {
-    setSemesters([]);
-    setNotice("All semester projections cleared.");
+    setSemesters((previous) =>
+      previous.map((semester) => ({
+        ...semester,
+        courses: semester.courses.map((course) => ({
+          ...course,
+          grade: "UNSET",
+        })),
+      })),
+    );
+    setNotice("All selected grades were cleared. Semester projections remain.");
   };
 
   const saveProjection = () => {
@@ -174,7 +225,7 @@ export default function CgpaCalculatorPage() {
   return (
     <div
       className="min-h-screen bg-[#f8fafc] text-[#334155]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       <main className="mx-auto max-w-[1220px] px-4 py-4 md:px-8">
         <AcademicRecordsTabs activeTab="cgpa" />
@@ -248,40 +299,24 @@ export default function CgpaCalculatorPage() {
                     </div>
 
                     <div className="px-5 py-5">
-                      <div className="grid grid-cols-[minmax(0,1.6fr)_110px_120px_28px] items-center gap-3 px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#94a3b8]">
+                      <div className="grid grid-cols-[minmax(0,1.6fr)_110px_120px] items-center gap-3 px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#94a3b8]">
                         <p>Course Name</p>
                         <p>Units</p>
                         <p>Grade</p>
-                        <span />
                       </div>
 
                       <div className="space-y-3">
                         {semester.courses.map((course) => (
                           <div
                             key={course.id}
-                            className="grid grid-cols-[minmax(0,1.6fr)_110px_120px_28px] items-center gap-3"
+                            className="grid grid-cols-[minmax(0,1.6fr)_110px_120px] items-center gap-3"
                           >
-                            <input
-                              value={course.name}
-                              onChange={(event) =>
-                                updateCourse(semester.id, course.id, {
-                                  name: event.target.value,
-                                })
-                              }
-                              placeholder="Enter course title"
-                              className="h-11 rounded-[10px] border border-[#dce3ee] bg-[#f8fafc] px-3 text-[14px] font-medium text-[#334155] outline-none transition focus:border-[#2f55c8] focus:bg-white"
-                            />
-                            <input
-                              value={course.units || ""}
-                              type="number"
-                              min={0}
-                              onChange={(event) =>
-                                updateCourse(semester.id, course.id, {
-                                  units: Number(event.target.value) || 0,
-                                })
-                              }
-                              className="h-11 rounded-[10px] border border-[#dce3ee] bg-[#f8fafc] px-3 text-center text-[14px] font-semibold text-[#334155] outline-none transition focus:border-[#2f55c8] focus:bg-white"
-                            />
+                            <div className="h-11 rounded-[10px] border border-[#dce3ee] bg-[#f8fafc] px-3 text-[14px] font-medium text-[#334155] flex items-center">
+                              {course.name}
+                            </div>
+                            <div className="h-11 rounded-[10px] border border-[#dce3ee] bg-[#f8fafc] px-3 text-center text-[14px] font-semibold text-[#334155] flex items-center justify-center">
+                              {course.units}
+                            </div>
                             <select
                               value={course.grade}
                               onChange={(event) =>
@@ -291,36 +326,19 @@ export default function CgpaCalculatorPage() {
                               }
                               className="h-11 rounded-[10px] border border-[#dce3ee] bg-[#f8fafc] px-3 text-[14px] font-semibold text-[#334155] outline-none transition focus:border-[#2f55c8] focus:bg-white"
                             >
+                              <option value="UNSET">-</option>
                               {Object.entries(gradePointMap).map(
-                                ([grade, points]) => (
-                                  <option key={grade} value={grade}>
-                                    {grade} ({points.toFixed(1)})
-                                  </option>
-                                ),
+                                ([grade, points]) =>
+                                  grade === "UNSET" ? null : (
+                                    <option key={grade} value={grade}>
+                                      {grade} ({points.toFixed(1)})
+                                    </option>
+                                  ),
                               )}
                             </select>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeCourse(semester.id, course.id)
-                              }
-                              className="rounded-md p-1.5 text-[#cbd5e1] transition hover:bg-[#f8fafc] hover:text-[#94a3b8]"
-                              aria-label={`Remove ${course.name || "course"}`}
-                            >
-                              <Trash2 size={15} strokeWidth={2.3} />
-                            </button>
                           </div>
                         ))}
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => addCourse(semester.id)}
-                        className="mt-6 inline-flex items-center gap-2 text-[14px] font-bold text-[#2f55c8] transition hover:text-[#2647ad]"
-                      >
-                        <Plus size={15} strokeWidth={2.5} />
-                        Add New Course
-                      </button>
 
                       <button
                         type="button"

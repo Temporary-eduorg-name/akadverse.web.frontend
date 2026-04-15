@@ -39,10 +39,10 @@ export async function verifyAdmin(req: NextRequest): Promise<AdminAuthResult> {
       };
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super-admin") {
       return {
         valid: false,
-        error: "Unauthorized - Admin access required",
+        error: "Unauthorized - Super-admin access required",
       };
     }
 
@@ -61,19 +61,21 @@ export async function verifyAdmin(req: NextRequest): Promise<AdminAuthResult> {
 }
 
 /**
- * Predefined admin emails that get admin role on signup
- * Add your admin emails here
+ * Predefined super-admin emails that get super-admin role on signup.
  */
-export const ADMIN_EMAILS = [
-  "admin@studentmarketplace.com",
-  // Add more admin emails here
+export const SUPER_ADMIN_EMAILS = [
+  "superadmin@studentmarketplace.com",
+  // Add more super-admin emails here
 ];
 
 /**
- * Check if an email should have admin role
+ * Check if an email should have super-admin role.
  * @param email - Email to check
- * @returns true if email is in admin list
+ * @returns true if email is in super-admin list
  */
-export function isAdminEmail(email: string): boolean {
-  return ADMIN_EMAILS.includes(email.toLowerCase());
+export function isSuperAdminEmail(email: string): boolean {
+  return SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
 }
+
+// Backward-compatible alias for existing imports.
+export const isAdminEmail = isSuperAdminEmail;

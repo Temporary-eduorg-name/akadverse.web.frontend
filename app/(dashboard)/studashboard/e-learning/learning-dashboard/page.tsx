@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import LearningEssentialsPage from "./learning-essentials/page";
 
 export default function LearningDashboardRedirect() {
-  redirect("/studashboard/e-learning/learning-dashboard/learning-essentials");
+  return <LearningEssentialsPage />;
 }

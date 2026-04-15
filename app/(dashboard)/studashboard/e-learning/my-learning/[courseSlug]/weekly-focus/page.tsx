@@ -1,245 +1,428 @@
 "use client";
 
-import { useState } from "react";
+import {
+  ArrowLeft,
+  CirclePlay,
+  Download,
+  FileText,
+  Folder,
+  Link as LinkIcon,
+  Mic,
+  Sparkles,
+  Timer,
+  Video,
+} from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import React from "react";
+import { getSharedCourseAssetUrl } from "@/app/lib/sharedCourseAssets";
+import { getAllCourseWeeks } from "../learningData";
+import { getSharedCourseWeeks } from "@/app/lib/sharedCourseWorkspace";
+import { useSharedCourseWorkspace } from "@/app/lib/useSharedCourseWorkspace";
+
+type Difficulty = "Easy" | "Intermediate" | "Hard";
 
 export default function WeeklyFocusPage() {
-  const [selectedWeek, setSelectedWeek] = useState(4);
+  const params = useParams<{ courseSlug: string }>();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const courseSlug = params?.courseSlug ?? "software-engineering";
+  const { course, isSharedCourse } = useSharedCourseWorkspace(courseSlug);
+  const allWeeks = React.useMemo(
+    () =>
+      isSharedCourse && course
+        ? getSharedCourseWeeks(course)
+        : getAllCourseWeeks(courseSlug),
+    [course, courseSlug, isSharedCourse],
+  );
 
-  const weeklyData = {
-    4: {
-      title: "Weekly Focus: Week 4",
-      subtitle: "Advanced Thermodynamics & Heat Transfer",
-      lectureNotes: [
-        { id: 1, name: "Note 1", date: "Feb 2 2025" },
-        { id: 2, name: "Note 2", date: "Feb 2 2025" },
-        { id: 3, name: "Note 3", date: "Feb 2 2025" },
-      ],
-      externalLinks: [
-        { name: "Online Article (Wiki)", icon: "🌐" },
-        { name: "External Resources Online", icon: "📚" },
-      ],
-      tools: [
-        {
-          title: "Note to Audio",
-          description:
-            "Convert complex slides into natural-sounding audio summaries for learning on the go.",
-          icon: "🎵",
-        },
-        {
-          title: "Note to Video",
-          description:
-            "Generate visual AI-focused that explain difficult concepts using your lecture notes.",
-          icon: "🎬",
-        },
-        {
-          title: "YouTube Guide",
-          description:
-            "AI-powered curation of top YouTube tutorials specifically matching this week's syllabus.",
-          icon: "▶️",
-        },
-      ],
-      quiz: {
-        difficulty: "Easy",
-        format: "Multiple Choice",
-        focusArea: "e.g., Entropy, Entropy...",
-      },
-      simulations: [
-        {
-          title: "Full Exam Simulation",
-          duration: "3 Hours",
-          difficulty: "Intermediate",
-        },
-        {
-          title: "Mid-Semester Prep",
-          duration: "Test (2 Hours)",
-          difficulty: "Hard",
-        },
-        {
-          title: "Test Preparation",
-          duration: "Intensive Study + Guided Module",
-          difficulty: "Intermediate",
-        },
-      ],
-    },
-  };
+  const firstAvailableWeek = allWeeks[0]?.weekNumber ?? 1;
+  const searchWeek = Number(searchParams.get("week"));
+  const initialWeek =
+    Number.isInteger(searchWeek) &&
+    allWeeks.some((week) => week.weekNumber === searchWeek)
+      ? searchWeek
+      : firstAvailableWeek;
+
+  const [selectedWeek, setSelectedWeek] = React.useState(initialWeek);
+  const [quizDifficulty, setQuizDifficulty] =
+    React.useState<Difficulty>("Intermediate");
+  const [noteUrls, setNoteUrls] = React.useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    setSelectedWeek(initialWeek);
+  }, [initialWeek]);
 
   const data =
-    weeklyData[selectedWeek as keyof typeof weeklyData] || weeklyData[4];
+    allWeeks.find((week) => week.weekNumber === selectedWeek) || allWeeks[0];
+
+  React.useEffect(() => {
+    if (!data) {
+      setNoteUrls({});
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrls: string[] = [];
+
+    const resolveNoteUrls = async () => {
+      const entries = await Promise.all(
+        data.notes.map(async (note) => {
+          if (note.fileUrl) {
+            return [note.id, note.fileUrl] as const;
+          }
+
+          if (!note.assetId) {
+            return [note.id, ""] as const;
+          }
+
+          const assetUrl = await getSharedCourseAssetUrl(note.assetId);
+          if (assetUrl?.startsWith("blob:")) {
+            objectUrls.push(assetUrl);
+          }
+
+          return [note.id, assetUrl ?? ""] as const;
+        }),
+      );
+
+      if (cancelled) {
+        objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        return;
+      }
+
+      setNoteUrls(
+        Object.fromEntries(entries.filter(([, url]) => Boolean(url))),
+      );
+    };
+
+    resolveNoteUrls();
+
+    return () => {
+      cancelled = true;
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [data]);
+
+  if (!data) {
+    return null;
+  }
+
+  const aiTools = [
+    {
+      title: "Note to Audio",
+      description:
+        "Convert complex slides into natural-sounding audio summaries for learning on the go.",
+      icon: Mic,
+    },
+    {
+      title: "Note to Video",
+      description:
+        "Generate visual AI lectures that explain difficult concepts using your lecture notes.",
+      icon: Video,
+    },
+    {
+      title: "YouTube Guide",
+      description:
+        "AI-powered curation of top video tutorials specifically matching this week's syllabus.",
+      icon: CirclePlay,
+      path: "/studashboard/productivity-layer",
+    },
+  ];
+
+  const simulations = [
+    {
+      tag: "3 Hours",
+      title: "Full Exam Simulation",
+      subtitle: "Unit 1 - 4 Comprehensive Review",
+    },
+    {
+      tag: "2 Hours",
+      title: "Mid-Semester Prep",
+      subtitle: "Core Content Phase 2 Review",
+    },
+    {
+      tag: "45 Mins",
+      title: "Test Preparation",
+      subtitle: "Intensive Study - Current Module",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Week Selector */}
-      <div className="flex gap-2 flex-wrap">
-        {[1, 2, 3, 4, 5].map((week) => (
+    <div className="space-y-4 pt-2">
+      <div className="flex flex-wrap gap-2">
+        {allWeeks.map((week) => (
           <button
-            key={week}
-            onClick={() => setSelectedWeek(week)}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              selectedWeek === week
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+            key={week.weekNumber}
+            type="button"
+            onClick={() => setSelectedWeek(week.weekNumber)}
+            className={`rounded-[7px] px-3 py-2 text-[12px] font-semibold ${
+              selectedWeek === week.weekNumber
+                ? "bg-[#2c4ec0] text-white"
+                : "bg-[#eef2f8] text-[#415273]"
             }`}
           >
-            Week {week}
+            Week {week.weekNumber}
           </button>
         ))}
       </div>
 
-      {/* Title Section */}
       <section>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">{data.title}</h2>
-        <p className="text-gray-600">{data.subtitle}</p>
+        <button
+          type="button"
+          onClick={() =>
+            setSelectedWeek(Math.max(firstAvailableWeek, selectedWeek - 1))
+          }
+          className="mb-4 inline-flex items-center gap-2 text-[#5d6f8b]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h2 className="mb-2 mt-4 text-[32px] font-black leading-none tracking-[-0.02em] text-[#111827] sm:text-[36px]">
+          Weekly Focus: Week {data.weekNumber}
+        </h2>
+        <p className="text-[15px] leading-6 text-[#50617d]">{data.title}</p>
       </section>
 
-      {/* Lecture Notes Repository */}
-      <section>
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>📋</span> Lecture Notes Repository
-        </h3>
-        <div className="grid grid-cols-3 gap-4">
-          {data.lectureNotes.map((note) => (
-            <div
+      <section className="overflow-hidden rounded-[12px] border border-[#d8deea] bg-white">
+        <div className="border-b border-[#e5ebf5] px-4 py-3">
+          <h3 className="flex items-center gap-2 text-[24px] leading-none tracking-[-0.02em] p-3 text-[#1a2434] sm:text-[20px]">
+            <Folder className="h-5 w-5 text-[#2e53c6]" />
+            Lecture Notes Repository
+          </h3>
+        </div>
+        <div className="grid gap-3 p-4 md:grid-cols-3">
+          {data.notes.map((note) => (
+            <article
               key={note.id}
-              className="p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-300 transition-all cursor-pointer"
+              className="flex items-center justify-between rounded-[8px] border border-[#e4e9f3] bg-[#fbfcff] px-3 py-3"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <span>📄</span>
-                <p className="font-semibold text-gray-900">{note.name}</p>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[#294fbe]" />
+                <div>
+                  <p className="text-[13px] font-semibold text-[#1f2a3d]">
+                    {note.name}
+                  </p>
+                  <p className="text-[11px] text-[#8896ad]">
+                    {note.fileType} - {note.size}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-gray-600">{note.date}</p>
-            </div>
+
+              {noteUrls[note.id] ? (
+                <a
+                  href={noteUrls[note.id]}
+                  download={note.name}
+                  className="rounded p-1 text-[#8c9ab0] hover:bg-[#eef2fa]"
+                  aria-label={`Download ${note.name}`}
+                >
+                  <Download className="h-4 w-4" />
+                </a>
+              ) : (
+                <span className="rounded p-1 text-[#b8c2d4]" aria-hidden>
+                  <Download className="h-4 w-4" />
+                </span>
+              )}
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Important External Links */}
-      <section>
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>🔗</span> Important External Links
-        </h3>
-        <div className="flex gap-3">
-          {data.externalLinks.map((link, i) => (
-            <button
-              key={i}
-              className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium text-gray-900"
+      <section className="overflow-hidden rounded-[12px] border border-[#d8deea] bg-white">
+        <div className="border-b border-[#e5ebf5] px-4 py-3">
+          <h3 className="flex items-center gap-2 text-[24px] p-3 leading-none tracking-[-0.02em] text-[#1a2434] sm:text-[20px]">
+            <LinkIcon className="h-5 w-5 text-[#2e53c6]" />
+            Important External Links
+          </h3>
+        </div>
+        <div className="flex flex-wrap gap-4 px-4 py-4">
+          {data.links.map((link) => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-w-[260px] items-center justify-center rounded-[10px] border border-[#e6ebf4] bg-white px-4 py-3 text-[13px] font-semibold text-[#3d4f6b]"
             >
-              {link.icon} {link.name}
-            </button>
+              {link.name}
+            </a>
           ))}
         </div>
       </section>
 
-      {/* AI Study Enhancers */}
-      <section>
-        <div className="bg-gradient-to-r from-purple-500 to-blue-600 rounded-2xl p-8 text-white mb-6">
-          <h3 className="text-2xl font-bold mb-2">AI Study Enhancers</h3>
-          <p className="text-sm opacity-90">
+      <section className="overflow-hidden rounded-[12px] border border-[#d8deea] bg-white">
+        <div className="bg-gradient-to-r from-[#6650f2] to-[#4d8fda] px-4 py-8 text-center text-white">
+          <h3 className="text-[30px]  leading-none tracking-[-0.02em] sm:text-[24px]">
+            AI Study Enhancers
+          </h3>
+          <p className="mt-2 text-[13px] text-[#dce7ff]">
             Transform your lecture materials into dynamic learning formats using
             our integrated AI tools.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data.tools.map((tool, i) => (
-            <div
-              key={i}
-              className="p-4 bg-gray-50 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
-            >
-              <div className="text-3xl mb-3">{tool.icon}</div>
-              <h4 className="font-bold text-gray-900 mb-2">{tool.title}</h4>
-              <p className="text-sm text-gray-600">{tool.description}</p>
-            </div>
-          ))}
+        <div className="grid gap-3 p-4 md:grid-cols-3">
+          {aiTools.map((tool) => {
+            const Icon = tool.icon;
+            const content = (
+              <>
+                <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-[12px] bg-[#ecf1fb] text-[#2d53c4]">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h4 className="mb-2 text-[20px] leading-none tracking-[-0.02em] text-[#1a2434] sm:text-[22px]">
+                  {tool.title}
+                </h4>
+                <p className="text-[13px] leading-5 text-[#61708a]">
+                  {tool.description}
+                </p>
+              </>
+            );
+
+            return tool.path ? (
+              <button
+                key={tool.title}
+                type="button"
+                onClick={() => router.push(tool.path)}
+                className="rounded-[10px] border border-[#e4e9f3] bg-[#fbfcff] px-4 py-5 text-center transition hover:border-[#d0daf0] hover:shadow-[0_12px_24px_rgba(16,24,40,0.06)]"
+              >
+                {content}
+              </button>
+            ) : (
+              <article
+                key={tool.title}
+                className="rounded-[10px] border border-[#e4e9f3] bg-[#fbfcff] px-4 py-5 text-center"
+              >
+                {content}
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      {/* AI Quiz Generator */}
-      <section className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <span>✨</span> AI Quiz Generator
-          </h3>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm">
+      <section className="overflow-hidden rounded-[12px] border border-[#d8deea] bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e5ebf5] px-4 py-3">
+          <div>
+            <h3 className="flex items-center gap-2 text-[24px] p-3 leading-none tracking-[-0.02em] text-[#1a2434] sm:text-[20px]">
+              <Sparkles className="h-5 w-5 text-[#2e53c6]" />
+              AI Quiz Generator
+            </h3>
+            <p className="text-[13px] text-[#60708a]">
+              Generate custom assessments for this unit instantly.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/studashboard/e-learning/my-learning/${courseSlug}/quiz-generator?difficulty=${encodeURIComponent(quizDifficulty)}`,
+              )
+            }
+            className="rounded-[8px] bg-[#294dbc] px-6 py-2 text-[13px] font-bold text-white"
+          >
             Launch Builder
           </button>
         </div>
-        <p className="text-gray-600 text-sm mb-4">
-          Generate custom quizzes based on this unit instantly.
-        </p>
 
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid gap-3 px-4 py-4 md:grid-cols-3">
           <div>
-            <p className="text-gray-600 uppercase font-semibold text-xs mb-1">
-              DIFFICULTY
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#8d9ab1]">
+              Difficulty
             </p>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white">
-              <option>Easy</option>
-              <option>Intermediate</option>
-              <option>Hard</option>
-            </select>
+            <div className="grid grid-cols-3 rounded-[8px] border border-[#dbe2ef] bg-[#f8fafd] p-1 text-[12px]">
+              <button
+                type="button"
+                onClick={() => setQuizDifficulty("Easy")}
+                className={`rounded-[6px] py-2 ${
+                  quizDifficulty === "Easy"
+                    ? "bg-[#2f53c4] text-white"
+                    : "text-[#243149]"
+                }`}
+              >
+                Easy
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuizDifficulty("Intermediate")}
+                className={`rounded-[6px] py-2 ${
+                  quizDifficulty === "Intermediate"
+                    ? "bg-[#2f53c4] text-white"
+                    : "text-[#243149]"
+                }`}
+              >
+                Intermediate
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuizDifficulty("Hard")}
+                className={`rounded-[6px] py-2 ${
+                  quizDifficulty === "Hard"
+                    ? "bg-[#2f53c4] text-white"
+                    : "text-[#243149]"
+                }`}
+              >
+                Hard
+              </button>
+            </div>
           </div>
+
           <div>
-            <p className="text-gray-600 uppercase font-semibold text-xs mb-1">
-              FORMAT
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#8d9ab1]">
+              Format
             </p>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white">
+            <select className="w-full rounded-[8px] border border-[#dbe2ef] bg-white px-3 py-2 text-[13px] text-[#273550]">
               <option>Multiple Choice</option>
               <option>Short Answer</option>
               <option>Essay</option>
             </select>
           </div>
+
           <div>
-            <p className="text-gray-600 uppercase font-semibold text-xs mb-1">
-              FOCUS AREA
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#8d9ab1]">
+              Focus Area
             </p>
             <input
               type="text"
-              placeholder="e.g., Entropy, Entropy..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder-gray-400"
+              placeholder="e.g. Entropy, Enthalpy..."
+              className="w-full rounded-[8px] border border-[#dbe2ef] bg-white px-3 py-2 text-[13px] text-[#273550] placeholder:text-[#96a3b8]"
             />
           </div>
         </div>
       </section>
 
-      {/* Timed Simulations */}
-      <section>
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>⏱️</span> Timed Simulations
-          <span className="ml-auto px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
-            EXAM READY
+      <section className="overflow-hidden rounded-[12px] border border-[#d8deea] bg-white">
+        <div className="flex items-center justify-between border-b border-[#e5ebf5] px-4 py-3">
+          <h3 className="flex items-center gap-2 text-[24px] p-3 leading-none tracking-[-0.02em] text-[#1a2434] sm:text-[20px]">
+            <Timer className="h-5 w-5 text-[#14a37f]" />
+            Timed Simulations
+          </h3>
+          <span className="rounded-full bg-[#d6faec] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#0a8a66]">
+            Exam Ready
           </span>
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data.simulations.map((sim, i) => (
-            <div
-              key={i}
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md hover:border-teal-400 transition-all"
+        </div>
+        <div className="grid gap-3 p-4 md:grid-cols-3">
+          {simulations.map((simulation, idx) => (
+            <article
+              key={simulation.title}
+              className="flex flex-col rounded-[10px] border border-[#e5eaf4] bg-[#fbfcff] px-4 py-4"
             >
-              <h4 className="font-bold text-gray-900 mb-2">{sim.title}</h4>
-              <div className="space-y-2 mb-4">
-                <p className="text-xs text-gray-600">
-                  <span className="font-semibold">Duration:</span>{" "}
-                  {sim.duration}
-                </p>
-                <p className="text-xs text-gray-600">
-                  <span className="font-semibold">Difficulty:</span>{" "}
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      sim.difficulty === "Easy"
-                        ? "bg-green-100 text-green-800"
-                        : sim.difficulty === "Intermediate"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {sim.difficulty}
-                  </span>
-                </p>
-              </div>
-              <button className="w-full px-3 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-semibold text-sm">
-                Start Simulation
+              <p className="mb-3 inline-block rounded-full bg-[#d6faec] px-2 py-1 text-[10px] font-bold uppercase text-[#0a8a66]">
+                {simulation.tag}
+              </p>
+              <h4 className="text-[18px]  leading-tight tracking-[-0.02em] text-[#1a2434] sm:text-[20px]">
+                {simulation.title}
+              </h4>
+              <p className="mt-1 flex-1 text-[12px] text-[#73829b]">
+                {simulation.subtitle}
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/studashboard/e-learning/my-learning/${courseSlug}/timed-simulations`,
+                  )
+                }
+                className="mt-4 rounded-[8px] bg-[#14a37f] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-[#0d8a6b]"
+              >
+                View Simulations
               </button>
-            </div>
+            </article>
           ))}
         </div>
       </section>

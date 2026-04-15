@@ -25,7 +25,7 @@ export default function TrendingBusinessCarousel() {
   useEffect(() => {
     const fetchTrendingBusinesses = async () => {
       try {
-        const response = await fetch("/api/businesses/trending");
+        const response = await fetch("/api/marketplace/businesses/trending");
         if (response.ok) {
           const data = await response.json();
           setBusinesses(data.businesses || []);
@@ -118,3 +118,4 @@ export default function TrendingBusinessCarousel() {
     </div>
   );
 }
+

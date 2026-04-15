@@ -60,7 +60,7 @@ export default function SkillOffersManager() {
 
   const fetchOffers = async () => {
     try {
-      const response = await fetch("/api/skills/dashboard/offers", {
+      const response = await fetch("/api/marketplace/skills/dashboard/offers", {
         credentials: "include",
       });
 
@@ -131,7 +131,7 @@ export default function SkillOffersManager() {
     try {
       setActionLoading(offerId);
 
-      const response = await fetch("/api/skills/dashboard/offers", {
+      const response = await fetch("/api/marketplace/skills/dashboard/offers", {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -430,3 +430,4 @@ export default function SkillOffersManager() {
     </div>
   );
 }
+

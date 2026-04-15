@@ -27,22 +27,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startRefreshTimer = () => {
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+      }
+
+      // Refresh a bit before the 1-hour access token expires.
+      refreshIntervalId = setInterval(async () => {
+        try {
+          await fetch("/api/marketplace/auth/refresh", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Periodic token refresh failed:", error);
+        }
+      }, 50 * 60 * 1000);
+    };
+
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/verify", {
+        const response = await fetch("/api/marketplace/auth/verify", {
           credentials: "include",
         });
 
         if (response.ok) {
           setIsAuthenticated(true);
 
-          const userResponse = await fetch("/api/user", {
+          const userResponse = await fetch("/api/marketplace/user", {
             credentials: "include",
           });
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
             setUser(userData.user);
+            startRefreshTimer();
           } else {
             setUser(null);
           }
@@ -60,6 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
+
+    return () => {
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+      }
+    };
   }, []);
 
   return (
@@ -76,3 +103,4 @@ export function useAuth() {
   }
   return context;
 }
+

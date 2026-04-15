@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyAccessToken } from "@/lib/jwt";
+import { NextRequest } from "next/server";
+import { verifyAccessToken, verifyRefreshToken } from "@/lib/jwt";
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
@@ -10,18 +10,23 @@ export interface AuthenticatedRequest extends NextRequest {
 }
 
 export function verifyAuth(req: NextRequest): { valid: boolean; error?: string; userId?: string; role?: string } {
-  // Get token from cookies only
-  const token = req.cookies.get("accessToken")?.value;
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
 
-  if (!token) {
-    return { valid: false, error: "No token provided" };
+  if (accessToken) {
+    const decodedAccess = verifyAccessToken(accessToken);
+    if (decodedAccess) {
+      return { valid: true, userId: decodedAccess.userId, role: decodedAccess.role };
+    }
   }
 
-  const decoded = verifyAccessToken(token);
-  if (!decoded) {
-    return { valid: false, error: "Invalid or expired token" };
+  if (refreshToken) {
+    const decodedRefresh = verifyRefreshToken(refreshToken);
+    if (decodedRefresh) {
+      return { valid: true, userId: decodedRefresh.userId, role: decodedRefresh.role };
+    }
   }
 
-  return { valid: true, userId: decoded.userId, role: decoded.role };
+  return { valid: false, error: "Invalid or expired token" };
 }
 

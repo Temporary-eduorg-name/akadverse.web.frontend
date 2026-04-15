@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function RecordsRedirect() {
-  redirect("/studashboard/e-learning/learning-dashboard/records/performance-overview");
+  redirect("/studashboard/e-learning/academic-records/performance-overview");
 }

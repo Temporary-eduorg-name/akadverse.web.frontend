@@ -1,16 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  History,
-  Lock,
-  Star,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, History, Lock, Star } from "lucide-react";
 import AcademicRecordsTabs from "@/src/AcademicRecordsTabs";
 
 type SemesterName = "Alpha" | "Omega";
@@ -280,10 +272,6 @@ function GaugeMeter({
     <article
       className="relative flex flex-col items-center justify-center p-8 rounded-xl transition-all duration-300 hover:-translate-y-1"
       style={{
-        background:
-          bgColor === "bg-[#dbeafe]"
-            ? "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)"
-            : "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
         boxShadow:
           bgColor === "bg-[#dbeafe]"
             ? "0 4px 12px rgba(59, 130, 246, 0.15)"
@@ -549,7 +537,6 @@ function GaugeMeter({
 }
 
 export default function ResultsPage() {
-  const router = useRouter();
   const initialExpanded = termRows.reduce<Record<string, boolean>>(
     (acc, term) => {
       acc[term.id] = term.id === "300-omega";
@@ -565,6 +552,9 @@ export default function ResultsPage() {
     Object.keys(initialExpanded).find((k) => initialExpanded[k]) || "300-omega";
   const [selectedTermId, setSelectedTermId] =
     useState<string>(defaultSelectedTerm);
+  const [showSemesterPicker, setShowSemesterPicker] = useState(false);
+  const [showTranscriptOptions, setShowTranscriptOptions] = useState(false);
+  const [showCustomPrintOptions, setShowCustomPrintOptions] = useState(false);
 
   const toggleRow = (term: TermRow) => {
     if (isFutureTerm(term)) {
@@ -597,11 +587,28 @@ export default function ResultsPage() {
   };
 
   const handleViewPreviousResults = () => {
-    console.log("View previous results", { studentProgress });
+    setShowSemesterPicker((prev) => !prev);
+    setShowTranscriptOptions(false);
+    setShowCustomPrintOptions(false);
   };
 
   const handlePrintTranscript = () => {
-    console.log("Print unofficial transcript", { studentProgress });
+    setShowTranscriptOptions((prev) => !prev);
+    setShowSemesterPicker(false);
+    if (showTranscriptOptions) {
+      setShowCustomPrintOptions(false);
+    }
+  };
+
+  const handleSemesterSelection = (term: TermRow) => {
+    if (isFutureTerm(term)) return;
+
+    setSelectedTermId(term.id);
+    setExpandedRows((prev) => ({
+      ...prev,
+      [term.id]: true,
+    }));
+    setShowSemesterPicker(false);
   };
 
   // Dynamically calculate the stats based on the selected term from termRows
@@ -638,7 +645,7 @@ export default function ResultsPage() {
   return (
     <div
       className="min-h-screen bg-[#f5f7fb] text-[#334155]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
       <main className="mx-auto max-w-[1220px] px-4 py-4 md:px-8">
         <AcademicRecordsTabs activeTab="records" />
@@ -655,21 +662,6 @@ export default function ResultsPage() {
               label="Cumulative GPA"
               bgColor="bg-[#fef3c7]"
             />
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={handleViewPreviousResults}
-              className="rounded-md bg-[#10b981] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm hover:bg-[#059669] transition"
-            >
-              View Previous Results
-            </button>
-            <button
-              onClick={handlePrintTranscript}
-              className="rounded-md bg-[#8b5cf6] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm hover:bg-[#7c3aed] transition"
-            >
-              Print Unofficial Transcript
-            </button>
           </div>
 
           <div className="mt-10 flex items-center justify-between">
@@ -825,6 +817,100 @@ export default function ResultsPage() {
               );
             })}
           </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={handleViewPreviousResults}
+              className="rounded-md bg-[#10b981] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm hover:bg-[#059669] transition"
+            >
+              View Previous Results
+            </button>
+            <button
+              onClick={handlePrintTranscript}
+              className="rounded-md bg-[#8b5cf6] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm hover:bg-[#7c3aed] transition"
+            >
+              Print Unofficial Transcript
+            </button>
+          </div>
+
+          {showSemesterPicker ? (
+            <div className="mt-4 rounded-lg border-2 border-[#e0e7ff] bg-[#f8fafc] p-4">
+              <h4 className="text-lg font-bold text-[#1e293b]">
+                Select Semester
+              </h4>
+              <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-5">
+                {termRows.map((term) => {
+                  const isFuture = isFutureTerm(term);
+                  return (
+                    <button
+                      key={`picker-${term.id}`}
+                      type="button"
+                      disabled={isFuture}
+                      onClick={() => handleSemesterSelection(term)}
+                      className={`rounded-md px-3 py-2 text-[11px] font-bold transition ${
+                        isFuture
+                          ? "cursor-not-allowed border border-[#e5e7eb] bg-[#f1f5f9] text-[#94a3b8]"
+                          : "border border-[#cbd5e1] bg-white text-[#334155] hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
+                      }`}
+                    >
+                      {term.level} {term.semester}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {showTranscriptOptions ? (
+            <div className="mt-4 rounded-lg border-2 border-[#e0e7ff] bg-[#f8fafc] p-4">
+              <h4 className="text-lg font-bold text-[#1e293b]">
+                Transcript Options
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="flex-1 rounded-md bg-[#4f46e5] px-4 py-2.5 text-[12px] font-bold text-white"
+                >
+                  Current Print (All Semesters)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomPrintOptions((prev) => !prev)}
+                  className="flex-1 rounded-md bg-[#7c3aed] px-4 py-2.5 text-[12px] font-bold text-white"
+                >
+                  Custom Print (Select Semesters)
+                </button>
+              </div>
+
+              {showCustomPrintOptions ? (
+                <div className="mt-4">
+                  <p className="text-[12px] font-semibold text-[#475569]">
+                    Select semesters to include:
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-5">
+                    {termRows.map((term) => {
+                      const isFuture = isFutureTerm(term);
+                      return (
+                        <label
+                          key={`print-${term.id}`}
+                          className={`flex items-center gap-2 rounded-md border px-3 py-2 text-[11px] font-semibold ${
+                            isFuture
+                              ? "cursor-not-allowed border-[#e5e7eb] bg-[#f1f5f9] text-[#94a3b8]"
+                              : "border-[#cbd5e1] bg-white text-[#334155]"
+                          }`}
+                        >
+                          <input type="checkbox" disabled={isFuture} />
+                          <span>
+                            {term.level} {term.semester}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </section>
       </main>
     </div>

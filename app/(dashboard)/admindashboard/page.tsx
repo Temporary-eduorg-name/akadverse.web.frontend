@@ -1,112 +1,120 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Book, Search, BellDot, User, LogOut, Home, ShoppingCart, Zap } from 'lucide-react';
+import { Zap, House, Bot, BookOpen } from 'lucide-react';
+import DashboardNavbar from '@/app/components/dashboard/admin/DashboardNavbar';
+
+interface DashboardUser {
+  firstName: string;
+}
+
+const getTimeOfDayGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
+};
 
 const Page = () => {
   const router = useRouter();
+  const [user, setUser] = useState<DashboardUser | null>(null);
+  const [timeOfDay, setTimeOfDay] = useState(getTimeOfDayGreeting());
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/marketplace/user', { credentials: 'include' });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data?.user?.firstName) {
+          setUser({ firstName: data.user.firstName });
+        }
+      } catch {
+        // Greeting gracefully falls back when user data is unavailable.
+      }
+    };
+
+    fetchUser();
+    setTimeOfDay(getTimeOfDayGreeting());
+  }, []);
+
+  const displayName = user?.firstName || 'Admin';
 
   const workspaces = [
     {
       id: 1,
-      title: 'Admin Dashboard',
-      description: 'Overview of students, faculty, and campus KPIs.',
-      icon: Home,
-      colors: 'bg-blue-500',
-      path: '/admindashboard/admin-dashboard',
+      title: 'Productivity Layer',
+      description: 'Tools to create, organize, and manage admin work. This workspace includes tools such as Docs and Drive.',
+      icon: Zap,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-50',
+      path: '/admindashboard/productivity-layer',
     },
     {
       id: 2,
-      title: 'Marketplace',
-      description: 'Business Market & Skills Market activity overview.',
-      icon: ShoppingCart,
-      colors: 'bg-orange-500',
-      path: '/studashboard/main-menu/marketplace',
+      title: 'Main Menu',
+      description: 'Access campus tools, the admin dashboard, marketplace, and admin essentials.',
+      icon: House,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-50',
+      path: '/admindashboard/main-menu',
     },
     {
       id: 3,
-      title: 'Smart Admin System',
-      description: 'Institutional Intelligence, KPIs, and advanced analytics.',
-      icon: Zap,
-      colors: 'bg-purple-500',
-      path: '/admindashboard/smart-admin-system',
-      badge: 'Coming Soon',
+      title: 'E-Learning',
+      description: 'Access courses, learning materials, and track admin progress. Includes learning dashboard, my learning, and learning resources.',
+      icon: BookOpen,
+      color: 'text-green-500',
+      bgColor: 'bg-green-50',
+      path: '/admindashboard/e-learning',
+    },
+    {
+      id: 4,
+      title: 'AI Studio',
+      description: 'Your AI-powered admin assistant for research, writing, and planning support.',
+      icon: Bot,
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-50',
+      path: '/admindashboard/ai-studio',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Book size={28} className="text-blue-600" />
-            <span className="text-lg font-semibold text-blue-600">AkadVerse</span>
-          </div>
-          <div className="flex-1 max-w-sm mx-6 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full pl-12 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors" aria-label="Notifications">
-              <BellDot size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">Admin Profile</span>
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User size={16} className="text-blue-600" />
-              </div>
-            </div>
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Logout"
-              onClick={() => router.push('/login')}
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
+    <div className="min-h-screen bg-white font-sans">
+      <DashboardNavbar />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-24 sm:pb-12">
+        <div className="mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Good {timeOfDay}, {displayName}</h1>
+          <p className="text-gray-500">Select a workspace to continue.</p>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Gray Container Card */}
-        <div className="bg-gray-100 rounded-[24px] p-8">
-          {/* Page Title */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">System Administration</h1>
-            <p className="text-gray-600">Overview of institutional management and system status.</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+          {workspaces.map((workspace) => {
+            const Icon = workspace.icon;
 
-          {/* Workspaces Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-            {workspaces.map((workspace) => (
+            return (
               <div
                 key={workspace.id}
-                className="p-8 bg-white border border-gray-200 rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer min-h-[260px] relative"
-                onClick={() => workspace.badge ? null : router.push(workspace.path)}
+                onClick={() => router.push(workspace.path)}
+                className="relative overflow-hidden p-6 sm:p-8 min-h-[240px] sm:min-h-[260px] border border-transparent rounded-[20px] shadow-[0_2px_8px_rgba(16,24,40,0.07)] hover:border-transparent hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] transition-all cursor-pointer group"
               >
-                <div className="mb-6">
-                  <workspace.icon size={40} className="text-gray-400" />
+                <div className="pointer-events-none absolute top-3 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-2">
+                  <Icon size={120} className="text-gray-200" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors flex items-center gap-2">
+                <div className={`w-14 h-14 ${workspace.bgColor} rounded-xl flex items-center justify-center mb-6 shadow-[0_2px_6px_rgba(16,24,40,0.04)]`}>
+                  <Icon size={31} className={workspace.color} />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition">
                   {workspace.title}
-                  {workspace.badge && (
-                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full text-center">
-                      {workspace.badge}
-                    </span>
-                  )}
                 </h3>
-                <p className="text-base text-gray-600 leading-relaxed">{workspace.description}</p>
+                <p className="text-md text-gray-500 leading-relaxed">{workspace.description}</p>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

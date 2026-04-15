@@ -1,168 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { CalendarDays } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { getCourseLearningContent } from "../learningData";
+import { useSharedCourseWorkspace } from "@/app/lib/useSharedCourseWorkspace";
 
 export default function SyllabusPage() {
-  const [expandedModule, setExpandedModule] = useState<number | null>(null);
-
-  const modules = [
-    {
-      id: 1,
-      title: "Module 1",
-      topics: [
-        {
-          week: "WEEK 01",
-          title: "Introduction to Software Design Patterns",
-          description:
-            "Foundation of the course covering why architectural patterns matter in large-scale systems and revisiting SOLID principles.",
-          topics: [
-            "Creational Patterns",
-            "Structural Patterns",
-            "SOLID Principles",
-          ],
-          focusArea:
-            "WEEKLY FOCUS: Understanding asynchronous communication using message brokers and managing state across distributed services.",
-        },
-        {
-          week: "WEEK 02",
-          title: "Microservices Architecture & Event-Driven Systems",
-          description:
-            "Transitioning from Monoliths to Microservices. Exploring communication protocols, data consistency, and event sourcing.",
-          topics: ["API Gateways", "Kafka/RabbitMQ", "Service Discovery"],
-          focusArea:
-            "WEEKLY FOCUS: Understanding asynchronous communication using message brokers and managing state across distributed services.",
-        },
-        {
-          week: "WEEK 03",
-          title: "Domain-Driven Design (DDD)",
-          description:
-            "Mastering the art of aligning software design with business domains using bounded contexts and ubiquitous language.",
-          topics: [
-            "Bounded Contexts",
-            "Entities & Value Objects",
-            "Aggregates",
-          ],
-          focusArea:
-            "WEEKLY FOCUS: Breaking down complex business requirements into manageable sub-domains and defining clear interface boundaries between aggregates.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Module 2",
-      topics: [
-        {
-          week: "WEEK 04",
-          title: "Project Milestone 1: System Proposal",
-          description:
-            "Submission of the technical proposal for the semester-long group project. Defense sessions scheduled for Friday.",
-          topics: ["Architecture Diagram", "Technology Stack", "Timeline"],
-          focusArea: "DEADLINE: Friday, 11:50 PM",
-        },
-        {
-          week: "WEEK 05",
-          title: "Cloud-Native Delivery & DevOps",
-          description:
-            "Implementing CI/CD pipelines and exploring container orchestration using Kubernetes and Docker.",
-          topics: ["GitHub Actions", "Kubernetes Helm", "Terraform"],
-          focusArea:
-            "FOCUS AREA: Automating the deployment lifecycle and understanding infrastructure as code (IaC) principles.",
-        },
-      ],
-    },
-  ];
+  const params = useParams<{ courseSlug: string }>();
+  const router = useRouter();
+  const courseSlug = params?.courseSlug ?? "software-engineering";
+  const { course, isSharedCourse } = useSharedCourseWorkspace(courseSlug);
+  const modules =
+    isSharedCourse && course
+      ? course.modules
+      : getCourseLearningContent(courseSlug).modules;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Syllabus</h2>
+    <div className="space-y-12 pt-3">
+      {modules.map((module) => (
+        <section
+          key={module.id}
+          className="rounded-[26px] border border-[#d7deeb] bg-[#f7f9fc] px-4 py-6 md:px-6"
+        >
+          <h2 className="mb-6 text-[30px] font-black tracking-[-0.02em] text-[#5a6d8a] sm:text-[34px]">
+            {module.title}
+          </h2>
 
-      <div className="space-y-4">
-        {modules.map((module) => (
-          <div
-            key={module.id}
-            className="border border-gray-200 rounded-lg overflow-hidden"
-          >
-            <button
-              onClick={() =>
-                setExpandedModule(
-                  expandedModule === module.id ? null : module.id,
-                )
-              }
-              className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
-            >
-              <span
-                className={`flex items-center justify-center w-6 h-6 rounded-full transition-transform ${
-                  expandedModule === module.id ? "rotate-180" : ""
-                }`}
+          <div className="space-y-4">
+            {module.weeks.map((week) => (
+              <article
+                key={week.weekNumber}
+                className="relative rounded-[14px] border border-[#d6ddeb] bg-white p-5 md:p-6"
               >
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                  />
-                </svg>
-              </span>
-              <h3 className="text-lg font-bold text-gray-900">
-                {module.title}
-              </h3>
-            </button>
+                <span className="absolute -left-[9px] top-3 h-4 w-4 rounded-full border-2 border-[#3a61d5] bg-white" />
+                <div className="absolute -left-[3px] top-7 h-[calc(100%-28px)] w-[2px] bg-[#d6deed]" />
 
-            {expandedModule === module.id && (
-              <div className="border-t border-gray-200 p-6 space-y-6 bg-gray-50">
-                {module.topics.map((topic, i) => (
+                <p className="mb-1 text-[12px] font-bold uppercase tracking-[0.04em] text-[#2450d3]">
+                  {week.weekLabel}
+                </p>
+                <h3 className="mb-2 text-[27px] font-black leading-tight tracking-[-0.02em] text-[#101828] sm:text-[30px]">
+                  {week.title}
+                </h3>
+                <p className="mb-4 text-[14px] leading-6 text-[#4e5f7b]">
+                  {week.description}
+                </p>
+
+                <div className="grid gap-4 border-t border-[#e5e9f1] pt-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                   <div
-                    key={i}
-                    className="bg-white border border-gray-200 rounded-lg p-5 space-y-4"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-blue-600 text-white rounded-full text-sm">
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs uppercase font-bold text-blue-600 mb-1">
-                          {topic.week}
-                        </p>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">
-                          {topic.title}
-                        </h4>
-                        <p className="text-gray-700 text-sm mb-3">
-                          {topic.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-blue-700 text-white rounded p-4 space-y-2">
-                      <p className="text-sm font-bold">WEEKLY FOCUS</p>
-                      <p className="text-sm">{topic.focusArea}</p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <p className="text-xs uppercase font-bold text-gray-600 col-span-3">
-                        KEY TOPICS
-                      </p>
-                      {topic.topics.map((t, j) => (
-                        <span
-                          key={j}
-                          className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+                   onClick={() =>
+                        router.push(
+                          `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,
+                        )
+                      } 
+                  className="rounded-[8px] bg-[#2143b6] px-4 py-4 text-white">
+                    <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#b8c7ff]">
+                      Weekly Focus
+                    </p>
+                    <p className="mb-3 text-[14px] leading-6">
+                      {week.focusSummary}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(
+                          `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,
+                        )
+                      }
+                      className="text-[12px] font-bold uppercase tracking-[0.04em] text-white"
+                    >
+                      View Details -&gt;
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div>
+                    <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8d9ab1]">
+                      {week.deadline ? "Deadline" : "Key Topics"}
+                    </p>
+                    {week.deadline ? (
+                      <p className="inline-flex items-center gap-2 rounded-[8px] bg-[#fff1f1] px-3 py-2 text-[14px] font-semibold text-[#e23a3a]">
+                        <CalendarDays className="h-4 w-4" />
+                        {week.deadline}
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {week.keyTopics.map((topic) => (
+                          <span
+                            key={topic}
+                            className="rounded-full bg-[#f1f4f9] px-3 py-1 text-[12px] text-[#5f6d85]"
+                          >
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
-        ))}
-      </div>
+        </section>
+      ))}
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
     if (!businessId) return;
 
     const eventSource = new EventSource(
-      `/api/realtime/events?scope=seller&businessId=${businessId}`
+      `/api/marketplace/realtime/events?scope=seller&businessId=${businessId}`
     );
 
     const onUpdate = () => {
@@ -54,7 +54,7 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
   const fetchNotifications = async () => {
     try {
       const response = await fetch(
-        `/api/businesses/${businessId}/notifications`,
+        `/api/marketplace/businesses/${businessId}/notifications`,
         {
           credentials: "include",
         }
@@ -76,7 +76,7 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       const response = await fetch(
-        `/api/businesses/${businessId}/notifications/${notificationId}`,
+        `/api/marketplace/businesses/${businessId}/notifications/${notificationId}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -101,7 +101,7 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
   const handleDeleteNotification = async (notificationId: string) => {
     try {
       const response = await fetch(
-        `/api/businesses/${businessId}/notifications/${notificationId}`,
+        `/api/marketplace/businesses/${businessId}/notifications/${notificationId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -218,3 +218,4 @@ export default function NotificationsComponent({ onActivityChange }: Notificatio
     </div>
   );
 }
+

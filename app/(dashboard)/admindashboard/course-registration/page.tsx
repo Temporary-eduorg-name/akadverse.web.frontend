@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Bell, Wrench } from "lucide-react";
+import DashboardNavbar from "@/app/components/dashboard/admin/DashboardNavbar";
 
 type Notice = {
   type: "success" | "error";
@@ -130,17 +131,17 @@ export default function AdminCourseRegistrationPage() {
   return (
     <div
       className="min-h-screen bg-[#f1f5f9]"
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{ fontFamily: "var(--font-lexend), sans-serif" }}
     >
+      <DashboardNavbar />
+
       <header className="border-b border-[#e2e8f0] bg-white">
         <div className="mx-auto flex h-16 w-full max-w-[1180px] items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <div className="flex size-8 items-center justify-center rounded-md bg-[#1e40af] text-[12px] font-extrabold uppercase text-white">
               AD
             </div>
-            <p className="text-[20px] font-extrabold text-[#111827]">
-              ADMIN
-            </p>
+            <p className="text-[20px] font-extrabold text-[#111827]">ADMIN</p>
           </div>
 
           <div className="flex items-center gap-4">
