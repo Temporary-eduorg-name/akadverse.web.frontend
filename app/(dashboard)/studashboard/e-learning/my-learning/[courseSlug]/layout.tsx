@@ -1,7 +1,6 @@
 "use client";
 
-import { use } from "react";
-import { notFound, usePathname, useRouter } from "next/navigation";
+import { notFound, useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import DashboardNavbar from "@/app/components/dashboard/student/DashboardNavbar";
@@ -113,17 +112,21 @@ const TABS = [
 
 export default function CourseLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ courseSlug: string }>;
 }) {
   const [sidebarWidth, setSidebarWidth] = useState(256);
   const mainStyle = useMemo(
     () => ({ "--sidebar-width": `${sidebarWidth}px` }) as React.CSSProperties,
     [sidebarWidth],
   );
-  const { courseSlug } = use(params);
+  const params = useParams<{ courseSlug: string }>();
+  const courseSlug = params?.courseSlug;
+
+  if (!courseSlug) {
+    notFound();
+  }
+
   const course = COURSE_META[courseSlug];
   const pathname = usePathname();
   const router = useRouter();

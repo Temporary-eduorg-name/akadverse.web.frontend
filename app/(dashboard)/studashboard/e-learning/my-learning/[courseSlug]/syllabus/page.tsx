@@ -46,31 +46,25 @@ export default function SyllabusPage() {
                 </p>
 
                 <div className="grid gap-4 border-t border-[#e5e9f1] pt-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                  <div
-                   onClick={() =>
-                        router.push(
-                          `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,
-                        )
-                      } 
-                  className="rounded-[8px] bg-[#2143b6] px-4 py-4 text-white">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      router.push(
+                        `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,
+                      )
+                    }
+                    className="w-full rounded-[8px] bg-[#2143b6] px-4 py-4 text-left text-white"
+                  >
                     <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#b8c7ff]">
                       Weekly Focus
                     </p>
                     <p className="mb-3 text-[14px] leading-6">
                       {week.focusSummary}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        router.push(
-                          `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,
-                        )
-                      }
-                      className="text-[12px] font-bold uppercase tracking-[0.04em] text-white"
-                    >
+                    <span className="text-[12px] font-bold uppercase tracking-[0.04em] text-white">
                       View Details -&gt;
-                    </button>
-                  </div>
+                    </span>
+                  </button>
 
                   <div>
                     <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8d9ab1]">
