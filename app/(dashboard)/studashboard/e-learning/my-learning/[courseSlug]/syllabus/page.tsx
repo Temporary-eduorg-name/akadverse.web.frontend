@@ -48,6 +48,7 @@ export default function SyllabusPage() {
                 <div className="grid gap-4 border-t border-[#e5e9f1] pt-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                   <button
                     type="button"
+                    aria-label={`View weekly focus details for ${week.weekLabel}`}
                     onClick={() =>
                       router.push(
                         `/studashboard/e-learning/my-learning/${courseSlug}/weekly-focus?week=${week.weekNumber}`,

@@ -124,7 +124,9 @@ export default function CourseLayout({
     courseSlug: string | string[];
   }>();
   const courseSlug = Array.isArray(courseSlugParam)
-    ? courseSlugParam[0]
+    ? courseSlugParam.length > 0
+      ? courseSlugParam[0]
+      : undefined
     : courseSlugParam;
 
   if (!courseSlug) {
