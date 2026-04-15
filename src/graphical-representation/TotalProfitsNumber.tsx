@@ -6,8 +6,8 @@ interface TotalProfitsNumberProps {
 
 export default function TotalProfitsNumber({ amount }: TotalProfitsNumberProps) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Total Profits</h2>
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h2 className="text-lg font-semibold text-zinc-900 mb-4">Total Profits</h2>
       
       <div className="flex items-center justify-center">
         <div className="text-center">
@@ -17,7 +17,7 @@ export default function TotalProfitsNumber({ amount }: TotalProfitsNumberProps) 
               maximumFractionDigits: 2,
             })}
           </div>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+          <p className="text-zinc-600 mt-2">
             {amount > 0 ? "Profitable" : "Loss"}
           </p>
         </div>

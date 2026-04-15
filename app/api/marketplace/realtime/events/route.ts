@@ -60,6 +60,12 @@ export async function GET(req: NextRequest) {
         scope,
       });
 
+      // Heartbeat interval (every 30s)
+      const heartbeat = setInterval(() => {
+        send("ping", { timestamp: new Date().toISOString() });
+      }, 30000);
+
+      // Data update interval (every 10s)
       const interval = setInterval(async () => {
         try {
           if (scope === "seller" && businessId) {
@@ -67,11 +73,8 @@ export async function GET(req: NextRequest) {
               prisma.order.count({ where: { businessId, status: "pending" } }),
               prisma.order.count({ where: { businessId, status: "processing" } }),
               prisma.order.count({ where: { businessId, status: "shipped" } }),
-              prisma.notification.count({
-                where: { businessId, read: false },
-              }),
+              prisma.notification.count({ where: { businessId, read: false } }),
             ]);
-
             send("update", {
               pending,
               processing,
@@ -84,93 +87,39 @@ export async function GET(req: NextRequest) {
               prisma.skillOffer.count({ where: { skillId, status: "pending" } }),
               prisma.skillOffer.count({ where: { skillId, status: "negotiated" } }),
               prisma.skillOffer.count({ where: { skillId, status: "ongoing" } }),
-              prisma.skillNotification.count({
-                where: { skillId, read: false },
-              }),
+              prisma.skillNotification.count({ where: { skillId, read: false } }),
             ]);
-
-            send("update", {
-              pendingOffers,
-              negotiatedOffers,
-              ongoingOffers,
-            })
-          } else if (scope === "skill_owner" && !skillId) {
-            // Aggregated stats for all skills owned by the user
-            const [pendingOffers, negotiatedOffers, ongoingOffers, unreadNotifications] = await Promise.all([
-              prisma.skillOffer.count({
-                where: {
-                  skill: { userId: authResult.userId },
-                  status: "pending",
-                },
-              }),
-              prisma.skillOffer.count({
-                where: {
-                  skill: { userId: authResult.userId },
-                  status: "negotiated",
-                },
-              }),
-              prisma.skillOffer.count({
-                where: {
-                  skill: { userId: authResult.userId },
-                  status: "ongoing",
-                },
-              }),
-              prisma.skillNotification.count({
-                where: {
-                  skill: { userId: authResult.userId },
-                  read: false,
-                },
-              }),
-            ]);
-
             send("update", {
               pendingOffers,
               negotiatedOffers,
               ongoingOffers,
               unreadNotifications,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
+            });
+          } else if (scope === "skill_owner" && !skillId) {
+            // Aggregated stats for all skills owned by the user
+            const [pendingOffers, negotiatedOffers, ongoingOffers, unreadNotifications] = await Promise.all([
+              prisma.skillOffer.count({ where: { skill: { userId: authResult.userId }, status: "pending" } }),
+              prisma.skillOffer.count({ where: { skill: { userId: authResult.userId }, status: "negotiated" } }),
+              prisma.skillOffer.count({ where: { skill: { userId: authResult.userId }, status: "ongoing" } }),
+              prisma.skillNotification.count({ where: { skill: { userId: authResult.userId }, read: false } }),
+            ]);
+            send("update", {
+              pendingOffers,
+              negotiatedOffers,
+              ongoingOffers,
+              unreadNotifications,
+              timestamp: new Date().toISOString(),
             });
           } else if (scope === "buyer") {
             const [activeOrders, shippedOrders, disputedOrders, activeOffers, negotiatedOffers, unreadOfferNotifications] = await Promise.all([
-              prisma.order.count({
-                where: {
-                  userId: authResult.userId,
-                  status: { in: ["pending", "processing"] },
-                },
-              }),
-              prisma.order.count({
-                where: {
-                  userId: authResult.userId,
-                  status: "shipped",
-                },
-              }),
-              prisma.order.count({
-                where: {
-                  userId: authResult.userId,
-                  status: "disputed",
-                },
-              }),
-              prisma.skillOffer.count({
-                where: {
-                  buyerId: authResult.userId,
-                  status: { in: ["pending", "ongoing"] },
-                },
-              }),
-              prisma.skillOffer.count({
-                where: {
-                  buyerId: authResult.userId,
-                  status: "negotiated",
-                },
-              }),
-              prisma.notification.count({
-                where: {
-                  userId: authResult.userId,
-                  read: false,
-                  type: { startsWith: "skill_offer_owner_update" },
-                },
-              }),
+              prisma.order.count({ where: { userId: authResult.userId, status: { in: ["pending", "processing"] } } }),
+              prisma.order.count({ where: { userId: authResult.userId, status: "shipped" } }),
+              prisma.order.count({ where: { userId: authResult.userId, status: "disputed" } }),
+              prisma.skillOffer.count({ where: { buyerId: authResult.userId, status: { in: ["pending", "ongoing"] } }}),
+              prisma.skillOffer.count({ where: { buyerId: authResult.userId, status: "negotiated" } }),
+              prisma.notification.count({ where: { userId: authResult.userId, read: false, type: { startsWith: "skill_offer_owner_update" } } }),
             ]);
-
             send("update", {
               activeOrders,
               shippedOrders,
@@ -188,6 +137,7 @@ export async function GET(req: NextRequest) {
 
       const close = () => {
         clearInterval(interval);
+        clearInterval(heartbeat);
         try {
           controller.close();
         } catch {

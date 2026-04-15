@@ -1,6 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
+import { UniversalAIInterface, AITool } from "../../../components/UniversalAIInterface";
+const geminiTool: AITool = { name: "Gemini Chat" };
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -12,9 +15,29 @@ import {
   Play,
 } from "lucide-react";
 import DashboardNavbar from '@/app/components/dashboard/student/DashboardNavbar';
-
 const Page = () => {
   const router = useRouter();
+  const [showGeminiChat, setShowGeminiChat] = useState(false);
+
+  // Ref for Gemini Chat popup
+  const geminiChatRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close logic
+  useEffect(() => {
+    if (!showGeminiChat) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        geminiChatRef.current &&
+        !geminiChatRef.current.contains(event.target as Node)
+      ) {
+        setShowGeminiChat(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showGeminiChat]);
 
   const recentWork = [
     { id: 1, title: "Biology Final Notes (AI Summarized)", date: "1 day ago" },
@@ -70,6 +93,34 @@ const Page = () => {
     },
   ];
 
+  // TODO: Replace this with the actual user email from your auth context or props
+  const user = { email: "user@email.com" };
+
+  // Helper to open Google service with login_hint
+  const openGoogleService = (service: "docs" | "drive" | "sheets" | "forms") => {
+    let continueUrl = "";
+    switch (service) {
+      case "docs":
+        continueUrl = "https://docs.google.com";
+        break;
+      case "drive":
+        continueUrl = "https://drive.google.com/drive/my-drive";
+        break;
+      case "sheets":
+        continueUrl = "https://sheets.google.com";
+        break;
+      case "forms":
+        continueUrl = "https://forms.google.com";
+        break;
+      default:
+        continueUrl = "https://google.com";
+    }
+    window.open(
+      `https://accounts.google.com/AccountChooser?Email=${encodeURIComponent(user.email)}&continue=${encodeURIComponent(continueUrl)}`,
+      "_blank"
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
       <DashboardNavbar />
@@ -97,13 +148,16 @@ const Page = () => {
 
         {/* Gemni Chat and Features Grid */}
         <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 xl:mb-12">
-          {/* Gemni Chat Card */}
-          <div className="cursor-pointer rounded-[20px] border border-transparent p-6 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:p-8 lg:p-10">
+          {/* Gemini Chat Card */}
+          <div
+            className="cursor-pointer rounded-[20px] border border-transparent p-6 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:p-8 lg:p-10"
+            onClick={() => setShowGeminiChat(true)}
+          >
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#615FFF] to-[#4F4BC4] shadow-[0_4px_12px_rgba(97,95,255,0.3)] sm:mb-8 sm:h-20 sm:w-20">
               <Bot size={40} className="text-white" />
             </div>
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">
-              Gemni Chat
+              Gemini Chat
             </h3>
             <p className="mb-8 text-base leading-relaxed text-gray-600">
               AI chat, research assistant, note summarizer, study planner. Your
@@ -118,38 +172,56 @@ const Page = () => {
               </button>
             </div>
           </div>
+          {/* Gemini Chat Popup */}
+          <AnimatePresence>
+            {showGeminiChat && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div ref={geminiChatRef}>
+                  <UniversalAIInterface
+                    tool={geminiTool}
+                    onBack={() => setShowGeminiChat(false)}
+                  />
+                </div>
+              </div>
+            )}
+          </AnimatePresence>
 
           {/* Tools Grid */}
           <div className="space-y-4">
-            {[
+            {([
               {
                 name: "Docs",
                 icon: <FileText size={24} className="text-blue-500" />,
                 bg: "bg-[#eff6ff]",
                 desc: "Collaborative documents for assignments and notes.",
+                service: "docs" as const
               },
               {
                 name: "Drive",
                 icon: <Folder size={24} className="text-amber-500" />,
                 bg: "bg-[#fffbeb]",
                 desc: "Upload, organize, and manage research files.",
+                service: "drive" as const
               },
               {
                 name: "Forms",
                 icon: <ListChecks size={24} className="text-purple-500" />,
                 bg: "bg-[#faf5ff]",
                 desc: "Create and manage surveys and questionnaires.",
+                service: "forms" as const
               },
               {
                 name: "Sheets",
                 icon: <Table2 size={24} className="text-emerald-500" />,
                 bg: "bg-[#ecfdf5]",
                 desc: "Spreadsheets for data analysis and tracking.",
+                service: "sheets" as const
               },
-            ].map((tool) => (
+            ]).map((tool) => (
               <div
                 key={tool.name}
                 className="cursor-pointer rounded-[20px] border border-transparent p-5 shadow-[0_2px_8px_rgba(16,24,40,0.07)] transition-all hover:shadow-[0_6px_14px_rgba(16,24,40,0.10)] sm:p-6"
+                onClick={() => openGoogleService(tool.service)}
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -170,7 +242,7 @@ const Page = () => {
         </div>
 
         {/* AkadVerse Hub */}
-        <div className="relative mb-12 overflow-hidden rounded-3xl bg-[#0f172b] p-5 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] sm:p-8">
+        <div className="relative mb-12 overflow-y-scroll rounded-3xl bg-[#0f172b] p-5 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] sm:p-8 h-50 lg:h-[500px]" >
           <div className="absolute right-0 top-0 h-40 w-40 px-4 pt-6 opacity-10 sm:h-64 sm:w-64 sm:pt-8 sm:pr-8">
             <Play size={192} className="text-white" />
           </div>
@@ -244,6 +316,66 @@ const Page = () => {
               ))}
             </div>
           </div>
+
+                    <div className="relative">
+            <h3 className="text-lg font-semibold text-[#e2e8f0] mb-4">
+              Career & Future Options
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {careerVideos.map((video, index) => (
+                <div key={index} className="cursor-pointer group">
+                  <div className="relative mb-3 h-44 overflow-hidden rounded-[14px] border border-[#314158] bg-[#1d293d] md:h-[180px]">
+                    <img
+                      src={video.image}
+                      alt={video.title}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-medium text-white">
+                        {video.duration}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-base font-medium text-white mb-1">
+                    {video.title}
+                  </p>
+                  <p className="text-sm text-[#90a1b9]">
+                    {video.views} • Recommended
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+                    <div className="relative">
+            <h3 className="text-lg font-semibold text-[#e2e8f0] mb-4">
+              Career & Future Options
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {careerVideos.map((video, index) => (
+                <div key={index} className="cursor-pointer group">
+                  <div className="relative mb-3 h-44 overflow-hidden rounded-[14px] border border-[#314158] bg-[#1d293d] md:h-[180px]">
+                    <img
+                      src={video.image}
+                      alt={video.title}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-medium text-white">
+                        {video.duration}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-base font-medium text-white mb-1">
+                    {video.title}
+                  </p>
+                  <p className="text-sm text-[#90a1b9]">
+                    {video.views} • Recommended
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Recent Work Section */}
@@ -255,11 +387,10 @@ const Page = () => {
             {recentWork.map((item, index) => (
               <div
                 key={item.id}
-                className={`cursor-pointer p-4 transition-colors hover:bg-gray-50 sm:flex sm:items-center sm:justify-between sm:p-6 ${
-                  index !== recentWork.length - 1
-                    ? "border-b border-gray-100"
-                    : ""
-                }`}
+                className={`cursor-pointer p-4 transition-colors hover:bg-gray-50 sm:flex sm:items-center sm:justify-between sm:p-6 ${index !== recentWork.length - 1
+                  ? "border-b border-gray-100"
+                  : ""
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FileText size={20} className="text-gray-400" />

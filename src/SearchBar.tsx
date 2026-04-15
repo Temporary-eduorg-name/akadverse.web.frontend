@@ -113,46 +113,26 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
 
   return (
     <form onSubmit={handleSearch} className="relative flex w-full items-center gap-2">
-      <div className="flex w-full items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+      <div className="flex w-full items-center bg-[#f3f6fa] rounded-[12px] border border-[#e6ebf2] transition-shadow">
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder="Search products, skills, businesses..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none w-full min-w-0 sm:w-56 rounded-l-lg"
+          className="px-3 py-2 bg-transparent text-gray-800 placeholder-[#b4bfd0] focus:outline-none w-full min-w-0 max-w-[120px] sm:max-w-[150px] md:max-w-[180px] rounded-l-[12px] text-[15px]"
         />
 
         {/* Filter Dropdown Button */}
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="shrink-0 px-3 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors border-l border-zinc-300 dark:border-zinc-700 text-sm whitespace-nowrap"
+          className="shrink-0 px-3 py-2 text-zinc-600 hover:text-zinc-800 transition-colors border-l border-[#e6ebf2] text-sm whitespace-nowrap rounded-none focus:bg-blue-50"
           title="Filter search"
         >
           {selectedCategory || (selectedSkill && selectedSkill) || "Filter"}
           <span className="ml-1">▼</span>
         </button>
 
-        <button
-          type="submit"
-          className="shrink-0 px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors rounded-r-lg"
-          title="Search"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.5 5.5a7.5 7.5 0 0010.5 10.5z"
-            />
-          </svg>
-        </button>
       </div>
 
       {/* Unified Filter Dropdown */}
@@ -163,7 +143,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             onMouseLeave={handleMouseLeave}
-            className="absolute top-full left-0 mt-2 flex gap-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl z-50"
+            className="absolute top-full left-0 mt-2 flex gap-0 bg-white border border-zinc-200 rounded-lg shadow-xl z-50"
           >
             {/* Main Filter Menu */}
             <div className="w-48">
@@ -174,10 +154,10 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
                   setSelectedSkill("");
                   setShowFilters(false);
                 }}
-                className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors border-b border-zinc-200 dark:border-zinc-700 ${
+                className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 transition-colors border-b border-zinc-200 ${
                   !selectedCategory && !selectedSkill
-                    ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold"
-                    : "text-zinc-900 dark:text-white"
+                    ? "bg-zinc-100 text-zinc-900 font-semibold"
+                    : "text-zinc-900"
                 }`}
               >
                 All
@@ -186,7 +166,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
               <button
                 type="button"
                 onMouseEnter={() => setHoveredType("categories")}
-                className="w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-900 dark:text-white font-medium border-b border-zinc-200 dark:border-zinc-700"
+                className="w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 transition-colors text-zinc-900 font-medium border-b border-zinc-200"
               >
                 Categories →
               </button>
@@ -194,7 +174,7 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
               <button
                 type="button"
                 onMouseEnter={() => setHoveredType("skills")}
-                className="w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-900 dark:text-white font-medium"
+                className="w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 transition-colors text-zinc-900 font-medium"
               >
                 Skills →
               </button>
@@ -209,17 +189,17 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="w-64 border-l border-zinc-200 dark:border-zinc-700 max-h-80 overflow-y-auto"
+                  className="w-64 border-l border-zinc-200 max-h-80 overflow-y-auto"
                 >
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => handleCategorySelect(cat)}
-                      className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 transition-colors ${
                         selectedCategory === cat
-                          ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold"
-                          : "text-zinc-900 dark:text-white"
+                          ? "bg-zinc-100 text-zinc-900 font-semibold"
+                          : "text-zinc-900"
                       }`}
                     >
                       {cat}
@@ -235,17 +215,17 @@ export default function SearchBar({ onSearchSubmit }: SearchBarProps) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="w-64 border-l border-zinc-200 dark:border-zinc-700 max-h-80 overflow-y-auto"
+                  className="w-64 border-l border-zinc-200 max-h-80 overflow-y-auto"
                 >
                   {skillTypes.map((skill) => (
                     <button
                       key={skill}
                       type="button"
                       onClick={() => handleSkillSelect(skill)}
-                      className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-100 transition-colors ${
                         selectedSkill === skill
-                          ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold"
-                          : "text-zinc-900 dark:text-white"
+                          ? "bg-zinc-100 text-zinc-900 font-semibold"
+                          : "text-zinc-900"
                       }`}
                     >
                       {skill}

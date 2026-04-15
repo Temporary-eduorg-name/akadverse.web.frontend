@@ -19,6 +19,12 @@ const DashboardNavbar = () => {
 
   const isMainMenuActive = MAIN_MENU_PATHS.some((basePath) => pathname.startsWith(basePath));
 
+  const { user } = useAuth ? useAuth() : { user: null };
+  const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+  const displayName = user ? `${capitalize(user.firstName)} ${capitalize(user.lastName)}` : 'Faculty Profile';
+  const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : 'FP';
+  // Add Admin tab for super-admins
+  const ShieldCheck = require('lucide-react').ShieldCheck;
   const centerTabs = [
     {
       id: 'productivity',
@@ -52,18 +58,22 @@ const DashboardNavbar = () => {
       label: 'Main Menu',
       activeColor: 'text-blue-500', // blue
     },
+    // Admin tab for super-admins
+    ...(user?.role === 'super-admin' ? [{
+      id: 'admin',
+      icon: ShieldCheck,
+      path: '/staffdashboard/admin',
+      isActive: pathname.startsWith('/staffdashboard/admin'),
+      label: 'Admin',
+      activeColor: 'text-sky-600',
+    }] : []),
   ];
-
-  const { user } = useAuth ? useAuth() : { user: null };
-  const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
-  const displayName = user ? `${capitalize(user.firstName)} ${capitalize(user.lastName)}` : 'Faculty Profile';
-  const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : 'FP';
   return (
-    <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
+    <div className="border-b border-gray-200 bg-white fixed top-0 left-0 w-full z-50 shadow-md">
       <div className="flex items-center justify-between px-3 py-3 sm:px-4 lg:hidden">
         <div
           className="flex min-w-0 items-center gap-2 cursor-pointer"
-          onClick={() => router.push('/staffdashboard/main-menu/faculty-dashboard')}
+          onClick={() => router.push('/staffdashboard')}
         >
           <Book size={24} className="text-blue-600" />
           <span className="truncate text-base font-semibold text-blue-600">AkadVerse</span>
@@ -106,7 +116,7 @@ const DashboardNavbar = () => {
       <div className="hidden px-6 py-4 lg:grid lg:grid-cols-3 lg:items-center">
         <div
           className="flex items-center gap-3 justify-self-start cursor-pointer"
-          onClick={() => router.push('/staffdashboard/main-menu/faculty-dashboard')}
+          onClick={() => router.push('/staffdashboard')}
         >
           <Book size={28} className="text-blue-600" />
           <span className="text-lg font-semibold text-blue-600">AkadVerse</span>

@@ -294,36 +294,36 @@ export default function EditProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black px-4 py-8 flex items-center justify-center">
+      <div className="min-h-screen bg-white px-4 py-8 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-200 mt-4">Loading product...</p>
+          <p className="text-zinc-600 mt-4">Loading product...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black px-4 py-8">
+    <div className="min-h-screen bg-zinc-50 px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <Link
           href={`/studashboard/main-menu/marketplace/dashboard/business/${businessId}`}
-          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-6 inline-block"
+          className="text-zinc-600 hover:text-zinc-900 mb-6 inline-block"
         >
           ← Back
         </Link>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 border border-zinc-200 dark:border-zinc-700">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Edit Product</h1>
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-zinc-200">
+          <h1 className="text-2xl font-bold text-zinc-900 mb-6">Edit Product</h1>
 
           {error && (
-            <div className="mb-4 p-3 rounded-md bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">
+            <div className="mb-4 p-3 rounded-md bg-red-100 text-red-700">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-3 rounded-md bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200">
+            <div className="mb-4 p-3 rounded-md bg-green-100 text-green-700">
               {success}
             </div>
           )}
@@ -331,19 +331,19 @@ export default function EditProductPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Product Name *</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Product Name *</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleBaseFieldChange}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Price (₦) *</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Price (₦) *</label>
                 <input
                   type="number"
                   name="price"
@@ -351,13 +351,13 @@ export default function EditProductPage() {
                   step="0.01"
                   value={formData.price}
                   onChange={handleBaseFieldChange}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Cost (₦) *</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Cost (₦) *</label>
                 <input
                   type="number"
                   name="cost"
@@ -365,73 +365,73 @@ export default function EditProductPage() {
                   step="0.01"
                   value={formData.cost}
                   onChange={handleBaseFieldChange}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Stock *</label>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Stock *</label>
                 <input
                   type="number"
                   name="stock"
                   min="0"
                   value={formData.stock}
                   onChange={handleBaseFieldChange}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Description *</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleBaseFieldChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Replace Image (optional)</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Replace Image (optional)</label>
               <input
                 type="file"
                 name="image"
                 accept="image/*"
                 onChange={handleBaseFieldChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
               />
             </div>
 
-            <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 space-y-4">
+            <div className="border border-zinc-200 rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">Variants</h4>
+                <h4 className="text-sm font-semibold text-zinc-900">Variants</h4>
                 <button
                   type="button"
                   onClick={addVariantField}
-                  className="px-3 py-1.5 text-sm rounded-md bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200"
+                  className="px-3 py-1.5 text-sm rounded-md bg-zinc-900 text-white hover:bg-zinc-700"
                 >
                   Add Field
                 </button>
               </div>
 
               {formData.variants.length === 0 && (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">No variants yet.</p>
+                <p className="text-sm text-zinc-500">No variants yet.</p>
               )}
 
               {formData.variants.map((field, fieldIndex) => (
-                <div key={field.id} className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3 space-y-3">
+                <div key={field.id} className="border border-zinc-200 rounded-md p-3 space-y-3">
                   <div className="flex gap-2 items-center">
                     <input
                       type="text"
                       value={field.name}
                       onChange={(event) => updateVariantFieldName(field.id, event.target.value)}
                       placeholder={`Field ${fieldIndex + 1} (e.g. Size, Color)`}
-                      className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                      className="flex-1 px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                     />
                     <button
                       type="button"
@@ -446,19 +446,19 @@ export default function EditProductPage() {
                     {field.options.map((option) => (
                       <div key={option.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                         <div className="md:col-span-3">
-                          <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Value</label>
+                          <label className="block text-xs text-zinc-600 mb-1">Value</label>
                           <input
                             type="text"
                             value={option.value}
                             onChange={(event) =>
                               updateVariantOption(field.id, option.id, { value: event.target.value })
                             }
-                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                            className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                           />
                         </div>
 
                         <div className="md:col-span-4">
-                          <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Pricing</label>
+                          <label className="block text-xs text-zinc-600 mb-1">Pricing</label>
                           <div className="flex gap-2">
                             <button
                               type="button"
@@ -470,8 +470,8 @@ export default function EditProductPage() {
                               }
                               className={`px-3 py-2 text-sm rounded-md border ${
                                 option.pricingMode === "same"
-                                  ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
-                                  : "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-300 dark:border-zinc-600"
+                                  ? "bg-zinc-900 text-white border-zinc-900"
+                                  : "bg-white text-zinc-900 border-zinc-300"
                               }`}
                             >
                               Same Price
@@ -485,8 +485,8 @@ export default function EditProductPage() {
                               }
                               className={`px-3 py-2 text-sm rounded-md border ${
                                 option.pricingMode === "custom"
-                                  ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
-                                  : "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-300 dark:border-zinc-600"
+                                  ? "bg-zinc-900 text-white border-zinc-900"
+                                  : "bg-white text-zinc-900 border-zinc-300"
                               }`}
                             >
                               Custom Price
@@ -496,7 +496,7 @@ export default function EditProductPage() {
 
                         {option.pricingMode === "custom" && (
                           <div className="md:col-span-2">
-                            <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Price</label>
+                            <label className="block text-xs text-zinc-600 mb-1">Price</label>
                             <input
                               type="number"
                               min="0"
@@ -507,13 +507,13 @@ export default function EditProductPage() {
                                   customPrice: event.target.value,
                                 })
                               }
-                              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                              className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                             />
                           </div>
                         )}
 
                         <div className="md:col-span-2">
-                          <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Stock</label>
+                          <label className="block text-xs text-zinc-600 mb-1">Stock</label>
                           <input
                             type="number"
                             min="0"
@@ -523,7 +523,7 @@ export default function EditProductPage() {
                                 stock: event.target.value,
                               })
                             }
-                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white"
+                            className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                           />
                         </div>
 
@@ -542,7 +542,7 @@ export default function EditProductPage() {
                     <button
                       type="button"
                       onClick={() => addVariantOption(field.id)}
-                      className="px-3 py-2 text-sm rounded-md bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                      className="px-3 py-2 text-sm rounded-md bg-zinc-200 text-zinc-900 hover:bg-zinc-300"
                     >
                       Add Value
                     </button>
@@ -554,7 +554,7 @@ export default function EditProductPage() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors font-medium disabled:opacity-50"
+              className="w-full bg-zinc-900 text-white py-3 rounded-md hover:bg-zinc-700 transition-colors font-medium disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Product"}
             </button>

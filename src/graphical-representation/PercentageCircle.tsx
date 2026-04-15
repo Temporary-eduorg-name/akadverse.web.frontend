@@ -21,8 +21,8 @@ export default function PercentageCircle({
   const offset = circumference - (clampedValue / 100) * circumference;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">{label}</h2>
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h2 className="text-lg font-semibold text-zinc-900 mb-4">{label}</h2>
       <div className="flex items-center justify-center">
         <svg width={size} height={size}>
           <circle
@@ -50,7 +50,7 @@ export default function PercentageCircle({
             y="50%"
             dominantBaseline="middle"
             textAnchor="middle"
-            className="fill-zinc-900 dark:fill-white"
+            className="fill-zinc-900"
             style={{ fontSize: "28px", fontWeight: 700 }}
           >
             {clampedValue.toFixed(1)}%

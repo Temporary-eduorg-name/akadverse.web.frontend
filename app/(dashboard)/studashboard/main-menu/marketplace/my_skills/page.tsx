@@ -14,7 +14,7 @@ export default function MySkillsRedirect() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <p className="text-zinc-600 dark:text-zinc-400">Redirecting to Skills Dashboard...</p>
+        <p className="text-zinc-600">Redirecting to Skills Dashboard...</p>
       </div>
     </div>
   );

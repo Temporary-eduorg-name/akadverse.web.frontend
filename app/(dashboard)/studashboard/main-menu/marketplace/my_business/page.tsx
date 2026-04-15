@@ -51,10 +51,10 @@ export default function MyBusinessPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-200 mt-4">Loading dashboard...</p>
+          <p className="text-zinc-600 mt-4">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -63,22 +63,22 @@ export default function MyBusinessPage() {
   if (error) {
     return (
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-red-600">{error}</p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-6">
+      <h1 className="text-3xl font-bold text-zinc-900 mb-6">
         My Businesses
       </h1>
       {user && (
-        <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+        <p className="text-zinc-600 mb-4">
           Welcome, {user.firstName} {user.lastName}!
         </p>
       )}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 text-center text-zinc-600 dark:text-zinc-400">
+      <div className="bg-white rounded-lg shadow p-6 text-center text-zinc-600">
         <p>No businesses created yet.</p>
       </div>
     </div>

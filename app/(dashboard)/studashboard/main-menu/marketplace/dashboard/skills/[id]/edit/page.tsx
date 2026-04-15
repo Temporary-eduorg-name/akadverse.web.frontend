@@ -138,67 +138,67 @@ export default function EditSkillPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black py-12 flex items-center justify-center">
+      <div className="min-h-screen bg-white py-12 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-200 mt-4">Loading skill...</p>
+          <p className="text-zinc-600 mt-4">Loading skill...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black py-12">
+    <div className="min-h-screen bg-zinc-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-8">
           <Link
             href={`/studashboard/main-menu/marketplace/dashboard/skills/${skillId}`}
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+            className="text-zinc-600 hover:text-zinc-900"
           >
             ← Back to Skill
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8">
+        <h1 className="text-3xl font-bold text-zinc-900 mb-8">
           Edit Skill
         </h1>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-zinc-900 p-8 rounded-lg border border-zinc-200 dark:border-zinc-700">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg border border-zinc-200">
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-900 mb-2">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-900 mb-2">
               Display Name
             </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-zinc-900 mb-2">
                 Years of Experience
               </label>
               <input
@@ -206,19 +206,19 @@ export default function EditSkillPage() {
                 min="0"
                 value={yearsOfExperience}
                 onChange={(e) => setYearsOfExperience(e.target.value)}
-                className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-zinc-900 mb-2">
                 Expertise Level
               </label>
               <select
                 value={expertiseLevel}
                 onChange={(e) => setExpertiseLevel(e.target.value)}
-                className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                 required
               >
                 <option value="">Select level</option>
@@ -232,7 +232,7 @@ export default function EditSkillPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-900 mb-2">
               Starting Price (₦)
             </label>
             <input
@@ -240,13 +240,13 @@ export default function EditSkillPage() {
               value={startingPrice}
               onChange={(e) => handlePriceChange(e.target.value)}
               placeholder="0"
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+              className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3">
+            <label className="block text-sm font-medium text-zinc-900 mb-3">
               Service Days
             </label>
             <div className="flex flex-wrap gap-3">
@@ -257,8 +257,8 @@ export default function EditSkillPage() {
                   onClick={() => handleDayToggle(day)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     serviceDays.includes(day)
-                      ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
-                      : "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-700"
+                      ? "bg-zinc-900 text-white"
+                      : "bg-white text-zinc-900 border border-zinc-300"
                   }`}
                 >
                   {day}
@@ -268,14 +268,14 @@ export default function EditSkillPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3">
+            <label className="block text-sm font-medium text-zinc-900 mb-3">
               Service Times
             </label>
             <div className="grid grid-cols-2 gap-4">
               <select
                 value={serviceTimeFrom}
                 onChange={(e) => setServiceTimeFrom(e.target.value)}
-                className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                 required
               >
                 <option value="">From</option>
@@ -288,7 +288,7 @@ export default function EditSkillPage() {
               <select
                 value={serviceTimeTo}
                 onChange={(e) => setServiceTimeTo(e.target.value)}
-                className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-4 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                 required
               >
                 <option value="">To</option>

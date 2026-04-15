@@ -100,8 +100,23 @@ const DashboardNavbar = () => {
   const initials = user
     ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
     : "AP";
+  const adminTabs = [
+    ...centerTabs,
+    ...(user?.role === "super-admin"
+      ? [
+          {
+            id: "admin",
+            icon: ShieldCheck,
+            path: "/admindashboard/admin",
+            isActive: pathname.startsWith("/admindashboard/admin"),
+            label: "Admin",
+            activeColor: "text-sky-600",
+          },
+        ]
+      : []),
+  ];
   return (
-    <div className="border-b border-gray-200 bg-white sticky top-0 z-40">
+    <div className="border-b border-gray-200 bg-white fixed top-0 left-0 w-full z-50 shadow-md">
       <div className="flex items-center justify-between px-3 py-3 sm:px-4 lg:hidden">
         <div
           className="flex min-w-0 items-center gap-2 cursor-pointer"
@@ -135,7 +150,7 @@ const DashboardNavbar = () => {
 
       <div className="border-t border-gray-100 lg:hidden">
         <div className="flex flex-wrap items-center justify-center gap-5 px-3 py-2 sm:px-4">
-          {centerTabs.map((tab) => (
+          {adminTabs.map((tab) => (
             <button
               key={`mobile-${tab.id}`}
               className={`relative shrink-0 p-2 transition-colors ${tab.isActive ? tab.activeColor : "text-gray-500 hover:text-gray-700"}`}
@@ -161,7 +176,7 @@ const DashboardNavbar = () => {
         </div>
 
         <div className="flex items-center gap-8 justify-self-center">
-          {centerTabs.map((tab) => (
+          {adminTabs.map((tab) => (
             <button
               key={tab.id}
               className={`relative p-2 transition-colors ${tab.isActive ? tab.activeColor : "text-gray-500 hover:text-gray-700"}`}

@@ -15,8 +15,8 @@ export default function RetentionRateDoughnut({ percentage }: RetentionRateDough
   const COLORS = ["#3b82f6", "#ef4444"];
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h2 className="text-lg font-semibold text-zinc-900 mb-4">
         Customer Retention Rate
       </h2>
 
@@ -44,7 +44,7 @@ export default function RetentionRateDoughnut({ percentage }: RetentionRateDough
         </div>
         <div className="w-1/3 text-center">
           <p className="text-4xl font-bold text-blue-500">{percentage.toFixed(2)}%</p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">Retention</p>
+          <p className="text-sm text-zinc-600 mt-2">Retention</p>
         </div>
       </div>
     </div>

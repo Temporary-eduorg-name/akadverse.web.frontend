@@ -184,15 +184,15 @@ export default function AddBusinessPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-zinc-50 dark:bg-black px-4 py-12">
+    <div className="flex-1 flex items-center justify-center bg-zinc-50 px-4 py-12">
       <div className="w-full max-w-3xl">
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-6">
+        <div className="bg-zinc-100 rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-zinc-900 mb-6">
             Add a Business
           </h1>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md text-sm">
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
             </div>
           )}
@@ -200,7 +200,7 @@ export default function AddBusinessPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Business Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="name" className="block text-sm font-semibold text-zinc-900 mb-1">
                 Business Name *
               </label>
               <input
@@ -209,14 +209,14 @@ export default function AddBusinessPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Industry */}
             <div>
-              <label htmlFor="industry" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="industry" className="block text-sm font-semibold text-zinc-900 mb-1">
                 Industry *
               </label>
               <select
@@ -224,7 +224,7 @@ export default function AddBusinessPage() {
                 name="industry"
                 value={formData.industry}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-zinc-900"
                 required
               >
                 <option value="">Select an industry</option>
@@ -238,7 +238,7 @@ export default function AddBusinessPage() {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="description" className="block text-sm font-semibold text-zinc-900 mb-1">
                 Bio/Description *
               </label>
               <textarea
@@ -247,14 +247,14 @@ export default function AddBusinessPage() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Location */}
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="location" className="block text-sm font-semibold text-zinc-900 mb-1">
                 Location *
               </label>
               <input
@@ -264,14 +264,14 @@ export default function AddBusinessPage() {
                 placeholder="e.g., Lagos, Nigeria"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Service Days */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+              <label className="block text-sm font-semibold text-zinc-900 mb-3">
                 Service Days *
               </label>
               <div className="space-y-2">
@@ -283,8 +283,8 @@ export default function AddBusinessPage() {
                       onClick={() => handleDayToggle(day)}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         formData.serviceDays.includes(day)
-                          ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
-                          : "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          ? "bg-indigo-600 text-white"
+                          : "bg-white text-zinc-900 border border-zinc-300 hover:bg-zinc-100"
                       }`}
                     >
                       {day}
@@ -292,7 +292,7 @@ export default function AddBusinessPage() {
                   ))}
                 </div>
                 {formData.serviceDays.length > 0 && (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+                  <p className="text-sm text-zinc-600 mt-2">
                     Active on: {formData.serviceDays.join(", ")}
                   </p>
                 )}
@@ -301,12 +301,12 @@ export default function AddBusinessPage() {
 
             {/* Service Times */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+              <label className="block text-sm font-medium text-zinc-700 mb-3">
                 Service Times *
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="serviceTimeFrom" className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label htmlFor="serviceTimeFrom" className="block text-xs font-medium text-zinc-600  mb-1">
                     From
                   </label>
                   <select
@@ -314,7 +314,7 @@ export default function AddBusinessPage() {
                     name="serviceTimeFrom"
                     value={formData.serviceTimeFrom}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md  bg-white text-zinc-900 "
                     required
                   >
                     <option value="">Select time</option>
@@ -327,7 +327,7 @@ export default function AddBusinessPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="serviceTimeTo" className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label htmlFor="serviceTimeTo" className="block text-xs font-medium text-zinc-600 mb-1">
                     To
                   </label>
                   <select
@@ -335,7 +335,7 @@ export default function AddBusinessPage() {
                     name="serviceTimeTo"
                     value={formData.serviceTimeTo}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white text-zinc-900"
                     required
                   >
                     <option value="">Select time</option>
@@ -348,21 +348,21 @@ export default function AddBusinessPage() {
                 </div>
               </div>
               {formData.serviceTimeFrom && formData.serviceTimeTo && (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+                <p className="text-sm text-zinc-600 mt-2">
                   Service hours: {formData.serviceTimeFrom} to {formData.serviceTimeTo}
                 </p>
               )}
             </div>
 
             {/* Socials Section */}
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mt-6">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="border-t border-zinc-200 pt-4 mt-6">
+              <h3 className="text-lg font-semibold text-zinc-900 text-black mb-4">
                 Social Links (Optional)
               </h3>
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label htmlFor="instagram" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label htmlFor="instagram" className="block text-sm font-medium text-zinc-700 mb-1">
                     Instagram
                   </label>
                   <input
@@ -372,12 +372,12 @@ export default function AddBusinessPage() {
                     placeholder="https://instagram.com/yourusername"
                     value={formData.instagram}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white text-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="linkedin" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label htmlFor="linkedin" className="block text-sm font-medium text-zinc-700 mb-1">
                     LinkedIn
                   </label>
                   <input
@@ -387,12 +387,12 @@ export default function AddBusinessPage() {
                     placeholder="https://linkedin.com/in/yourprofile"
                     value={formData.linkedin}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white text-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="website" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label htmlFor="website" className="block text-sm font-medium text-zinc-700 mb-1">
                     Website
                   </label>
                   <input
@@ -402,7 +402,7 @@ export default function AddBusinessPage() {
                     placeholder="https://yourwebsite.com"
                     value={formData.website}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white text-zinc-900"
                   />
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function AddBusinessPage() {
 
             {/* Payment Method */}
             <div>
-              <label htmlFor="paymentMethod" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="paymentMethod" className="block text-sm font-medium text-zinc-700 mb-1">
                 Preferred Payment Method *
               </label>
               <select
@@ -418,7 +418,7 @@ export default function AddBusinessPage() {
                 name="paymentMethod"
                 value={formData.paymentMethod}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300  rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white  text-zinc-900 "
                 required
               >
                 <option value="">Select payment method</option>
@@ -428,14 +428,14 @@ export default function AddBusinessPage() {
             </div>
 
             {/* Payment Details - Always shown */}
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mt-6">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="border-t border-zinc-200 pt-4 mt-6">
+              <h3 className="text-lg font-semibold text-zinc-900 mb-4">
                 Payment Details
               </h3>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="bankName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label htmlFor="bankName" className="block text-sm font-medium text-zinc-700 mb-1">
                     Bank Name *
                   </label>
                   <select
@@ -443,7 +443,7 @@ export default function AddBusinessPage() {
                     name="bankName"
                     value={formData.bankName}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white  text-zinc-900 "
                     disabled={loadingBanks}
                   >
                     <option value="">Select a bank</option>
@@ -456,7 +456,7 @@ export default function AddBusinessPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="accountNumber" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label htmlFor="accountNumber" className="block text-sm font-medium text-zinc-700  mb-1">
                     Account Number *
                   </label>
                   <input
@@ -466,7 +466,7 @@ export default function AddBusinessPage() {
                     placeholder="10 digits"
                     value={formData.accountNumber}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300  rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900  bg-white text-zinc-900 "
                   />
                 </div>
               </div>

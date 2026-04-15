@@ -249,7 +249,7 @@ export default function BusinessDashboardPage() {
         )}
 
         {activeTab === "orders" && (
-          <OrdersComponent onActivityChange={refreshActivity} />
+          <OrdersComponent businessId = {businessId} />
         )}
 
         {activeTab === "reviews" && (

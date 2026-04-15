@@ -36,16 +36,16 @@ export default function TotalRevenuePie({
     setLocalPeriod(nextPeriod);
   };
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
+    <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Total Revenue</h2>
+        <h2 className="text-xl font-semibold text-zinc-900">Total Revenue</h2>
         <div className="flex gap-2">
           <button
             onClick={() => handlePeriodChange("monthly")}
             className={`px-4 py-2 rounded-md transition-colors ${
               activePeriod === "monthly"
                 ? "bg-blue-500 text-white"
-                : "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                : "bg-zinc-200 text-zinc-900"
             }`}
           >
             Monthly
@@ -55,7 +55,7 @@ export default function TotalRevenuePie({
             className={`px-4 py-2 rounded-md transition-colors ${
               activePeriod === "annual"
                 ? "bg-blue-500 text-white"
-                : "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                : "bg-zinc-200 text-zinc-900"
             }`}
           >
             Annual
@@ -68,7 +68,7 @@ export default function TotalRevenuePie({
           <select
             value={selectedMonth}
             onChange={(event) => onMonthChange?.(event.target.value)}
-            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+            className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
           >
             {months.map((month) => (
               <option key={month} value={month}>

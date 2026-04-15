@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useMarketplaceActivity } from "@/src/context/MarketplaceActivityContext";
 
 interface SkillOffer {
   id: string;
@@ -47,23 +48,24 @@ interface SkillOffer {
   } | null;
 }
 
+
 export default function ActivityOffersPage() {
   const router = useRouter();
   const [offers, setOffers] = useState<SkillOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeStatus, setActiveStatus] = useState<string>("all");
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const { setScope, buyerActivity, registerOnUpdate } = useMarketplaceActivity();
 
   const statuses = [
-    { key: "all", label: "All", color: "bg-zinc-100 dark:bg-zinc-900" },
-    { key: "pending", label: "Pending", color: "bg-yellow-100 dark:bg-yellow-900" },
-    { key: "negotiated", label: "Negotiating", color: "bg-blue-100 dark:bg-blue-900" },
-    { key: "ongoing", label: "Ongoing", color: "bg-purple-100 dark:bg-purple-900" },
-    { key: "completed", label: "Completed", color: "bg-green-100 dark:bg-green-900" },
-    { key: "rejected", label: "Rejected", color: "bg-red-100 dark:bg-red-900" },
-    { key: "cancelled", label: "Cancelled", color: "bg-orange-100 dark:bg-orange-900" },
-    { key: "disputed", label: "Disputed", color: "bg-amber-100 dark:bg-amber-900" },
-    { key: "ignored", label: "Ignored", color: "bg-gray-100 dark:bg-gray-900" },
+    { key: "all", label: "All", color: "bg-zinc-100" },
+    { key: "pending", label: "Pending", color: "bg-yellow-100" },
+    { key: "negotiated", label: "Negotiating", color: "bg-blue-100" },
+    { key: "ongoing", label: "Ongoing", color: "bg-purple-100" },
+    { key: "completed", label: "Completed", color: "bg-green-100" },
+    { key: "rejected", label: "Rejected", color: "bg-red-100" },
+    { key: "cancelled", label: "Cancelled", color: "bg-orange-100" },
+    { key: "disputed", label: "Disputed", color: "bg-amber-100" },
+    { key: "ignored", label: "Ignored", color: "bg-gray-100" },
   ];
 
   const fetchOffers = async () => {
@@ -93,46 +95,24 @@ export default function ActivityOffersPage() {
     }
   };
 
-    useEffect(() => {
-      fetchOffers();
-    }, [activeStatus, router]);
+  useEffect(() => {
+    setScope("buyer");
+  }, [setScope]);
 
-    useEffect(() => {
-      // Set up EventSource listener for real-time updates
-      const setupRealtimeListener = () => {
-        try {
-          const eventSource = new EventSource("/api/marketplace/realtime/events?scope=buyer");
-          eventSourceRef.current = eventSource;
+  useEffect(() => {
+    fetchOffers();
+  }, [activeStatus, router]);
 
-          eventSource.addEventListener("connected", () => {
-            console.log("Connected to real-time offer updates");
-          });
+  // Register fetchOffers to run on every SSE update
+  const fetchOffersCallback = useCallback(() => {
+    fetchOffers();
+  }, [activeStatus]);
+  useEffect(() => {
+    const unregister = registerOnUpdate(fetchOffersCallback);
+    return unregister;
+  }, [registerOnUpdate, fetchOffersCallback]);
 
-          eventSource.addEventListener("update", () => {
-            // Refresh offers when real-time updates occur
-            fetchOffers();
-          });
-
-          eventSource.addEventListener("error", (error) => {
-            console.error("EventSource error:", error);
-            eventSource.close();
-            eventSourceRef.current = null;
-          });
-        } catch (error) {
-          console.error("Failed to setup real-time listener:", error);
-        }
-      };
-
-      setupRealtimeListener();
-
-      // Cleanup on unmount
-      return () => {
-        if (eventSourceRef.current) {
-          eventSourceRef.current.close();
-          eventSourceRef.current = null;
-        }
-      };
-    }, []);
+  // You can now use buyerActivity.hasOfferActivity for UI if needed
 
   const handleAcceptNegotiation = async (offerId: string) => {
     try {
@@ -264,23 +244,23 @@ export default function ActivityOffersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 dark:bg-yellow-900";
+        return "bg-yellow-100";
       case "negotiated":
-        return "bg-blue-100 dark:bg-blue-900";
+        return "bg-blue-100";
       case "ongoing":
-        return "bg-purple-100 dark:bg-purple-900";
+        return "bg-purple-100";
       case "completed":
-        return "bg-green-100 dark:bg-green-900";
+        return "bg-green-100";
       case "rejected":
-        return "bg-red-100 dark:bg-red-900";
+        return "bg-red-100";
       case "cancelled":
-        return "bg-orange-100 dark:bg-orange-900";
+        return "bg-orange-100";
       case "disputed":
-        return "bg-amber-100 dark:bg-amber-900";
+        return "bg-amber-100";
       case "ignored":
-        return "bg-gray-100 dark:bg-gray-900";
+        return "bg-gray-100";
       default:
-        return "bg-gray-100 dark:bg-gray-900";
+        return "bg-gray-100";
     }
   };
 
@@ -291,22 +271,22 @@ export default function ActivityOffersPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen flex items-center justify-center">
+      <div className="flex-1 bg-zinc-50 min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen py-12 px-4">
+    <div className="flex-1 bg-zinc-50 min-h-screen py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-8">
+        <h1 className="text-4xl font-bold text-zinc-900 mb-8">
           My Offers
         </h1>
 
         {/* Status Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-8 bg-blue-50 p-2 rounded-lg">
           {statuses.map((status) => {
             const count = status.key === "all" 
               ? offers.length 
@@ -318,8 +298,8 @@ export default function ActivityOffersPage() {
                 onClick={() => setActiveStatus(status.key)}
                 className={`px-4 py-2 rounded font-semibold transition-colors ${
                   activeStatus === status.key
-                    ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
-                    : "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    ? "bg-blue-600 text-white"
+                    : "bg-zinc-200 text-zinc-900"
                 }`}
               >
                 {status.label} ({count})
@@ -334,67 +314,68 @@ export default function ActivityOffersPage() {
             {filteredOffers.map((offer) => (
               <div
                 key={offer.id}
-                className="bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-700 p-6 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-lg shadow border border-zinc-200 p-6 hover:shadow-lg transition-shadow"
+                style={{ background: offer.status === 'negotiated' ? '#e0f2fe' : offer.status === 'pending' ? '#fef9c3' : offer.status === 'completed' ? '#dcfce7' : undefined }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                    <h3 className="text-xl font-bold text-zinc-900 mb-2">
                       {offer.skillName}
                     </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+                    <p className="text-sm text-zinc-600 mb-2">
                       by {offer.skillOwnerName}
                     </p>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(offer.status)} text-zinc-900 dark:text-white`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(offer.status)} text-zinc-900`}>
                       {offer.status.charAt(0).toUpperCase() +
                         offer.status.slice(1)}
                     </span>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <p className="text-2xl font-bold text-zinc-900">
                       ₦{(offer.skillOwnerAcceptedPrice || offer.buyerAcceptedPrice || offer.currentPrice || offer.originalPrice).toLocaleString()}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                <p className="text-zinc-600 mb-4">
                   {offer.description}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                   <div>
-                    <p className="text-zinc-500 dark:text-zinc-400">From</p>
-                    <p className="text-zinc-900 dark:text-white font-semibold">
+                    <p className="text-zinc-500">From</p>
+                    <p className="text-zinc-900 font-semibold">
                       {new Date(offer.offerFrom).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 dark:text-zinc-400">To</p>
-                    <p className="text-zinc-900 dark:text-white font-semibold">
+                    <p className="text-zinc-500">To</p>
+                    <p className="text-zinc-900 font-semibold">
                       {new Date(offer.offerTo).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
 
                 {offer.status === "negotiated" && offer.latestCounterOffer && (
-                  <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">Negotiation Details</p>
+                  <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm font-semibold text-blue-900 mb-2">Negotiation Details</p>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-blue-700 dark:text-blue-300">Original Price:</p>
-                        <p className="font-bold text-blue-900 dark:text-blue-100">₦{offer.originalPrice.toLocaleString()}</p>
+                        <p className="text-blue-700">Original Price:</p>
+                        <p className="font-bold text-blue-900">₦{offer.originalPrice.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-blue-700 dark:text-blue-300">Counter Offer:</p>
-                        <p className="font-bold text-blue-900 dark:text-blue-100">₦{offer.latestCounterOffer.counterPrice.toLocaleString()}</p>
+                        <p className="text-blue-700">Counter Offer:</p>
+                        <p className="font-bold text-blue-900">₦{offer.latestCounterOffer.counterPrice.toLocaleString()}</p>
                       </div>
                     </div>
                     {offer.latestCounterOffer.reason && (
                       <div className="mt-2">
-                        <p className="text-blue-700 dark:text-blue-300 text-sm">Reason:</p>
-                        <p className="text-blue-900 dark:text-blue-100 text-sm italic">{offer.latestCounterOffer.reason}</p>
+                        <p className="text-blue-700 text-sm">Reason:</p>
+                        <p className="text-blue-900 text-sm italic">{offer.latestCounterOffer.reason}</p>
                       </div>
                     )}
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                    <p className="text-xs text-blue-600 mt-2">
                       Made by: {offer.latestCounterOffer.madeBy === "buyer" ? "You (Buyer)" : "Skill Owner"}
                     </p>
                   </div>
@@ -402,7 +383,7 @@ export default function ActivityOffersPage() {
 
                 {/* Action Buttons */}
                 {offer.status === "pending" && (
-                  <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                  <div className="text-sm text-zinc-600 mb-4">
                     <p className="mb-2">Waiting for skill owner response.</p>
                     <p>Offered at: {new Date(offer.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
                   </div>
@@ -414,14 +395,14 @@ export default function ActivityOffersPage() {
                     {offer.latestCounterOffer?.madeBy !== "buyer" && (
                       <button
                         onClick={() => handleAcceptNegotiation(offer.id)}
-                        className="flex-1 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
+                        className="flex-1 bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition-colors"
                       >
                         Accept New Price
                       </button>
                     )}
                     <button
                       onClick={() => handleRejectNegotiation(offer.id)}
-                      className="flex-1 bg-red-600 dark:bg-red-500 text-white px-4 py-2 rounded font-semibold hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
+                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700 transition-colors"
                     >
                       Reject New Price
                     </button>
@@ -437,7 +418,7 @@ export default function ActivityOffersPage() {
                         const reason = prompt("Optional reason for this negotiation:") || "";
                         handleNegotiate(offer.id, parsedPrice, reason);
                       }}
-                      className="flex-1 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                      className="flex-1 bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition-colors"
                     >
                       Negotiate Further
                     </button>
@@ -446,7 +427,7 @@ export default function ActivityOffersPage() {
 
                 {offer.status === "ongoing" && (
                   <div className="space-y-3">
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="text-sm text-zinc-600">
                       This offer is ongoing. You can cancel with a reason if needed.
                     </div>
                     <button
@@ -455,7 +436,7 @@ export default function ActivityOffersPage() {
                         if (!reason) return;
                         handleCancelOngoing(offer.id, reason);
                       }}
-                      className="bg-red-600 dark:bg-red-500 text-white px-4 py-2 rounded font-semibold hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
+                      className="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700 transition-colors"
                     >
                       Cancel Offer
                     </button>
@@ -463,20 +444,20 @@ export default function ActivityOffersPage() {
                 )}
 
                 {offer.status === "rejected" && (
-                  <div className="text-sm text-red-600 dark:text-red-400">
+                  <div className="text-sm text-red-600">
                     Rejected by: {offer.rejectedBy === "buyer" ? "Buyer" : "Skill Owner"}
                   </div>
                 )}
 
                 {offer.status === "cancelled" && (
-                  <div className="text-sm text-red-600 dark:text-red-400">
+                  <div className="text-sm text-red-600">
                     <p>Cancelled by: {offer.cancelledBy === "buyer" ? "Buyer" : "Skill Owner"}</p>
                     {offer.cancellationReason && <p>Reason: {offer.cancellationReason}</p>}
                   </div>
                 )}
 
                 {offer.status === "disputed" && (
-                  <div className="text-sm text-amber-600 dark:text-amber-400">
+                  <div className="text-sm text-amber-600">
                     <p>Disputed by: {offer.disputedBy === "buyer" ? "Buyer" : "Skill Owner"}</p>
                     {offer.disputeReason && <p>Reason: {offer.disputeReason}</p>}
                   </div>
@@ -485,13 +466,13 @@ export default function ActivityOffersPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-700 p-12 text-center">
-            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+          <div className="bg-white rounded-lg shadow border border-zinc-200 p-12 text-center">
+            <p className="text-zinc-600 mb-4">
               No offers in this category
             </p>
             <Link
               href="/studashboard/main-menu/marketplace/browse-skills"
-              className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-lg font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               Browse Skills
             </Link>

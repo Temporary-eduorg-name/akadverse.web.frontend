@@ -164,29 +164,29 @@ export default function SkillDetailModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-2xl bg-[#f9fafb] rounded-2xl shadow-2xl border border-zinc-100 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-zinc-50"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 p-6 flex justify-between items-start">
+            <div className="sticky top-0 bg-[#f9fafb] border-b border-zinc-100 p-6 flex justify-between items-start">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-zinc-900 mb-2">
                   {skill.name}
                 </h2>
-                <p className="text-blue-600 dark:text-blue-400 font-medium">
+                <p className="text-indigo-600 font-medium">
                   by {skill.displayName}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-2xl leading-none"
+                className="text-zinc-400 hover:text-zinc-700 text-2xl leading-none bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm border border-zinc-100 transition-colors"
+                aria-label="Close"
               >
-                ✕
+                ×
               </button>
             </div>
 
             {/* Content */}
             <div className="p-6">
-              {/* Skill Image and Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Image */}
                 <div>
@@ -194,73 +194,64 @@ export default function SkillDetailModal({
                     <img
                       src={skill.profilePicture}
                       alt={skill.name}
-                      className="w-full h-72 object-cover rounded-lg"
+                      className="w-full h-72 object-cover rounded-xl border border-zinc-100 bg-zinc-50"
                     />
                   ) : (
-                    <div className="w-full h-72 bg-gradient-to-br from-blue-200 to-purple-300 dark:from-blue-900 dark:to-purple-900 rounded-lg flex items-center justify-center">
+                    <div className="w-full h-72 bg-gradient-to-br from-blue-200 to-purple-300 rounded-xl flex items-center justify-center border border-zinc-100">
                       <span className="text-6xl font-bold text-white">
                         {skill.displayName.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                 </div>
-
                 {/* Info Cards */}
                 <div className="space-y-4">
-                  <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Expertise Level</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-100">
+                    <p className="text-xs text-zinc-500 mb-1">Expertise Level</p>
+                    <p className="text-lg font-semibold text-zinc-900">
                       {skill.expertiseLevel.charAt(0).toUpperCase() + skill.expertiseLevel.slice(1)}
                     </p>
                   </div>
-
-                  <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Years of Experience</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <p className="text-xs text-indigo-600 mb-1">Years of Experience</p>
+                    <p className="text-lg font-semibold text-indigo-900">
                       {skill.yearsOfExperience}+ years
                     </p>
                   </div>
-
-                  <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Availability</p>
-                    <p className="text-sm text-zinc-900 dark:text-white font-medium">{skill.serviceDays}</p>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">{skill.serviceTimes}</p>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p className="text-xs text-blue-600 mb-1">Availability</p>
+                    <p className="text-sm text-blue-900 font-medium">{skill.serviceDays}</p>
+                    <p className="text-sm text-blue-500">{skill.serviceTimes}</p>
                   </div>
-
-                  <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Engagement</p>
-                    <p className="text-sm text-zinc-900 dark:text-white">
+                  <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+                    <p className="text-xs text-emerald-600 mb-1">Engagement</p>
+                    <p className="text-sm text-emerald-900">
                       {skill._count.reviews} reviews • {skill.visitors} views
                     </p>
-                  </div>
-
-                  <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Registered On</p>
-                    <p className="text-sm text-zinc-900 dark:text-white font-medium">{registeredDate}</p>
                   </div>
                 </div>
               </div>
 
               {/* Description */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">About This Skill</h3>
-                <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                <h3 className="text-lg font-semibold text-zinc-900 mb-3">About This Skill</h3>
+                <p className="text-zinc-700 leading-relaxed">
                   {skill.description}
                 </p>
               </div>
 
               {/* Achievements */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">Achievements</h3>
-                <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                  {skill.achievements?.trim() || "No achievements added yet."}
+                <h3 className="text-lg font-semibold text-zinc-900 mb-3">Achievements</h3>
+                <p className="text-zinc-700 leading-relaxed">
+                  {skill.achievements?.trim() ? skill.achievements : "No achievements added yet."}
                 </p>
               </div>
 
               {/* Social Links */}
               {(skill.instagram || skill.linkedin || skill.twitter || skill.website) && (
-                <div className="mb-6 pb-6 border-b border-zinc-200 dark:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">Connect</h3>
+                <div className="mb-6 pb-6 border-b border-zinc-200">
+                  <h3 className="text-lg font-semibold text-zinc-900 mb-3">Connect</h3>
                   <div className="flex gap-3 flex-wrap">
                     {skill.instagram && (
                       <InstagramLink username={skill.instagram} />
@@ -280,8 +271,7 @@ export default function SkillDetailModal({
 
               {/* Offer Form */}
               <div>
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Make an Offer</h3>
-
+                <h3 className="text-lg font-semibold text-zinc-900 mb-4">Make an Offer</h3>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -289,16 +279,15 @@ export default function SkillDetailModal({
                   }}
                   className="space-y-4"
                 >
-                  <div className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-1">Select the duration of your offer request</p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
+                    <p className="text-sm font-semibold text-zinc-900 mb-1">Select the duration of your offer request</p>
+                    <p className="text-xs text-zinc-600">
                       Offer From and Offer To define how long your request stays active. If this duration expires before the offer is handled, it is automatically moved to Ignored.
                     </p>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                      <label className="block text-sm font-medium text-zinc-900 mb-2">
                         Offer Duration - From
                       </label>
                       <input
@@ -306,13 +295,12 @@ export default function SkillDetailModal({
                         value={offerFrom}
                         min={today}
                         onChange={(e) => setOfferFrom(e.target.value)}
-                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                        className="w-full px-3 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                         required
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                      <label className="block text-sm font-medium text-zinc-900 mb-2">
                         Offer Duration - To
                       </label>
                       <input
@@ -320,14 +308,13 @@ export default function SkillDetailModal({
                         value={offerTo}
                         min={today}
                         onChange={(e) => setOfferTo(e.target.value)}
-                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                        className="w-full px-3 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                         required
                       />
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                    <label className="block text-sm font-medium text-zinc-900 mb-2">
                       Your Budget
                     </label>
                     <input
@@ -336,13 +323,12 @@ export default function SkillDetailModal({
                       value={proposedPrice}
                       onChange={(e) => setProposedPrice(e.target.value)}
                       placeholder="Enter amount you're willing to pay"
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900"
                       required
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                    <label className="block text-sm font-medium text-zinc-900 mb-2">
                       What do you need from this skill owner?
                     </label>
                     <textarea
@@ -350,33 +336,30 @@ export default function SkillDetailModal({
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe what you need in detail..."
                       rows={4}
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white resize-none"
+                      className="w-full px-3 py-2 border border-zinc-300 rounded-lg bg-white text-zinc-900 resize-none"
                       required
                     />
                   </div>
-
                   {error && (
-                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                    <p className="text-sm text-red-600">{error}</p>
                   )}
-
                   {success && (
-                    <p className="text-sm text-green-600 dark:text-green-400">
+                    <p className="text-sm text-green-600">
                       ✓ Offer submitted successfully! The skill owner will review it shortly.
                     </p>
                   )}
-
                   <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
                       disabled={submitting || success}
-                      className="flex-1 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors disabled:opacity-60"
+                      className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
                     >
                       {submitting ? "Submitting..." : success ? "✓ Sent!" : "Send Offer"}
                     </button>
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-4 py-3 rounded-lg font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                      className="flex-1 bg-zinc-200 text-zinc-900 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-300 transition-colors"
                     >
                       Close
                     </button>

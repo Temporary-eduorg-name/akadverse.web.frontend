@@ -80,17 +80,17 @@ export default function AnalyticsComponent({
       {/* Second Row - Rate Doughnuts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Conversion Rate Doughnut */}
-        <ConversionRateDoughnut percentage={stats.conversionRate} />
+        {/* <ConversionRateDoughnut percentage={stats.conversionRate} /> */}
 
         {/* Customer Retention Doughnut */}
-        <RetentionRateDoughnut percentage={stats.customerRetention} />
+        {/* <RetentionRateDoughnut percentage={stats.customerRetention} /> */}
       </div>
 
       {/* Third Row - ROI and Annual Growth with PercentageCircles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* ROI Percentage Circle */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">
+        <div className="bg-white  rounded-lg shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-zinc-900 mb-6">
             Return on Investment (ROI)
           </h3>
           <div className="flex justify-center">
@@ -105,7 +105,7 @@ export default function AnalyticsComponent({
         </div>
 
         {/* Annual Growth Rate Percentage Circle */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
+        {/* <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">
             Annual Growth Rate
           </h3>
@@ -118,14 +118,14 @@ export default function AnalyticsComponent({
               color="#3b82f6"
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Fourth Row - Additional Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Profit */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <p className="text-sm font-medium text-zinc-600 mb-2">
             Total Profit
           </p>
           <p className="text-4xl font-bold text-purple-500">
@@ -134,14 +134,14 @@ export default function AnalyticsComponent({
         </div>
 
         {/* Average Rating */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
+        {/* <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">
             Average Rating
           </p>
           <p className="text-4xl font-bold text-yellow-500">
             {stats.averageRating.toFixed(1)} ⭐
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

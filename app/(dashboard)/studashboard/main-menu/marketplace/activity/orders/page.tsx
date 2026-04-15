@@ -88,15 +88,15 @@ export default function ActivityOrdersPage() {
     const lowerStatus = status.toLowerCase();
     switch (lowerStatus) {
       case "pending":
-        return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200";
+        return "bg-yellow-100 text-yellow-800";
       case "completed":
-        return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200";
+        return "bg-green-100 text-green-800";
       case "active":
-        return "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200";
+        return "bg-blue-100 text-blue-800";
       case "disputed":
-        return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200";
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -111,27 +111,27 @@ export default function ActivityOrdersPage() {
   if (error) {
     return (
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-red-600">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black py-12">
+    <div className="min-h-screen bg-zinc-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-6">
+          <h1 className="text-3xl font-bold text-zinc-900 mb-6">
             My Orders
           </h1>
 
           {orders.length === 0 ? (
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-12 text-center">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-6 text-lg">
+            <div className="bg-white rounded-lg shadow p-12 text-center">
+              <p className="text-zinc-600 mb-6 text-lg">
                 You don't have any orders yet.
               </p>
               <Link
                 href="/studashboard/main-menu/marketplace"
-                className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-lg font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+                className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Start Shopping
               </Link>
@@ -139,13 +139,13 @@ export default function ActivityOrdersPage() {
           ) : (
             <>
               {/* Status Filters */}
-              <div className="flex gap-2 mb-6 flex-wrap">
+              <div className="flex gap-2 mb-6 flex-wrap bg-blue-50 p-2 rounded-lg">
                 <button
                   onClick={() => handleStatusFilter(null)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     activeStatus === null
-                      ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
-                      : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white border border-zinc-200 text-zinc-900 hover:bg-zinc-50"
                   }`}
                 >
                   All ({orders.length})
@@ -158,8 +158,8 @@ export default function ActivityOrdersPage() {
                       onClick={() => handleStatusFilter(status)}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${
                         activeStatus === status
-                          ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
-                          : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          ? "bg-blue-600 text-white"
+                          : "bg-white border border-zinc-200 text-zinc-900 hover:bg-zinc-50"
                       }`}
                     >
                       {status} ({count})
@@ -170,8 +170,8 @@ export default function ActivityOrdersPage() {
 
               {/* Orders List */}
               {filteredOrders.length === 0 ? (
-                <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-8 text-center">
-                  <p className="text-zinc-600 dark:text-zinc-400">
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <p className="text-zinc-600">
                     No {activeStatus ? activeStatus : ""} orders found.
                   </p>
                 </div>
@@ -181,14 +181,14 @@ export default function ActivityOrdersPage() {
                     <Link
                       key={order.id}
                       href={`/studashboard/main-menu/marketplace`}
-                      className="bg-white dark:bg-zinc-900 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg transition-shadow p-6"
+                      className="bg-white rounded-lg shadow-md border border-zinc-200 hover:shadow-lg transition-shadow p-6"
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                          <p className="text-sm text-zinc-500 mb-1">
                             Order ID: {order.id}
                           </p>
-                          <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                          <p className="text-lg font-semibold text-zinc-900">
                             ₦{order.total.toFixed(2)}
                           </p>
                         </div>
@@ -199,17 +199,17 @@ export default function ActivityOrdersPage() {
 
                       {/* Order Items */}
                       <div className="mb-4">
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+                        <p className="text-sm text-zinc-600 mb-2">
                           {order.orderItems.length} item{order.orderItems.length !== 1 ? "s" : ""}
                         </p>
                         <div className="space-y-1">
                           {order.orderItems.slice(0, 2).map((item) => (
-                            <p key={item.id} className="text-sm text-zinc-700 dark:text-zinc-300">
+                            <p key={item.id} className="text-sm text-zinc-700">
                               {item.product.name} x {item.quantity}
                             </p>
                           ))}
                           {order.orderItems.length > 2 && (
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                            <p className="text-sm text-zinc-600">
                               +{order.orderItems.length - 2} more item{order.orderItems.length - 2 !== 1 ? "s" : ""}
                             </p>
                           )}
@@ -217,7 +217,7 @@ export default function ActivityOrdersPage() {
                       </div>
 
                       {/* Date */}
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-zinc-500">
                         {new Date(order.createdAt).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",

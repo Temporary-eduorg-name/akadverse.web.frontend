@@ -6,15 +6,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getMarketplaceBase } from "./marketplaceRouteUtils";
+import { Activity } from "lucide-react";
+import { useMarketplaceActivity } from "./context/MarketplaceActivityContext";
 
 export default function ActivityDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  const [hasOfferActivity, setHasOfferActivity] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
   const marketplaceBase = getMarketplaceBase(pathname);
+  const { setScope, buyerActivity } = useMarketplaceActivity();
+
+  useEffect(() => {
+    setScope("buyer");
+  }, [setScope]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -26,35 +31,7 @@ export default function ActivityDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    try {
-      const eventSource = new EventSource("/api/marketplace/realtime/events?scope=buyer");
-      eventSourceRef.current = eventSource;
-
-      eventSource.addEventListener("update", (event) => {
-        const data = JSON.parse((event as MessageEvent).data);
-        // Show notification dot only if skill owner made updates (unreadOfferNotifications > 0)
-        setHasOfferActivity(data.unreadOfferNotifications > 0);
-      });
-
-      eventSource.addEventListener("error", () => {
-        console.error("Activity real-time listener disconnected");
-        eventSource.close();
-        eventSourceRef.current = null;
-      });
-    } catch (error) {
-      console.error("Failed to setup activity real-time listener:", error);
-    }
-
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
-    };
-  }, [isAuthenticated]);
+  // (Removed local EventSource logic, now handled by context)
 
   if (!isAuthenticated) {
     return null;
@@ -73,10 +50,11 @@ export default function ActivityDropdown() {
             }).catch((error) => console.error("Failed to mark notifications as read:", error));
           }
         }}
-        className="text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative"
+        className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors relative"
+        title="Activity"
       >
-        Activity
-        {hasOfferActivity && (
+        <span className="font-semibold text-sm text-slate-700 group-hover:text-indigo-900 transition-colors">Activity</span>
+        {buyerActivity.hasOfferActivity && (
           <span className="absolute -top-1 -right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
         )}
       </button>
@@ -88,7 +66,7 @@ export default function ActivityDropdown() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-50"
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white border border-zinc-200 rounded-lg shadow-lg z-50"
             style={{
               maxWidth: "calc(100vw - 32px)",
               left: "50%",
@@ -99,17 +77,17 @@ export default function ActivityDropdown() {
               <Link
                 href={`${marketplaceBase}/activity/orders`}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-sm"
+                className="block px-4 py-2 text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors text-sm"
               >
                 My Orders
               </Link>
               <Link
                 href={`${marketplaceBase}/activity/offers`}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between px-4 py-2 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-sm"
+                className="flex items-center justify-between px-4 py-2 text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors text-sm"
               >
                 <span>My Offers</span>
-                {hasOfferActivity && (
+                {buyerActivity.hasOfferActivity && (
                   <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 )}
               </Link>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { Briefcase, Wrench, Activity, ShoppingCart } from "lucide-react";
 import BusinessDropdown from "./BusinessDropdown";
 import SkillsDropdown from "./SkillsDropdown";
 import ActivityDropdown from "./ActivityDropdown";
@@ -143,66 +144,103 @@ export default function Navbar({ className = "" }: NavbarProps) {
 
   return (
     <>
-      <nav className={`sticky top-[70px] z-20 w-full bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 ${className}`}>
-        <div className="w-full px-3 sm:px-4 lg:px-6">
-          <div className="flex flex-wrap items-center gap-3 py-3 lg:flex-nowrap lg:h-16 lg:py-0">
-            <div className="min-w-0 shrink-0">
-              <Link href={marketplaceBase} className="block truncate text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
-                {marketplaceLabel}
-              </Link>
-            </div>
+      {/* Essentials/Figma-style Navbar */}
 
-            <div className="order-3 w-full lg:order-none lg:flex-1 lg:min-w-[260px]">
+      <nav className={`border-b border-slate-200 bg-white sticky top-0 z-20 mx-auto${className}`} style={{margin: '24px 0px'}}>
+        {/* Essentials/Figma-style Navbar - exact spacing and layout */}
+        <div className="w-full max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
+          {/* Left: Logo/Label */}
+          <div className="flex items-center gap-2.5 shrink-0 cursor-pointer" onClick={() => window.location.assign('/studashboard/main-menu/marketplace')}>
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200">
+              <span className="font-bold text-lg">M</span>
+            </div>
+            <span className="font-bold text-lg text-slate-900 hidden sm:block tracking-tight">{marketplaceLabel}</span>
+          </div>
+
+          {/* Center: SearchBar (with 'Filter' word) */}
+          <div className="flex-1 flex justify-center mx-2 min-w-0">
+            <div className="relative w-full max-w-[170px] sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]">
               <SearchBar />
             </div>
+          </div>
 
-            <div className="ml-auto flex items-center justify-end gap-3 sm:gap-4 flex-wrap">
-              <BusinessDropdown hasActivity={hasBusinessActivity} />
-              <SkillsDropdown />
-              <ActivityDropdown />
-              {isAuthenticated && user?.role === "super-admin" && !pathname.startsWith("/studashboard") && (
-                <Link
-                  href={`${dashboardRoot}/main-menu/admin`}
-                  className="inline-flex items-center gap-1.5 text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors font-medium"
-                  title="Super Admin Dashboard"
-                >
-                  <span className="hidden sm:inline">Admin</span>
-                </Link>
+          {/* Right: Dropdowns and Cart */}
+          <div className="hidden lg:flex items-center gap-1 shrink-0 min-w-0">
+            {/* My Businesses NavItem */}
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  window.location.assign("/login");
+                } else {
+                  window.location.assign(`${marketplaceBase}/dashboard`);
+                }
+              }}
+              className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors relative"
+              title="My Businesses"
+            >
+              <Briefcase className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-300" />
+              <span className="font-semibold text-sm text-slate-700 group-hover:text-indigo-900 transition-colors">My Businesses</span>
+              {hasBusinessActivity && (
+                <span className="absolute -top-1 -right-2 h-2 w-2 rounded-full bg-red-500" />
               )}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
-                title="Cart"
+            </button>
+
+            {/* My Skills NavItem */}
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  window.location.assign("/login");
+                } else {
+                  window.location.assign(`${marketplaceBase}/dashboard/skills`);
+                  fetch("/api/marketplace/skills/notifications", {
+                    method: "PATCH",
+                    credentials: "include",
+                  }).catch(() => {});
+                }
+              }}
+              className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors relative"
+              title="My Skills"
+            >
+              <Wrench className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-300" />
+              <span className="font-semibold text-sm text-slate-700 group-hover:text-indigo-900 transition-colors">My Skills</span>
+            </button>
+
+            {/* Activity NavItem */}
+            <ActivityDropdown />
+      
+            {/* Cart NavItem */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors relative"
+              title="Cart"
+            >
+              <ShoppingCart className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-300" />
+              <span className="font-semibold text-sm text-slate-700 group-hover:text-indigo-900 transition-colors">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Admin Link (unchanged) */}
+            {isAuthenticated && user?.role === "super-admin" && !pathname.startsWith("/studashboard") && (
+              <Link
+                href={`${dashboardRoot}/main-menu/admin`}
+                className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
+                title="Super Admin Dashboard"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                  />
-                </svg>
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </button>
-              {!isAuthenticated && (
-                <Link
-                  href={marketplaceBase}
-                  className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
-                >
-                  Browse
-                </Link>
-              )}
-            </div>
+                <span className="hidden sm:inline">Admin</span>
+              </Link>
+            )}
+            {!isAuthenticated && (
+              <Link
+                href={marketplaceBase}
+                className="bg-blue-600 text-white px-4 py-2 rounded-[10px] font-semibold shadow hover:bg-blue-700 transition-colors"
+              >
+                Browse
+              </Link>
+            )}
           </div>
         </div>
       </nav>

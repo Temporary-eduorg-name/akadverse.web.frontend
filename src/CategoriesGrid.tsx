@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Sparkle, Zap, Tag, Wrench } from "lucide-react";
 
 interface Category {
   name: string;
@@ -27,60 +28,39 @@ export default function CategoriesGrid() {
     fetchCategories();
   }, []);
 
+  // Demo icon assignment (cycle through icons)
+  const icons = [Sparkle, Zap, Tag, Wrench];
   return (
-    <div className="py-12 px-4">
+    <div className="py-6 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
-            Browse by Category
-          </h2>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Explore businesses and products in different categories
-          </p>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Browse Categories</h2>
         </div>
-
         {categories.length === 0 ? (
-          <p className="text-zinc-600 dark:text-zinc-400">No categories available yet.</p>
+          <p className="text-slate-600">No categories available yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                href={`/category/${encodeURIComponent(category.name)}`}
-                className="group relative bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 hover:shadow-xl hover:border-zinc-400 dark:hover:border-zinc-500 transition-all overflow-hidden"
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-center w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-lg mb-4 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                      className="w-6 h-6 text-zinc-600 dark:text-zinc-400"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
+          <div className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x -mx-2">
+            {categories.map((category, i) => {
+              const Icon = icons[i % icons.length];
+              return (
+                <Link
+                  key={category.name}
+                  href={`/category/${encodeURIComponent(category.name)}`}
+                  className="group relative flex-none w-[200px] h-[140px] rounded-3xl p-5 border border-slate-200/60 overflow-hidden text-left bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+                  style={{ minWidth: 200, maxWidth: 200 }}
+                >
+                  <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500 bg-indigo-100" />
+                  <div className="relative z-10 flex flex-col h-full justify-between">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm bg-indigo-100 text-indigo-600 mb-4">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-800 text-lg truncate">{category.name}</h3>
+                    </div>
                   </div>
-
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 line-clamp-2">
-                    {category.name}
-                  </h3>
-
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    Explore businesses & products
-                  </p>
-
-                  <div className="mt-4 inline-flex items-center text-zinc-900 dark:text-white font-semibold text-sm group-hover:translate-x-1 transition-transform">
-                    Browse Category →
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

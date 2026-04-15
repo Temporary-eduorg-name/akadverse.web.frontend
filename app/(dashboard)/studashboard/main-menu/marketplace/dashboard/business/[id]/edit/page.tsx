@@ -131,10 +131,10 @@ export default function EditBusinessPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-200 mt-4">Loading business...</p>
+          <p className="text-zinc-600 mt-4">Loading business...</p>
         </div>
       </div>
     );
@@ -144,7 +144,7 @@ export default function EditBusinessPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-zinc-600 dark:text-zinc-400 mb-4">Business not found</p>
+          <p className="text-zinc-600 mb-4">Business not found</p>
           <Link href="/studashboard/main-menu/marketplace/dashboard" className="text-blue-600 hover:underline">
             Back to Dashboard
           </Link>
@@ -154,25 +154,25 @@ export default function EditBusinessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black px-4 py-8">
+    <div className="min-h-screen bg-zinc-50 px-4 py-8">
       <div className="max-w-3xl mx-auto">
-        <Link href={`/studashboard/main-menu/marketplace/dashboard/business/${businessId}`} className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-6 inline-block">
+        <Link href={`/studashboard/main-menu/marketplace/dashboard/business/${businessId}`} className="text-zinc-600 hover:text-zinc-900 mb-6 inline-block">
           ← Back
         </Link>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-zinc-900 mb-6">
             Edit Business
           </h1>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-md">
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
               {success}
             </div>
           )}
@@ -180,7 +180,7 @@ export default function EditBusinessPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Business Name */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Business Name
               </label>
               <input
@@ -188,21 +188,21 @@ export default function EditBusinessPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Industry */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Industry
               </label>
               <select
                 name="industry"
                 value={formData.industry}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               >
                 <option value="">Select industry</option>
@@ -215,7 +215,7 @@ export default function EditBusinessPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Description
               </label>
               <textarea
@@ -223,14 +223,14 @@ export default function EditBusinessPage() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Location
               </label>
               <input
@@ -238,14 +238,14 @@ export default function EditBusinessPage() {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Service Days */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Service Days
               </label>
               <input
@@ -253,14 +253,14 @@ export default function EditBusinessPage() {
                 name="serviceDays"
                 value={formData.serviceDays}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
 
             {/* Service Times */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
                 Service Times
               </label>
               <input
@@ -268,7 +268,7 @@ export default function EditBusinessPage() {
                 name="serviceTimes"
                 value={formData.serviceTimes}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                 required
               />
             </div>
@@ -288,14 +288,14 @@ export default function EditBusinessPage() {
             </div>
 
             {/* Social Links */}
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mt-6">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="border-t border-zinc-200 pt-4 mt-6">
+              <h3 className="text-lg font-semibold text-zinc-900 mb-4">
                 Social Links
               </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
                     Instagram
                   </label>
                   <input
@@ -303,12 +303,12 @@ export default function EditBusinessPage() {
                     name="instagram"
                     value={formData.instagram || ""}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
                     LinkedIn
                   </label>
                   <input
@@ -316,12 +316,12 @@ export default function EditBusinessPage() {
                     name="linkedin"
                     value={formData.linkedin || ""}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
                     Website
                   </label>
                   <input
@@ -329,7 +329,7 @@ export default function EditBusinessPage() {
                     name="website"
                     value={formData.website || ""}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900"
                   />
                 </div>
               </div>
@@ -340,13 +340,13 @@ export default function EditBusinessPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors font-medium disabled:opacity-50"
+                className="flex-1 bg-zinc-900 text-white py-2 rounded-md hover:bg-zinc-700 transition-colors font-medium disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
               <Link
                 href={`/studashboard/main-menu/marketplace/dashboard/business/${businessId}`}
-                className="flex-1 text-center bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white py-2 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors font-medium"
+                className="flex-1 text-center bg-zinc-200 text-zinc-900 py-2 rounded-md hover:bg-zinc-300 transition-colors font-medium"
               >
                 Cancel
               </Link>

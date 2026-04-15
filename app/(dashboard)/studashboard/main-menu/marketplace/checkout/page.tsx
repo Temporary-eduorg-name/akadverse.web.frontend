@@ -164,7 +164,7 @@ export default function CheckoutPage() {
       }
 
       // Get Paystack public key from environment
-      const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_KEY;
+      const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_LIVE_KEY;
       if (!paystackPublicKey) {
         throw new Error("Paystack public key not configured");
       }
@@ -223,10 +223,10 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner size="md" />
-          <p className="text-zinc-900 dark:text-white mt-4">Loading checkout...</p>
+          <p className="text-zinc-900 mt-4">Loading checkout...</p>
         </div>
       </div>
     );
@@ -234,14 +234,14 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-zinc-900 mb-4">
             Your cart is empty
           </h1>
           <button
             onClick={() => router.push("/studashboard/main-menu/marketplace")}
-            className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors"
           >
             Continue Shopping
           </button>
@@ -251,14 +251,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black py-8 px-4">
+    <div className="min-h-screen bg-zinc-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8">
+        <h1 className="text-3xl font-bold text-zinc-900 mb-8">
           Checkout
         </h1>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
             {error}
           </div>
         )}
@@ -266,8 +266,8 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Order Summary */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="bg-zinc-100 rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-zinc-900 mb-4">
                 Order Summary
               </h2>
 
@@ -275,9 +275,9 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800"
+                    className="flex items-center gap-4 pb-4 border-b border-zinc-200"
                   >
-                    <div className="relative w-20 h-20 flex-shrink-0 bg-zinc-200 dark:bg-zinc-800 rounded-md overflow-hidden">
+                    <div className="relative w-20 h-20 flex-shrink-0 bg-zinc-200 rounded-md overflow-hidden">
                       {item.product.secure_url ? (
                         <img
                           src={item.product.secure_url}
@@ -293,16 +293,15 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="font-medium text-zinc-900 dark:text-white">
+                      <h3 className="font-medium text-zinc-900">
                         {item.product.name}
                       </h3>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-zinc-500">
                         {item.product.business.name}
                       </p>
-                      
                       {/* Display selected variants */}
                       {item.selectedVariants && (
-                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                        <p className="text-xs text-zinc-600 mt-1">
                           {Object.entries(JSON.parse(item.selectedVariants)).map(([key, value], idx) => (
                             <span key={key}>
                               {key}: <span className="font-semibold">{value as string}</span>
@@ -311,17 +310,16 @@ export default function CheckoutPage() {
                           ))}
                         </p>
                       )}
-                      
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                      <p className="text-sm text-zinc-600 mt-1">
                         Quantity: {item.quantity}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <p className="font-semibold text-zinc-900 dark:text-white">
+                      <p className="font-semibold text-zinc-900">
                         ₦{((item.variant?.price ?? item.product.price) * item.quantity).toFixed(2)}
                       </p>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-zinc-500">
                         ₦{(item.variant?.price ?? item.product.price).toFixed(2)} each
                       </p>
                     </div>
@@ -329,10 +327,10 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="mt-6 pt-4 border-t border-zinc-200">
                 <div className="flex justify-between items-center text-lg font-bold">
-                  <span className="text-zinc-900 dark:text-white">Total:</span>
-                  <span className="text-zinc-900 dark:text-white">
+                  <span className="text-zinc-900">Total:</span>
+                  <span className="text-zinc-900">
                     ₦{calculateTotal().toFixed(2)}
                   </span>
                 </div>
@@ -343,17 +341,17 @@ export default function CheckoutPage() {
           {/* Delivery & Payment */}
           <div className="space-y-6">
             {/* Delivery Address */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="bg-zinc-100 rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-zinc-900 mb-4">
                 Delivery Address
               </h2>
 
               {user && (
                 <div className="mb-4">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                  <p className="text-sm text-zinc-600 mb-1">
                     Name:
                   </p>
-                  <p className="text-zinc-900 dark:text-white font-medium">
+                  <p className="text-zinc-900 font-medium">
                     {user.firstName} {user.lastName}
                   </p>
                 </div>
@@ -362,7 +360,7 @@ export default function CheckoutPage() {
               <div className="mb-4">
                 <label
                   htmlFor="location"
-                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+                  className="block text-sm font-medium text-zinc-700 mb-2"
                 >
                   Location:
                 </label>
@@ -372,14 +370,14 @@ export default function CheckoutPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Enter your delivery location"
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-zinc-900"
                 />
               </div>
 
               {user?.location !== location && location.trim() && (
                 <button
                   onClick={updateLocation}
-                  className="w-full mb-4 bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-4 py-2 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors text-sm"
+                  className="w-full mb-4 bg-indigo-100 text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-200 transition-colors text-sm"
                 >
                   Update Location
                 </button>
@@ -387,16 +385,16 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Button */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="bg-zinc-100 rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-zinc-900 mb-4">
                 Payment
               </h2>
 
-              <div className="mb-4 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-md">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+              <div className="mb-4 p-4 bg-white rounded-md">
+                <p className="text-sm text-zinc-600 mb-2">
                   Total Amount:
                 </p>
-                <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <p className="text-2xl font-bold text-zinc-900">
                   ₦{calculateTotal().toFixed(2)}
                 </p>
               </div>
@@ -404,12 +402,12 @@ export default function CheckoutPage() {
               <button
                 onClick={handlePayment}
                 disabled={processing || !location.trim()}
-                className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processing ? "Processing..." : "Pay Now"}
               </button>
 
-              <p className="mt-4 text-xs text-center text-zinc-500 dark:text-zinc-400">
+              <p className="mt-4 text-xs text-center text-zinc-500">
                 A secure payment modal will open to complete your transaction
               </p>
             </div>

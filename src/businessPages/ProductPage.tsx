@@ -317,25 +317,25 @@ export default function ProductsPage() {
     <div className="w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-zinc-900">
           Products
         </h2>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-md hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors font-medium"
+          className="bg-zinc-900 text-white px-4 py-2 rounded-md hover:bg-zinc-700 transition-colors font-medium"
         >
           {showCreateForm ? "Cancel" : "Add Product"}
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+        <div className="mb-4 p-3 bg-red-100  text-red-700 rounded-md">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-md">
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
           {success}
         </div>
       )}
@@ -363,14 +363,14 @@ export default function ProductsPage() {
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400"
+          className="w-full px-4 py-2 border border-zinc-300 rounded-md bg-white text-zinc-900 placeholder-zinc-500"
         />
       </div>
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-zinc-600 ">
             {searchQuery ? "No products found matching your search" : "No products yet"}
           </p>
         </div>

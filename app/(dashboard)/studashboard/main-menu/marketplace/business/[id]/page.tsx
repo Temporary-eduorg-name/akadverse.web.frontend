@@ -106,7 +106,7 @@ export default function BusinessPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen flex items-center justify-center">
+      <div className="flex-1 bg-zinc-50 min-h-screen flex items-center justify-center">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -114,14 +114,14 @@ export default function BusinessPage() {
 
   if (!business) {
     return (
-      <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen flex items-center justify-center">
+      <div className="flex-1 bg-zinc-50 min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+          <p className="text-zinc-600 mb-4">
             Business not found
           </p>
           <Link
             href="/studashboard/main-menu/marketplace"
-            className="text-zinc-900 dark:text-white hover:underline"
+            className="text-zinc-900 hover:underline"
           >
             Back to Home
           </Link>
@@ -130,27 +130,23 @@ export default function BusinessPage() {
     );
   }
 
-  const serviceDaysDisplay = Array.isArray(business.serviceDays)
-    ? business.serviceDays.join(", ")
-    : business.serviceDays;
-
   return (
-    <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen">
+    <div className="flex-1 bg-zinc-50 min-h-screen">
       {/* Business Header */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="bg-white border-b border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <Link
             href="/studashboard/main-menu/marketplace"
-            className="inline-flex items-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center text-zinc-600 hover:text-zinc-900 mb-6 transition-colors"
           >
-            ← Back to Home
+            0 Back to Home
           </Link>
 
           <div className="mb-6">
-            <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">
+            <h1 className="text-4xl font-bold text-zinc-900 mb-2">
               {business.name}
             </h1>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="text-lg text-zinc-600">
               {business.industry}
             </p>
           </div>
@@ -159,10 +155,10 @@ export default function BusinessPage() {
             {/* Business Info */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                   Registered On
                 </h3>
-                <p className="text-zinc-900 dark:text-white">
+                <p className="text-zinc-900">
                   {new Date(business.createdAt).toLocaleDateString('en-US', { 
                     year: 'numeric', 
                     month: 'long', 
@@ -172,19 +168,19 @@ export default function BusinessPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                   About
                 </h3>
-                <p className="text-zinc-900 dark:text-white">
+                <p className="text-zinc-900">
                   {business.description}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                   Location
                 </h3>
-                <p className="text-zinc-900 dark:text-white flex items-center gap-2">
+                <p className="text-zinc-900 flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -212,19 +208,19 @@ export default function BusinessPage() {
             {/* Operating Hours */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                   Service Days
                 </h3>
-                <p className="text-zinc-900 dark:text-white">
-                  {serviceDaysDisplay}
+                <p className="text-zinc-900">
+                  {business.serviceDays}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-2">
                   Service Times
                 </h3>
-                <p className="text-zinc-900 dark:text-white flex items-center gap-2">
+                <p className="text-zinc-900 flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -246,7 +242,7 @@ export default function BusinessPage() {
               {/* Social Links */}
               {(business.instagram || business.linkedin || business.website) && (
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
+                  <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">
                     Connect
                   </h3>
                   <div className="flex gap-3">
@@ -255,7 +251,7 @@ export default function BusinessPage() {
                         href={business.instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="text-zinc-600 hover:text-zinc-900 transition-colors"
                         title="Instagram"
                       >
                         <svg
@@ -272,7 +268,7 @@ export default function BusinessPage() {
                         href={business.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="text-zinc-600 hover:text-zinc-900 transition-colors"
                         title="LinkedIn"
                       >
                         <svg
@@ -289,7 +285,7 @@ export default function BusinessPage() {
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="text-zinc-600 hover:text-zinc-900 transition-colors"
                         title="Website"
                       >
                         <svg
@@ -317,13 +313,13 @@ export default function BusinessPage() {
 
       {/* Products Section */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8">
+        <h2 className="text-3xl font-bold text-zinc-900 mb-8">
           Products
         </h2>
 
         {business.products.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700">
-            <p className="text-zinc-600 dark:text-zinc-400">
+          <div className="text-center py-12 bg-white rounded-lg border border-zinc-200">
+            <p className="text-zinc-600">
               No products available at the moment
             </p>
           </div>
@@ -332,7 +328,7 @@ export default function BusinessPage() {
             {business.products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:shadow-xl transition-shadow"
+                className="bg-white rounded-lg shadow-lg overflow-hidden border border-zinc-200 hover:shadow-xl transition-shadow"
               >
                 <div
                   className="relative"
@@ -346,8 +342,8 @@ export default function BusinessPage() {
                       className="w-full h-48 object-cover"
                     />
                   ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center">
-                      <span className="text-zinc-400 dark:text-zinc-500 text-sm">
+                    <div className="w-full h-48 bg-gradient-to-br from-zinc-200 to-zinc-300 flex items-center justify-center">
+                      <span className="text-zinc-400 text-sm">
                         No Image
                       </span>
                     </div>
@@ -358,7 +354,7 @@ export default function BusinessPage() {
                       <button
                         onClick={(e) => handleAddToCart(product.id, e)}
                         disabled={adding === product.id || product.stock === 0}
-                        className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-6 py-3 rounded-lg font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-white text-zinc-900 px-6 py-3 rounded-lg font-semibold hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {adding === product.id
                           ? "Adding..."
@@ -371,40 +367,40 @@ export default function BusinessPage() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 line-clamp-1">
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2 line-clamp-1">
                     {product.name}
                   </h3>
 
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
+                  <p className="text-sm text-zinc-600 mb-3 line-clamp-2">
                     {product.description}
                   </p>
 
                   <div className="flex justify-between items-center mb-2">
                     <div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-zinc-500">
                         Price
                       </p>
-                      <p className="text-xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-xl font-bold text-zinc-900">
                         ₦{product.price.toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-zinc-500">
                         Rating
                       </p>
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                      <p className="text-sm font-semibold text-zinc-900">
                         {product.rating.toFixed(1)} ⭐
                       </p>
                     </div>
                   </div>
 
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-zinc-600">
                     {product.stock > 0 ? (
-                      <span className="text-green-600 dark:text-green-400">
+                      <span className="text-green-600">
                         In Stock ({product.stock} units)
                       </span>
                     ) : (
-                      <span className="text-red-600 dark:text-red-400">
+                      <span className="text-red-600">
                         Out of Stock
                       </span>
                     )}
@@ -418,9 +414,9 @@ export default function BusinessPage() {
 
       {/* Related Businesses Section */}
       {relatedBusinesses.length > 0 && (
-        <div className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 py-12">
+        <div className="bg-white border-t border-zinc-200 py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-8">
+            <h2 className="text-3xl font-bold text-zinc-900 mb-8">
               Related Businesses
             </h2>
 
@@ -429,24 +425,24 @@ export default function BusinessPage() {
                 <Link
                   key={relatedBusiness.id}
                   href={`/studashboard/main-menu/marketplace/business/${relatedBusiness.id}`}
-                  className="bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6 hover:shadow-lg hover:border-zinc-400 dark:hover:border-zinc-500 transition-all"
+                  className="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-lg hover:border-zinc-400 transition-all"
                 >
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 line-clamp-1">
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2 line-clamp-1">
                     {relatedBusiness.name}
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
+                  <p className="text-sm text-zinc-600 mb-3 line-clamp-2">
                     {relatedBusiness.description}
                   </p>
                   <div className="space-y-1">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-zinc-500">
                       <span className="font-semibold">Category:</span>{" "}
                       {relatedBusiness.industry}
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-zinc-500">
                       <span className="font-semibold">Location:</span>{" "}
                       {relatedBusiness.location}
                     </p>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-2">
+                    <p className="text-sm font-semibold text-zinc-900 mt-2">
                       {relatedBusiness.productCount} Product
                       {relatedBusiness.productCount !== 1 ? "s" : ""}
                     </p>
@@ -458,5 +454,5 @@ export default function BusinessPage() {
         </div>
       )}
     </div>
-  );
-}
+  )};
+

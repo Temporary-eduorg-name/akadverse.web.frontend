@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     const paystackSecret =
-      process.env.PAYSTACK_TEST_SECRET_KEY ||
+      // process.env.PAYSTACK_TEST_SECRET_KEY ||
       process.env.PAYSTACK_SECRET_KEY;
 
     if (!paystackSecret) {
@@ -108,37 +108,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const itemsByBusiness = new Map<string, typeof cartItems>();
+    const itemsByBusiness = new Map<string, { items: typeof cartItems, business: any, expectedDeliveryDate: any }>();
     for (const item of cartItems) {
       const businessId = item.product.business.id;
       if (!itemsByBusiness.has(businessId)) {
-        itemsByBusiness.set(businessId, []);
-      }
-      itemsByBusiness.get(businessId)?.push(item);
-    }
-
-    const orders = await prisma.$transaction(async (tx: any) => {
-      for (const item of cartItems) {
-        if (item.product.stock < item.quantity) {
-          throw new Error(
-            `Insufficient stock for ${item.product.name}`
-          );
-        }
-      }
-
-      const createdOrders = [];
-
-      for (const [businessId, items] of itemsByBusiness.entries()) {
-        const orderTotal = items.reduce(
-          (sum: number, item: any) => {
-            const itemPrice = item.variant?.price ?? item.product.price;
-            return sum + itemPrice * item.quantity;
-          },
-          0
-        );
-
-        // Get business details for delivery date calculation
-        const business = await tx.business.findUnique({
+        // Fetch business info and calculate delivery date outside transaction
+        const business = await prisma.business.findUnique({
           where: { id: businessId },
           select: {
             serviceDays: true,
@@ -152,86 +127,96 @@ export async function GET(req: NextRequest) {
             },
           },
         });
-
-        // Calculate expected delivery date
         const expectedDeliveryDate = business?.serviceDays && business?.serviceTimes
           ? calculateDeliveryDate(business.serviceDays, business.serviceTimes)
           : null;
+        itemsByBusiness.set(businessId, { items: [], business, expectedDeliveryDate });
+      }
+      itemsByBusiness.get(businessId)?.items.push(item);
+    }
 
-        const order = await tx.order.create({
-          data: {
-            status: "pending",
-            totalAmount: orderTotal,
-            userId,
-            businessId,
-            paystackReference: reference,
-            paymentStatus: "success",
-            expectedDeliveryDate,
-            items: {
-              create: items.map((item: any) => ({
-                quantity: item.quantity,
-                price: item.variant?.price ?? item.product.price,
-                productId: item.product.id,
-                selectedVariants: item.selectedVariants,
-              })),
-            },
-          },
-          include: {
-            items: {
-              include: {
-                product: true,
-              },
-            },
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        });
-
-        createdOrders.push(order);
-
-        // Send email notification to seller
-        if (business?.user.email) {
-          try {
-            const emailData = newOrderEmail(
-              `${business.user.firstName} ${business.user.lastName}`,
-              order.id,
-              `${order.user.firstName} ${order.user.lastName}`,
-              orderTotal,
-              expectedDeliveryDate
-            );
-            emailData.to = business.user.email;
-            await sendEmail(emailData);
-          } catch (emailError) {
-            console.error("Failed to send new order email:", emailError);
-            // Don't fail the transaction if email fails
-          }
+    // Only DB writes inside transaction, parallelized for speed
+    const orders = await prisma.$transaction(async (tx: any) => {
+      // Check stock before proceeding (still sequential for safety)
+      for (const item of cartItems) {
+        if (item.product.stock < item.quantity) {
+          throw new Error(`Insufficient stock for ${item.product.name}`);
         }
       }
-
-      for (const item of cartItems) {
-        await tx.product.update({
-          where: { id: item.product.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-
-      await tx.cartItem.deleteMany({
-        where: { userId },
-      });
-
+      // Parallelize order creation
+      const createdOrders = await Promise.all(
+        Array.from(itemsByBusiness.entries()).map(
+          async ([businessId, { items, expectedDeliveryDate }]) => {
+            const orderTotal = items.reduce((sum: number, item: any) => {
+              const itemPrice = item.variant?.price ?? item.product.price;
+              return sum + itemPrice * item.quantity;
+            }, 0);
+            const order = await tx.order.create({
+              data: {
+                status: "pending",
+                totalAmount: orderTotal,
+                userId,
+                businessId,
+                paystackReference: reference,
+                paymentStatus: "success",
+                expectedDeliveryDate,
+                items: {
+                  create: items.map((item: any) => ({
+                    quantity: item.quantity,
+                    price: item.variant?.price ?? item.product.price,
+                    productId: item.product.id,
+                    selectedVariants: item.selectedVariants,
+                  })),
+                },
+              },
+              include: {
+                items: { include: { product: true } },
+                user: { select: { firstName: true, lastName: true, email: true } },
+              },
+            });
+            return { order, businessId };
+          }
+        )
+      );
+      // Parallelize product stock updates
+      await Promise.all(
+        cartItems.map((item) =>
+          tx.product.update({
+            where: { id: item.product.id },
+            data: { stock: { decrement: item.quantity } },
+          })
+        )
+      );
+      // Await cart clear
+      await tx.cartItem.deleteMany({ where: { userId } });
       return createdOrders;
-    });
+    }, { timeout: 10000 }); // 10s timeout for safety
 
-    // Create notifications outside transaction to prevent blocking order creation
+    // Send emails and notifications after transaction
+    for (const { order, businessId } of orders) {
+      const { business, expectedDeliveryDate } = itemsByBusiness.get(businessId) || {};
+      if (business?.user.email) {
+        try {
+          const orderTotal = order.totalAmount;
+          const emailData = newOrderEmail(
+            `${business.user.firstName} ${business.user.lastName}`,
+            order.id,
+            `${order.user.firstName} ${order.user.lastName}`,
+            orderTotal,
+            expectedDeliveryDate
+          );
+          emailData.to = business.user.email;
+          await sendEmail(emailData);
+        } catch (emailError) {
+          console.error("Failed to send new order email:", emailError);
+        }
+      }
+    }
+    // Create notifications after transaction
     if (orders.length > 0) {
       try {
         await prisma.notification.createMany({
-          data: orders.map((order: any) => ({  // Type from Prisma create operation returns any
+          data: orders.map(({ order }) => ({
             userId,
             type: "payment",
             message: `Payment successful. Order ${order.id} created.`,
@@ -240,15 +225,14 @@ export async function GET(req: NextRequest) {
         });
       } catch (notificationError) {
         console.error("Failed to create notifications:", notificationError);
-        // Don't fail the entire payment if notifications fail
       }
     }
 
     return NextResponse.json(
-      { message: "Payment verified", orders },
+      { message: "Payment verified", orders: orders.map(({ order }) => order) },
       { status: 200 }
     );
-  } catch (error) {
+      } catch (error) {
     console.error("Payment verification error:", error);
     console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
     if (error instanceof Error) {
@@ -263,3 +247,114 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+//         const business = await tx.business.findUnique({
+//           where: { id: businessId },
+//           select: {
+//             serviceDays: true,
+//             serviceTimes: true,
+//             user: {
+//               select: {
+//                 email: true,
+//                 firstName: true,
+//                 lastName: true,
+//               },
+//             },
+//           },
+//         });
+
+//         // Calculate expected delivery date
+//         const expectedDeliveryDate = business?.serviceDays && business?.serviceTimes
+//           ? calculateDeliveryDate(business.serviceDays, business.serviceTimes)
+//           : null;
+
+//         const order = await tx.order.create({
+//           data: {
+//             status: "pending",
+//             totalAmount: orderTotal,
+//             userId,
+//             businessId,
+//             paystackReference: reference,
+//             paymentStatus: "success",
+//             expectedDeliveryDate,
+//             items: {
+//               create: items.map((item: any) => ({
+//                 quantity: item.quantity,
+//                 price: item.variant?.price ?? item.product.price,
+//                 productId: item.product.id,
+//                 selectedVariants: item.selectedVariants,
+//               })),
+//             },
+//           },
+//           include: {
+//             items: {
+//               include: {
+//                 product: true,
+//               },
+//             },
+//             user: {
+//               select: {
+//                 firstName: true,
+//                 lastName: true,
+//                 email: true,
+//               },
+//             },
+//           },
+//         });
+
+//         createdOrders.push(order);
+
+//         // Send email notification to seller
+//         if (business?.user.email) {
+//           try {
+//             const emailData = newOrderEmail(
+//               `${business.user.firstName} ${business.user.lastName}`,
+//               order.id,
+//               `${order.user.firstName} ${order.user.lastName}`,
+//               orderTotal,
+//               expectedDeliveryDate
+//             );
+//             emailData.to = business.user.email;
+//             await sendEmail(emailData);
+//           } catch (emailError) {
+//             console.error("Failed to send new order email:", emailError);
+//             // Don't fail the transaction if email fails
+//           }
+//         }
+//       }
+
+//       for (const item of cartItems) {
+//         await tx.product.update({
+//           where: { id: item.product.id },
+//           data: { stock: { decrement: item.quantity } },
+//         });
+//       }
+
+//       await tx.cartItem.deleteMany({
+//         where: { userId },
+//       });
+
+//       return createdOrders;
+//     });
+
+//     // Create notifications outside transaction to prevent blocking order creation
+//     if (orders.length > 0) {
+//       try {
+//         await prisma.notification.createMany({
+//           data: orders.map((order: any) => ({  // Type from Prisma create operation returns any
+//             userId,
+//             type: "payment",
+//             message: `Payment successful. Order ${order.id} created.`,
+//             businessId: order.businessId,
+//           })),
+//         });
+//       } catch (notificationError) {
+//         console.error("Failed to create notifications:", notificationError);
+//         // Don't fail the entire payment if notifications fail
+//       }
+//     }
+
+//     return NextResponse.json(
+//       { message: "Payment verified", orders },
+//       { status: 200 }
+//     );
+

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useMarketplaceActivity } from "@/src/context/MarketplaceActivityContext";
+import { useRouter } from "next/router";
 
 interface Order {
   id: string;
@@ -25,9 +27,12 @@ interface Order {
   }>;
 }
 
+
 export default function CurrentOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setScope, buyerActivity, registerOnUpdate } = useMarketplaceActivity();
+  const router = useRouter();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchOrders = async () => {
@@ -47,26 +52,22 @@ export default function CurrentOrdersPage() {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    setScope("buyer");
+  }, [setScope]);
 
   useEffect(() => {
-    const eventSource = new EventSource("/api/marketplace/realtime/events?scope=buyer");
+    fetchOrders();
+  }, [router]);
 
-    const onUpdate = () => {
-      fetchOrders();
-    };
+  // Refresh orders on SSE update
+  useEffect(() => {
+    const cb = () => fetchOrders();
+    const unregister = registerOnUpdate(cb);
+    return unregister;
+  }, [registerOnUpdate, fetchOrders]);
 
-    eventSource.addEventListener("update", onUpdate);
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
+  // You can now use buyerActivity.hasOfferActivity for UI if needed
 
-    return () => {
-      eventSource.removeEventListener("update", onUpdate);
-      eventSource.close();
-    };
-  }, []);
 
   const handleConfirmDelivery = async (orderId: string) => {
     if (!confirm("Confirm that you received this order from the seller?")) return;
@@ -121,32 +122,32 @@ export default function CurrentOrdersPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen flex items-center justify-center">
+      <div className="flex-1 bg-zinc-50 min-h-screen flex items-center justify-center">
         <LoadingSpinner size="md" />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-zinc-50 dark:bg-black min-h-screen py-12">
+    <div className="flex-1 bg-zinc-50 min-h-screen py-12">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-zinc-900 mb-2">
             Active Orders
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-zinc-600">
             {orders.length === 0 ? "No active orders" : `${orders.length} active order(s)`}
           </p>
         </div>
 
         {orders.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700 p-8 text-center">
-            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+          <div className="bg-white rounded-lg border border-zinc-200 p-8 text-center">
+            <p className="text-zinc-600 mb-4">
               You have no active orders
             </p>
             <Link
               href="/studashboard/main-menu/marketplace"
-              className="inline-block bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2 rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+              className="inline-block bg-zinc-900 text-white px-6 py-2 rounded-lg hover:bg-zinc-700 transition-colors"
             >
               Continue Shopping
             </Link>
@@ -156,34 +157,33 @@ export default function CurrentOrdersPage() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6"
+                className="bg-white rounded-lg border border-zinc-200 p-6"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="text-sm text-zinc-500">
                       Order ID: {order.id.substring(0, 8)}...
                     </p>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="text-sm text-zinc-500">
                       Business: {order.business?.name || "Business"}
                     </p>
-                    <p className="text-lg font-bold text-zinc-900 dark:text-white">
+                    <p className="text-lg font-bold text-zinc-900">
                       ₦{order.total.toFixed(2)}
                     </p>
                   </div>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                    order.status === "pending"
-                      ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${order.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800"
                       : order.status === "processing"
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                      : "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
-                  }`}>
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-purple-100 text-purple-800"
+                    }`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>
                 </div>
 
                 {order.items && order.items.length > 0 && (
-                  <div className="mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-                    <h3 className="font-semibold text-zinc-900 dark:text-white mb-2">
+                  <div className="mb-4 pb-4 border-b border-zinc-200">
+                    <h3 className="font-semibold text-zinc-900 mb-2">
                       Items:
                     </h3>
                     <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function CurrentOrdersPage() {
                               className="w-10 h-10 object-cover rounded"
                             />
                           )}
-                          <div className="flex-1 flex justify-between text-sm text-zinc-600 dark:text-zinc-400">
+                          <div className="flex-1 flex justify-between text-sm text-zinc-600">
                             <span>
                               {item.product.name} × {item.quantity}
                               {item.selectedVariants && (
@@ -221,7 +221,7 @@ export default function CurrentOrdersPage() {
                 )}
 
                 {order.expectedDeliveryDate && (
-                  <p className="text-sm text-green-600 dark:text-green-400 mb-3">
+                  <p className="text-sm text-green-600 mb-3">
                     Expected delivery: {new Date(order.expectedDeliveryDate).toLocaleDateString()}
                   </p>
                 )}
@@ -241,7 +241,7 @@ export default function CurrentOrdersPage() {
                 {order.status !== "shipped" && !order.isDisputed && (
                   <div className="mb-4">
                     {order.status === "pending" && (
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
+                      <p className="text-xs text-zinc-600 mb-2">
                         If the seller hasn&apos;t accepted your order, you can raise a dispute to request a refund.
                       </p>
                     )}
@@ -255,7 +255,7 @@ export default function CurrentOrdersPage() {
                   </div>
                 )}
 
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-zinc-500">
                   Ordered on{" "}
                   {new Date(order.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
@@ -271,7 +271,7 @@ export default function CurrentOrdersPage() {
         <div className="mt-8">
           <Link
             href="/studashboard/main-menu/marketplace/order-history"
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="text-zinc-600 hover:text-zinc-900 transition-colors"
           >
             ← View Delivered / Disputed Orders
           </Link>
