@@ -120,7 +120,17 @@ export default function CourseLayout({
     () => ({ "--sidebar-width": `${sidebarWidth}px` }) as React.CSSProperties,
     [sidebarWidth],
   );
-  const { courseSlug } = useParams<{ courseSlug: string }>();
+  const { courseSlug: courseSlugParam } = useParams<{
+    courseSlug: string | string[];
+  }>();
+  const courseSlug = Array.isArray(courseSlugParam)
+    ? courseSlugParam[0]
+    : courseSlugParam;
+
+  if (!courseSlug) {
+    notFound();
+  }
+
   const course = COURSE_META[courseSlug];
   const pathname = usePathname();
   const router = useRouter();
